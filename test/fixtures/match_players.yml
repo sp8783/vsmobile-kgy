@@ -1,0 +1,13 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  match: one
+  player: one
+  team: one
+  mobile_suit: one
+
+two:
+  match: two
+  player: two
+  team: two
+  mobile_suit: two
