@@ -3,11 +3,11 @@
 one:
   event: one
   team1: one
-  team2: one
+  team2: two
   winner_team: one
 
 two:
   event: two
-  team1: two
+  team1: one
   team2: two
   winner_team: two

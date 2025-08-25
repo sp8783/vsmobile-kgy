@@ -3,15 +3,15 @@
 one:
   rotation_template: one
   order: 1
-  team1_user_1: one
-  team1_user_2: one
-  team2_user_1: one
-  team2_user_2: one
+  team1_player1_index: 0
+  team1_player2_index: 1
+  team2_player1_index: 2
+  team2_player2_index: 3
 
 two:
   rotation_template: two
   order: 1
-  team1_user_1: two
-  team1_user_2: two
-  team2_user_1: two
-  team2_user_2: two
+  team1_player1_index: 0
+  team1_player2_index: 1
+  team2_player1_index: 2
+  team2_player2_index: 3

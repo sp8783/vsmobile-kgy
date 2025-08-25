@@ -59,18 +59,14 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_25_171617) do
 
   create_table "rotation_template_matches", force: :cascade do |t|
     t.integer "rotation_template_id", null: false
-    t.integer "order"
-    t.integer "team1_user1_id", null: false
-    t.integer "team1_user2_id", null: false
-    t.integer "team2_user1_id", null: false
-    t.integer "team2_user2_id", null: false
+    t.integer "order", null: false
+    t.integer "team1_player1_index", null: false
+    t.integer "team1_player2_index", null: false
+    t.integer "team2_player1_index", null: false
+    t.integer "team2_player2_index", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["rotation_template_id"], name: "index_rotation_template_matches_on_rotation_template_id"
-    t.index ["team1_user1_id"], name: "index_rotation_template_matches_on_team1_user1_id"
-    t.index ["team1_user2_id"], name: "index_rotation_template_matches_on_team1_user2_id"
-    t.index ["team2_user1_id"], name: "index_rotation_template_matches_on_team2_user1_id"
-    t.index ["team2_user2_id"], name: "index_rotation_template_matches_on_team2_user2_id"
   end
 
   create_table "rotation_templates", force: :cascade do |t|
@@ -114,10 +110,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_25_171617) do
   add_foreign_key "matches", "teams", column: "team2_id"
   add_foreign_key "matches", "teams", column: "winner_team_id"
   add_foreign_key "rotation_template_matches", "rotation_templates"
-  add_foreign_key "rotation_template_matches", "users", column: "team1_user1_id"
-  add_foreign_key "rotation_template_matches", "users", column: "team1_user2_id"
-  add_foreign_key "rotation_template_matches", "users", column: "team2_user1_id"
-  add_foreign_key "rotation_template_matches", "users", column: "team2_user2_id"
   add_foreign_key "teams", "users", column: "player1_id"
   add_foreign_key "teams", "users", column: "player2_id"
 end

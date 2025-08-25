@@ -2,10 +2,10 @@
 
 one:
   name: MyString
-  player_count: 1
+  player_count: 4
   match_count: 1
 
 two:
   name: MyString
-  player_count: 1
+  player_count: 4
   match_count: 1
