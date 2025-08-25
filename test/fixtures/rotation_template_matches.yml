@@ -1,0 +1,17 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  rotation_template: one
+  order: 1
+  team1_user_1: one
+  team1_user_2: one
+  team2_user_1: one
+  team2_user_2: one
+
+two:
+  rotation_template: two
+  order: 1
+  team1_user_1: two
+  team1_user_2: two
+  team2_user_1: two
+  team2_user_2: two
