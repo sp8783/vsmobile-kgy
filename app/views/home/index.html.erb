@@ -1,0 +1,8 @@
+<h1>トップページ</h1>
+<% if user_signed_in? %>
+  <p>こんにちは、<%= current_user.email %> さん！</p>
+  <%= link_to 'ログアウト', destroy_user_session_path, data: { turbo_method: :delete } %>
+<% else %>
+  <%= link_to 'ログイン', new_user_session_path %> |
+  <%= link_to 'アカウント登録', new_user_registration_path %>
+<% end %>
