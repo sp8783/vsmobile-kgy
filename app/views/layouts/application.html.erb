@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title><%= content_for(:title) || "Vsmobile Kgy" %></title>
+    <title><%= content_for(:title) || "VSモバイル KGY版" %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="application-name" content="Vsmobile Kgy">
@@ -23,8 +23,33 @@
     <%= javascript_importmap_tags %>
   </head>
 
-  <body>
-    <main class="container mx-auto mt-28 px-5 flex">
+  <body class="bg-gray-50">
+    <nav class="bg-white shadow-sm">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-16">
+          <div class="flex">
+            <div class="flex-shrink-0 flex items-center">
+              <%= link_to "VSモバイル KGY版", root_path, class: "text-xl font-bold text-gray-900" %>
+            </div>
+            <% if user_signed_in? %>
+              <div class="ml-6 flex space-x-8">
+                <%= link_to "機体マスタ", mobile_suits_path, class: "inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-900 border-b-2 border-transparent hover:border-gray-300" %>
+              </div>
+            <% end %>
+          </div>
+          <div class="flex items-center">
+            <% if user_signed_in? %>
+              <span class="text-sm text-gray-700 mr-4"><%= current_user.nickname %></span>
+              <%= button_to "ログアウト", destroy_user_session_path, method: :delete, class: "text-sm text-gray-700 hover:text-gray-900" %>
+            <% else %>
+              <%= link_to "ログイン", new_user_session_path, class: "text-sm text-gray-700 hover:text-gray-900" %>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <main>
       <%= yield %>
     </main>
   </body>
