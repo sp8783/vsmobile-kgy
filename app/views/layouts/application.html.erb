@@ -33,6 +33,7 @@
             </div>
             <% if user_signed_in? %>
               <div class="ml-6 flex space-x-8">
+                <%= link_to "イベント", events_path, class: "inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-900 border-b-2 border-transparent hover:border-gray-300" %>
                 <%= link_to "機体マスタ", mobile_suits_path, class: "inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-900 border-b-2 border-transparent hover:border-gray-300" %>
                 <% if current_user.is_admin? %>
                   <%= link_to "ユーザー管理", users_path, class: "inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-900 border-b-2 border-transparent hover:border-gray-300" %>

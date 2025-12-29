@@ -1,0 +1,76 @@
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <div class="mb-6">
+    <%= link_to "← イベント一覧に戻る", events_path, class: "text-blue-600 hover:text-blue-500" %>
+  </div>
+
+  <div class="bg-white shadow overflow-hidden sm:rounded-lg mb-6">
+    <div class="px-4 py-5 sm:px-6 flex justify-between items-start">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-900"><%= @event.name %></h1>
+        <p class="mt-1 max-w-2xl text-sm text-gray-500">
+          <%= @event.held_on.strftime('%Y年%m月%d日') %>
+        </p>
+      </div>
+      <% if current_user.is_admin? %>
+        <%= link_to "編集", edit_event_path(@event), class: "bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded" %>
+      <% end %>
+    </div>
+    <% if @event.description.present? %>
+      <div class="border-t border-gray-200 px-4 py-5 sm:px-6">
+        <p class="text-sm text-gray-700"><%= @event.description %></p>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+      <div class="px-4 py-5 sm:px-6">
+        <h2 class="text-lg font-medium text-gray-900">試合記録</h2>
+        <p class="mt-1 text-sm text-gray-500">全 <%= @matches.count %> 試合</p>
+      </div>
+      <div class="border-t border-gray-200">
+        <% if @matches.any? %>
+          <ul class="divide-y divide-gray-200">
+            <% @matches.first(5).each do |match| %>
+              <li class="px-4 py-3">
+                <p class="text-sm text-gray-900"><%= match.played_at.strftime('%H:%M') %></p>
+              </li>
+            <% end %>
+          </ul>
+          <% if @matches.count > 5 %>
+            <div class="px-4 py-3 bg-gray-50 text-center">
+              <p class="text-sm text-gray-500">他 <%= @matches.count - 5 %> 試合</p>
+            </div>
+          <% end %>
+        <% else %>
+          <div class="px-4 py-3 text-center">
+            <p class="text-sm text-gray-500">まだ試合記録がありません</p>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+      <div class="px-4 py-5 sm:px-6">
+        <h2 class="text-lg font-medium text-gray-900">ローテーション</h2>
+        <p class="mt-1 text-sm text-gray-500">全 <%= @rotations.count %> 個</p>
+      </div>
+      <div class="border-t border-gray-200">
+        <% if @rotations.any? %>
+          <ul class="divide-y divide-gray-200">
+            <% @rotations.each do |rotation| %>
+              <li class="px-4 py-3">
+                <p class="text-sm text-gray-900"><%= rotation.name %></p>
+                <p class="text-xs text-gray-500">第<%= rotation.round_number %>周</p>
+              </li>
+            <% end %>
+          </ul>
+        <% else %>
+          <div class="px-4 py-3 text-center">
+            <p class="text-sm text-gray-500">まだローテーションがありません</p>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

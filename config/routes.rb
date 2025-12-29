@@ -20,4 +20,7 @@ Rails.application.routes.draw do
 
   # Users (Admin only)
   resources :users, except: [:show]
+
+  # Events
+  resources :events
 end
