@@ -8,6 +8,15 @@ class User < ApplicationRecord
   validates :username, presence: true, uniqueness: { case_sensitive: false }
   validates :nickname, presence: true
 
+  # Virtual email attribute (maps to username for Devise compatibility)
+  def email
+    username
+  end
+
+  def email=(value)
+    self.username = value
+  end
+
   # Override Devise's email validation (we use username instead)
   def email_required?
     false
