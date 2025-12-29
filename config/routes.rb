@@ -22,5 +22,10 @@ Rails.application.routes.draw do
   resources :users, except: [:show]
 
   # Events
-  resources :events
+  resources :events do
+    resources :matches, only: [:new, :create]
+  end
+
+  # Matches
+  resources :matches, only: [:index, :show]
 end

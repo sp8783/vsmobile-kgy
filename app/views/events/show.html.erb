@@ -11,9 +11,12 @@
           <%= @event.held_on.strftime('%Y年%m月%d日') %>
         </p>
       </div>
-      <% if current_user.is_admin? %>
-        <%= link_to "編集", edit_event_path(@event), class: "bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded" %>
-      <% end %>
+      <div class="flex space-x-3">
+        <%= link_to "試合を記録", new_event_match_path(@event), class: "bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded" %>
+        <% if current_user.is_admin? %>
+          <%= link_to "編集", edit_event_path(@event), class: "bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded" %>
+        <% end %>
+      </div>
     </div>
     <% if @event.description.present? %>
       <div class="border-t border-gray-200 px-4 py-5 sm:px-6">

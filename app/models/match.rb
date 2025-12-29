@@ -4,6 +4,8 @@ class Match < ApplicationRecord
   belongs_to :rotation_match, optional: true
   has_many :match_players, dependent: :destroy
 
+  accepts_nested_attributes_for :match_players
+
   # Validations
   validates :played_at, presence: true
   validates :winning_team, presence: true, inclusion: { in: [1, 2] }
