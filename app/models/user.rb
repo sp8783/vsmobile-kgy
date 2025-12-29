@@ -17,6 +17,10 @@ class User < ApplicationRecord
     false
   end
 
+  def will_save_change_to_email?
+    false
+  end
+
   # Use username for authentication instead of email
   def self.find_for_database_authentication(warden_conditions)
     conditions = warden_conditions.dup
