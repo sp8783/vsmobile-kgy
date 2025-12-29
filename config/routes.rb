@@ -17,4 +17,7 @@ Rails.application.routes.draw do
 
   # Mobile Suits
   resources :mobile_suits
+
+  # Users (Admin only)
+  resources :users, except: [:show]
 end

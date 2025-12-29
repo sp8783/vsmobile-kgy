@@ -1,0 +1,53 @@
+<%= form_with(model: user, class: "space-y-6") do |form| %>
+  <% if user.errors.any? %>
+    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+      <h2 class="font-bold text-lg mb-2"><%= pluralize(user.errors.count, "個のエラー") %>があります:</h2>
+      <ul class="list-disc list-inside">
+        <% user.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div>
+    <%= form.label :username, "ユーザー名", class: "block text-sm font-medium text-gray-700 mb-1" %>
+    <%= form.text_field :username, class: "w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500", disabled: user.persisted? %>
+    <% if user.persisted? %>
+      <p class="mt-1 text-sm text-gray-500">ユーザー名は変更できません</p>
+    <% end %>
+  </div>
+
+  <div>
+    <%= form.label :nickname, "ニックネーム", class: "block text-sm font-medium text-gray-700 mb-1" %>
+    <%= form.text_field :nickname, class: "w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" %>
+  </div>
+
+  <div>
+    <%= form.label :password, user.persisted? ? "パスワード（変更する場合のみ）" : "パスワード", class: "block text-sm font-medium text-gray-700 mb-1" %>
+    <%= form.password_field :password, autocomplete: "new-password", class: "w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" %>
+    <% if user.persisted? %>
+      <p class="mt-1 text-sm text-gray-500">変更しない場合は空欄のままにしてください</p>
+    <% end %>
+  </div>
+
+  <div>
+    <%= form.label :password_confirmation, "パスワード（確認）", class: "block text-sm font-medium text-gray-700 mb-1" %>
+    <%= form.password_field :password_confirmation, autocomplete: "new-password", class: "w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" %>
+  </div>
+
+  <div class="flex items-center">
+    <%= form.check_box :is_admin, class: "h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" %>
+    <%= form.label :is_admin, "管理者権限を付与", class: "ml-2 block text-sm text-gray-900" %>
+  </div>
+
+  <div class="flex items-center">
+    <%= form.check_box :notification_enabled, class: "h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" %>
+    <%= form.label :notification_enabled, "通知を有効化", class: "ml-2 block text-sm text-gray-900" %>
+  </div>
+
+  <div class="flex justify-end space-x-3">
+    <%= link_to "キャンセル", users_path, class: "px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50" %>
+    <%= form.submit user.new_record? ? "作成" : "更新", class: "px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700" %>
+  </div>
+<% end %>
