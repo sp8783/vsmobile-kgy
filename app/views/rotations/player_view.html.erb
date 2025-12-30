@@ -1,0 +1,181 @@
+<div class="max-w-2xl mx-auto px-4 py-6">
+  <!-- Header -->
+  <div class="mb-6 text-center">
+    <h1 class="text-2xl font-bold text-gray-900"><%= @rotation.name %></h1>
+    <p class="mt-2 text-sm text-gray-600"><%= @rotation.event.name %></p>
+    <p class="text-xs text-gray-500">自動更新: 30秒ごと</p>
+  </div>
+
+  <!-- Current Match -->
+  <div class="mb-6 bg-blue-50 border-2 border-blue-300 rounded-lg p-6 text-center">
+    <div class="text-sm font-semibold text-blue-700 mb-2">現在の試合</div>
+    <div class="text-5xl font-bold text-blue-900">
+      第<%= @rotation.current_match_index + 1 %>試合
+    </div>
+    <div class="mt-2 text-sm text-blue-700">
+      全<%= @rotation.rotation_matches.count %>試合中
+    </div>
+  </div>
+
+  <!-- Next Match Info -->
+  <% if @next_match %>
+    <div class="mb-6 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-300 rounded-lg p-6">
+      <div class="text-center mb-4">
+        <div class="text-sm font-semibold text-green-700 mb-2">あなたの次の出番</div>
+        <div class="text-4xl font-bold text-green-900 mb-2">
+          第<%= @next_match.match_index + 1 %>試合
+        </div>
+        <% if @matches_until_next == 0 %>
+          <div class="text-lg font-bold text-red-600 animate-pulse">
+            🔔 今です！準備してください！
+          </div>
+        <% elsif @matches_until_next == 1 %>
+          <div class="text-lg font-bold text-orange-600">
+            ⚠️ 次の試合です！
+          </div>
+        <% elsif @matches_until_next == 2 %>
+          <div class="text-lg font-semibold text-yellow-600">
+            あと2試合後
+          </div>
+        <% else %>
+          <div class="text-sm text-green-700">
+            あと<%= @matches_until_next %>試合後
+          </div>
+        <% end %>
+      </div>
+
+      <% if @match_info %>
+        <% streaming_player = @next_match.team1_player1 %>
+        <% is_streaming = (streaming_player.id == @current_user_id) %>
+
+        <!-- Partner -->
+        <div class="bg-white rounded-lg p-4 mb-3">
+          <div class="text-xs text-gray-500 mb-2">ペア</div>
+          <div class="text-2xl font-bold <%= streaming_player.id == @match_info[:partner].id ? 'text-red-600' : 'text-gray-900' %>">
+            <%= @match_info[:partner].nickname %>
+            <% if streaming_player.id == @match_info[:partner].id %>
+              <span class="ml-2 px-2 py-0.5 bg-red-100 text-red-700 rounded text-xs font-semibold align-middle">配信台</span>
+            <% end %>
+          </div>
+        </div>
+
+        <!-- Streaming indicator if you are streaming -->
+        <% if is_streaming %>
+          <div class="bg-red-50 border-2 border-red-300 rounded-lg p-4 mb-3">
+            <div class="text-center">
+              <div class="text-lg font-bold text-red-700">🎥 あなたが配信台に座ります</div>
+            </div>
+          </div>
+        <% end %>
+
+        <!-- Opponents -->
+        <div class="bg-white rounded-lg p-4">
+          <div class="text-xs text-gray-500 mb-2">対戦相手</div>
+          <div class="space-y-2">
+            <% @match_info[:opponents].each do |opponent| %>
+              <div class="text-xl font-bold <%= streaming_player.id == opponent.id ? 'text-red-600' : 'text-gray-900' %>">
+                <%= opponent.nickname %>
+                <% if streaming_player.id == opponent.id %>
+                  <span class="ml-2 px-2 py-0.5 bg-red-100 text-red-700 rounded text-xs font-semibold align-middle">配信台</span>
+                <% end %>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="mb-6 bg-gray-100 border border-gray-300 rounded-lg p-6 text-center">
+      <div class="text-lg font-semibold text-gray-700">
+        これ以降の試合予定はありません
+      </div>
+      <div class="text-sm text-gray-600 mt-2">
+        お疲れ様でした！
+      </div>
+    </div>
+  <% end %>
+
+  <!-- Statistics -->
+  <div class="bg-white shadow rounded-lg p-6 mb-6">
+    <h3 class="text-lg font-semibold text-gray-900 mb-4">あなたの統計</h3>
+    <% if @player_statistics[@current_user_id] %>
+      <% stats = @player_statistics[@current_user_id] %>
+      <div class="grid grid-cols-1 gap-3">
+        <div class="bg-gray-50 rounded p-3">
+          <div class="text-xs text-gray-500">試合数</div>
+          <div class="text-2xl font-bold text-gray-900">
+            <%= stats[:match_count] %>試合
+          </div>
+        </div>
+
+        <div class="bg-gray-50 rounded p-3">
+          <div class="text-xs text-gray-500 mb-2">ペアを組んだ回数</div>
+          <div class="text-sm text-gray-700">
+            <% if stats[:pair_counts].any? %>
+              <% stats[:pair_counts].sort_by { |_, count| -count }.first(5).each do |player_id, count| %>
+                <% partner = User.find(player_id) %>
+                <div class="flex justify-between py-1">
+                  <span><%= partner.nickname %></span>
+                  <span class="font-semibold"><%= count %>回</span>
+                </div>
+              <% end %>
+            <% else %>
+              <div class="text-gray-400">データなし</div>
+            <% end %>
+          </div>
+        </div>
+
+        <div class="bg-gray-50 rounded p-3">
+          <div class="text-xs text-gray-500 mb-2">対戦した回数</div>
+          <div class="text-sm text-gray-700">
+            <% if stats[:opponent_counts].any? %>
+              <% stats[:opponent_counts].sort_by { |_, count| -count }.first(5).each do |player_id, count| %>
+                <% opponent = User.find(player_id) %>
+                <div class="flex justify-between py-1">
+                  <span><%= opponent.nickname %></span>
+                  <span class="font-semibold"><%= count %>回</span>
+                </div>
+              <% end %>
+            <% else %>
+              <div class="text-gray-400">データなし</div>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    <% else %>
+      <p class="text-gray-500 text-center">このローテーションには参加していません</p>
+    <% end %>
+  </div>
+
+  <!-- Navigation -->
+  <div class="flex justify-center space-x-3">
+    <%= link_to "詳細ビュー", @rotation, class: "px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50" %>
+    <%= link_to "一覧に戻る", rotations_path, class: "px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50" %>
+  </div>
+</div>
+
+<!-- Notification Script -->
+<script>
+  // Request notification permission on load
+  if ('Notification' in window && Notification.permission === 'default') {
+    Notification.requestPermission();
+  }
+
+  // Check if it's time to notify (2-3 matches before)
+  <% if @next_match && @matches_until_next.present? && @matches_until_next <= 3 && @matches_until_next > 0 %>
+    if ('Notification' in window && Notification.permission === 'granted') {
+      new Notification('出番が近づいています！', {
+        body: 'あと<%= @matches_until_next %>試合後です。準備してください。',
+        icon: '/icon.png'
+      });
+    }
+  <% elsif @next_match && @matches_until_next == 0 %>
+    if ('Notification' in window && Notification.permission === 'granted') {
+      new Notification('今です！', {
+        body: 'あなたの試合です。準備してください！',
+        icon: '/icon.png',
+        tag: 'current-match'
+      });
+    }
+  <% end %>
+</script>

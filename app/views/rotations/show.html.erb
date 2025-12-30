@@ -1,0 +1,384 @@
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <!-- Header -->
+  <div class="mb-6">
+    <div class="flex justify-between items-start">
+      <div>
+        <h1 class="text-3xl font-bold text-gray-900"><%= @rotation.name %></h1>
+        <p class="mt-2 text-sm text-gray-600">
+          イベント: <%= link_to @rotation.event.name, @rotation.event, class: "text-blue-600 hover:text-blue-800" %>
+          (<%= @rotation.event.held_on.strftime('%Y/%m/%d') %>)
+        </p>
+        <div class="mt-2 flex items-center space-x-3">
+          <span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
+            <%= @rotation.round_number %>周目
+          </span>
+          <% if @rotation.is_active %>
+            <span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+              アクティブ
+            </span>
+          <% end %>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap gap-3">
+        <%= link_to "📱 プレイヤー画面", player_view_rotation_path(@rotation), class: "px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700", target: "_blank" %>
+        <% unless @rotation.is_active %>
+          <%= button_to "アクティブにする", activate_rotation_path(@rotation), method: :post, class: "px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700" %>
+        <% end %>
+        <%= button_to "周回をコピー", copy_for_next_round_rotation_path(@rotation), method: :post, class: "px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50" %>
+        <%= link_to "一覧に戻る", rotations_path, class: "px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50" %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Progress Bar -->
+  <div class="mb-6 bg-white shadow sm:rounded-lg p-6">
+    <div class="flex justify-between items-center mb-2">
+      <h3 class="text-lg font-semibold text-gray-900">進捗状況</h3>
+      <span class="text-sm text-gray-600">
+        <%= @rotation.current_match_index + 1 %> / <%= @rotation_matches.count %> 試合
+      </span>
+    </div>
+    <div class="w-full bg-gray-200 rounded-full h-4">
+      <% progress = @rotation_matches.count > 0 ? ((@rotation.current_match_index + 1).to_f / @rotation_matches.count * 100) : 0 %>
+      <div class="bg-blue-600 h-4 rounded-full transition-all duration-300" style="width: <%= progress %>%"></div>
+    </div>
+  </div>
+
+  <!-- Current Match -->
+  <% if @current_match.present? %>
+    <div class="mb-6 bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-300 shadow-lg sm:rounded-lg p-6">
+      <div class="flex justify-between items-start mb-4">
+        <h3 class="text-xl font-bold text-blue-900">現在の試合（第<%= @rotation.current_match_index + 1 %>試合）</h3>
+        <% if @current_match.match.present? %>
+          <span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+            記録済み
+          </span>
+        <% else %>
+          <span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+            未記録
+          </span>
+        <% end %>
+      </div>
+
+      <!-- Match Display -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <!-- Team 1 -->
+        <div class="bg-white rounded-lg p-4 shadow">
+          <h4 class="text-sm font-semibold text-gray-500 mb-3">チーム1</h4>
+          <div class="space-y-2">
+            <div class="flex items-center">
+              <span class="text-sm font-bold text-red-600"><%= @current_match.team1_player1.nickname %></span>
+              <span class="ml-2 px-2 py-0.5 bg-red-100 text-red-700 rounded text-xs font-semibold">配信台</span>
+            </div>
+            <div class="flex items-center">
+              <span class="text-sm font-medium text-gray-900"><%= @current_match.team1_player2.nickname %></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- VS -->
+        <div class="flex items-center justify-center">
+          <span class="text-3xl font-bold text-gray-400">VS</span>
+        </div>
+
+        <!-- Team 2 -->
+        <div class="bg-white rounded-lg p-4 shadow">
+          <h4 class="text-sm font-semibold text-gray-500 mb-3">チーム2</h4>
+          <div class="space-y-2">
+            <div class="flex items-center">
+              <span class="text-sm font-medium text-gray-900"><%= @current_match.team2_player1.nickname %></span>
+            </div>
+            <div class="flex items-center">
+              <span class="text-sm font-medium text-gray-900"><%= @current_match.team2_player2.nickname %></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Record Match Form -->
+      <% unless @current_match.match.present? %>
+        <div class="bg-white rounded-lg p-6 shadow">
+          <h4 class="text-lg font-semibold text-gray-900 mb-4">試合結果を記録</h4>
+          <form action="<%= record_match_rotation_path(@rotation) %>" method="post" data-turbo="false" id="match-record-form">
+            <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <!-- Team 1 Suits -->
+              <div>
+                <h5 class="text-sm font-semibold text-gray-700 mb-3">チーム1 使用機体</h5>
+                <div class="space-y-3">
+                  <div>
+                    <label class="block text-sm text-gray-600 mb-1"><%= @current_match.team1_player1.nickname %> <span class="text-red-500">*</span></label>
+                    <select name="team1_player1_suit" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                      <option value="">機体を選択...</option>
+                      <% MobileSuit.order(:name).each do |suit| %>
+                        <option value="<%= suit.id %>"><%= suit.name %> (<%= suit.cost %>)</option>
+                      <% end %>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block text-sm text-gray-600 mb-1"><%= @current_match.team1_player2.nickname %> <span class="text-red-500">*</span></label>
+                    <select name="team1_player2_suit" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                      <option value="">機体を選択...</option>
+                      <% MobileSuit.order(:name).each do |suit| %>
+                        <option value="<%= suit.id %>"><%= suit.name %> (<%= suit.cost %>)</option>
+                      <% end %>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Team 2 Suits -->
+              <div>
+                <h5 class="text-sm font-semibold text-gray-700 mb-3">チーム2 使用機体</h5>
+                <div class="space-y-3">
+                  <div>
+                    <label class="block text-sm text-gray-600 mb-1"><%= @current_match.team2_player1.nickname %> <span class="text-red-500">*</span></label>
+                    <select name="team2_player1_suit" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                      <option value="">機体を選択...</option>
+                      <% MobileSuit.order(:name).each do |suit| %>
+                        <option value="<%= suit.id %>"><%= suit.name %> (<%= suit.cost %>)</option>
+                      <% end %>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block text-sm text-gray-600 mb-1"><%= @current_match.team2_player2.nickname %> <span class="text-red-500">*</span></label>
+                    <select name="team2_player2_suit" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                      <option value="">機体を選択...</option>
+                      <% MobileSuit.order(:name).each do |suit| %>
+                        <option value="<%= suit.id %>"><%= suit.name %> (<%= suit.cost %>)</option>
+                      <% end %>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Winning Team -->
+            <div class="mt-6">
+              <label class="block text-sm font-semibold text-gray-700 mb-3">勝利チーム <span class="text-red-500">*</span></label>
+              <div class="flex space-x-4">
+                <div class="flex items-center">
+                  <input type="radio" name="winning_team" value="1" id="team1_win" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
+                  <label for="team1_win" class="ml-2 block text-sm text-gray-900">チーム1</label>
+                </div>
+                <div class="flex items-center">
+                  <input type="radio" name="winning_team" value="2" id="team2_win" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
+                  <label for="team2_win" class="ml-2 block text-sm text-gray-900">チーム2</label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="mt-6 flex justify-end">
+              <button type="submit" class="px-6 py-3 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                試合を記録して次へ
+              </button>
+            </div>
+          </form>
+
+          <script>
+            // Initialize Tom-Select for mobile suit selects
+            document.addEventListener('DOMContentLoaded', function() {
+              const selects = document.querySelectorAll('select[name*="_suit"]');
+              selects.forEach(function(select) {
+                new TomSelect(select, {
+                  placeholder: '機体を検索...',
+                  allowEmptyOption: true,
+                  plugins: ['clear_button'],
+                  render: {
+                    no_results: function(data, escape) {
+                      return '<div class="no-results">該当する機体が見つかりません</div>';
+                    }
+                  }
+                });
+              });
+            });
+          </script>
+        </div>
+      <% else %>
+        <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+          <p class="text-sm text-green-800">
+            この試合は記録済みです。
+            <%= link_to "試合詳細を見る", @current_match.match, class: "font-semibold underline" %>
+          </p>
+          <% if @rotation.current_match_index < @rotation_matches.count - 1 %>
+            <%= button_to "次の試合へ", next_match_rotation_path(@rotation), method: :post, class: "mt-3 px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700", form: { data: { turbo: false } } %>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+
+  <!-- All Matches List -->
+  <div class="bg-white shadow sm:rounded-lg">
+    <div class="px-6 py-5 border-b border-gray-200">
+      <h3 class="text-lg font-semibold text-gray-900">全試合一覧</h3>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              試合
+            </th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              チーム1
+            </th>
+            <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+              VS
+            </th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              チーム2
+            </th>
+            <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+              状態
+            </th>
+            <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+              結果
+            </th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          <% @rotation_matches.each_with_index do |rm, index| %>
+            <tr class="<%= 'bg-blue-50' if index == @rotation.current_match_index %> hover:bg-gray-50">
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex items-center">
+                  <span class="text-sm font-medium text-gray-900">第<%= index + 1 %>試合</span>
+                  <% if index == @rotation.current_match_index %>
+                    <span class="ml-2 px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                      現在
+                    </span>
+                  <% end %>
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm text-gray-900">
+                  <span class="font-bold text-red-600"><%= rm.team1_player1.nickname %></span>
+                  <span class="ml-1 px-1.5 py-0.5 bg-red-100 text-red-700 rounded text-xs font-semibold">配信台</span><br>
+                  <%= rm.team1_player2.nickname %>
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-center">
+                <span class="text-gray-400 font-semibold">VS</span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm text-gray-900">
+                  <%= rm.team2_player1.nickname %><br>
+                  <%= rm.team2_player2.nickname %>
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-center">
+                <% if rm.match %>
+                  <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                    記録済み
+                  </span>
+                <% elsif index < @rotation.current_match_index %>
+                  <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
+                    スキップ
+                  </span>
+                <% else %>
+                  <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                    未記録
+                  </span>
+                <% end %>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-center">
+                <% if rm.match %>
+                  <% if rm.match.winning_team == 1 %>
+                    <span class="text-sm font-semibold text-blue-600">チーム1 勝利</span>
+                  <% else %>
+                    <span class="text-sm font-semibold text-red-600">チーム2 勝利</span>
+                  <% end %>
+                  <div class="text-xs text-gray-500 mt-1">
+                    <%= link_to "詳細", rm.match, class: "text-blue-600 hover:text-blue-800" %>
+                  </div>
+                <% else %>
+                  <span class="text-sm text-gray-400">-</span>
+                <% end %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Player Statistics -->
+  <div class="mt-6 bg-white shadow sm:rounded-lg">
+    <div class="px-6 py-5 border-b border-gray-200">
+      <h3 class="text-lg font-semibold text-gray-900">プレイヤー統計（平等性チェック）</h3>
+      <p class="mt-1 text-sm text-gray-500">各プレイヤーの試合数、ペア回数、対戦相手回数が均等に配分されているか確認できます</p>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              プレイヤー
+            </th>
+            <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+              試合数
+            </th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              最もペアを組んだ相手
+            </th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              最も対戦した相手
+            </th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          <% @player_statistics.each do |player_id, stats| %>
+            <tr class="hover:bg-gray-50">
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm font-medium text-gray-900">
+                  <%= stats[:user].nickname %>
+                  <% if stats[:user].id == current_user.id %>
+                    <span class="ml-2 px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                      あなた
+                    </span>
+                  <% end %>
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-center">
+                <span class="text-sm font-semibold text-gray-900"><%= stats[:match_count] %></span>
+              </td>
+              <td class="px-6 py-4">
+                <div class="text-sm text-gray-700">
+                  <% if stats[:pair_counts].any? %>
+                    <% top_pairs = stats[:pair_counts].sort_by { |_, count| -count }.first(3) %>
+                    <% top_pairs.each do |partner_id, count| %>
+                      <% partner = User.find(partner_id) %>
+                      <div class="text-xs">
+                        <%= partner.nickname %>: <span class="font-semibold"><%= count %>回</span>
+                      </div>
+                    <% end %>
+                  <% else %>
+                    <span class="text-gray-400">-</span>
+                  <% end %>
+                </div>
+              </td>
+              <td class="px-6 py-4">
+                <div class="text-sm text-gray-700">
+                  <% if stats[:opponent_counts].any? %>
+                    <% top_opponents = stats[:opponent_counts].sort_by { |_, count| -count }.first(3) %>
+                    <% top_opponents.each do |opponent_id, count| %>
+                      <% opponent = User.find(opponent_id) %>
+                      <div class="text-xs">
+                        <%= opponent.nickname %>: <span class="font-semibold"><%= count %>回</span>
+                      </div>
+                    <% end %>
+                  <% else %>
+                    <span class="text-gray-400">-</span>
+                  <% end %>
+                </div>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
