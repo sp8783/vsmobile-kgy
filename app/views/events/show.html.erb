@@ -12,9 +12,10 @@
         </p>
       </div>
       <div class="flex space-x-3">
-        <%= link_to "試合を記録", new_event_match_path(@event), class: "bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded" %>
+        <%= link_to "試合を登録", new_event_match_path(@event), class: "bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded" %>
+        <%= link_to "ローテーション作成", new_event_rotation_path(@event), class: "bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded" %>
         <% if current_user.is_admin? %>
-          <%= link_to "編集", edit_event_path(@event), class: "bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded" %>
+          <%= link_to "編集", edit_event_path(@event), class: "bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded" %>
         <% end %>
       </div>
     </div>
@@ -28,26 +29,58 @@
   <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
     <div class="bg-white shadow overflow-hidden sm:rounded-lg">
       <div class="px-4 py-5 sm:px-6">
-        <h2 class="text-lg font-medium text-gray-900">試合記録</h2>
+        <h2 class="text-lg font-medium text-gray-900">対戦記録</h2>
         <p class="mt-1 text-sm text-gray-500">全 <%= @matches.count %> 試合</p>
       </div>
       <div class="border-t border-gray-200">
         <% if @matches.any? %>
           <ul class="divide-y divide-gray-200">
-            <% @matches.first(5).each do |match| %>
-              <li class="px-4 py-3">
-                <p class="text-sm text-gray-900"><%= match.played_at.strftime('%H:%M') %></p>
-              </li>
+            <% @matches.first(10).each do |match| %>
+              <%= link_to match_path(match), class: "block hover:bg-gray-50" do %>
+                <li class="px-4 py-3">
+                  <div class="flex items-center justify-between mb-2">
+                    <% if match.winning_team == 1 %>
+                      <span class="text-xs font-semibold text-green-600">チーム1勝利</span>
+                    <% else %>
+                      <span class="text-xs font-semibold text-blue-600">チーム2勝利</span>
+                    <% end %>
+                  </div>
+                  <div class="grid grid-cols-2 gap-2 text-xs">
+                    <div class="<%= match.winning_team == 1 ? 'font-semibold' : '' %>">
+                      <div class="text-gray-500 mb-1">チーム1</div>
+                      <% match.match_players.where(team_number: 1).order(:position).each_with_index do |player, index| %>
+                        <div class="text-gray-700">
+                          <span class="<%= index == 0 ? 'text-red-600 font-bold' : '' %>">
+                            <%= player.user.nickname %>
+                            <% if index == 0 %>
+                              <span class="px-1 py-0.5 bg-red-100 text-red-700 rounded text-xs font-semibold">配信台</span>
+                            <% end %>
+                          </span>
+                          / <%= player.mobile_suit.name %>
+                        </div>
+                      <% end %>
+                    </div>
+                    <div class="<%= match.winning_team == 2 ? 'font-semibold' : '' %>">
+                      <div class="text-gray-500 mb-1">チーム2</div>
+                      <% match.match_players.where(team_number: 2).order(:position).each do |player| %>
+                        <div class="text-gray-700">
+                          <%= player.user.nickname %> / <%= player.mobile_suit.name %>
+                        </div>
+                      <% end %>
+                    </div>
+                  </div>
+                </li>
+              <% end %>
             <% end %>
           </ul>
-          <% if @matches.count > 5 %>
+          <% if @matches.count > 10 %>
             <div class="px-4 py-3 bg-gray-50 text-center">
-              <p class="text-sm text-gray-500">他 <%= @matches.count - 5 %> 試合</p>
+              <%= link_to "全 #{@matches.count} 試合を表示", matches_path(event_id: @event.id), class: "text-sm text-blue-600 hover:text-blue-500" %>
             </div>
           <% end %>
         <% else %>
           <div class="px-4 py-3 text-center">
-            <p class="text-sm text-gray-500">まだ試合記録がありません</p>
+            <p class="text-sm text-gray-500">まだ対戦記録がありません</p>
           </div>
         <% end %>
       </div>
@@ -62,15 +95,40 @@
         <% if @rotations.any? %>
           <ul class="divide-y divide-gray-200">
             <% @rotations.each do |rotation| %>
-              <li class="px-4 py-3">
-                <p class="text-sm text-gray-900"><%= rotation.name %></p>
-                <p class="text-xs text-gray-500">第<%= rotation.round_number %>周</p>
-              </li>
+              <%= link_to rotation_path(rotation), class: "block hover:bg-gray-50" do %>
+                <li class="px-4 py-3">
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <p class="text-sm font-medium text-gray-900"><%= rotation.name %></p>
+                      <div class="mt-1 flex items-center space-x-2">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
+                          <%= rotation.round_number %>周目
+                        </span>
+                        <% if rotation.is_active %>
+                          <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                            アクティブ
+                          </span>
+                        <% end %>
+                      </div>
+                    </div>
+                    <div class="text-right">
+                      <p class="text-xs text-gray-500">
+                        <%= rotation.current_match_index + 1 %> / <%= rotation.rotation_matches.count %> 試合
+                      </p>
+                      <div class="w-24 bg-gray-200 rounded-full h-1.5 mt-1">
+                        <% progress = rotation.rotation_matches.count > 0 ? ((rotation.current_match_index + 1).to_f / rotation.rotation_matches.count * 100) : 0 %>
+                        <div class="bg-blue-600 h-1.5 rounded-full" style="width: <%= progress %>%"></div>
+                      </div>
+                    </div>
+                  </div>
+                </li>
+              <% end %>
             <% end %>
           </ul>
         <% else %>
           <div class="px-4 py-3 text-center">
             <p class="text-sm text-gray-500">まだローテーションがありません</p>
+            <%= link_to "ローテーションを作成", new_event_rotation_path(@event), class: "mt-2 inline-block text-sm text-blue-600 hover:text-blue-500" %>
           </div>
         <% end %>
       </div>

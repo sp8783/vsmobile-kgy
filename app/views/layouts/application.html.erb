@@ -20,6 +20,8 @@
 
     <%# Includes all stylesheet files in app/assets/stylesheets %>
     <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.4.3/dist/css/tom-select.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.4.3/dist/js/tom-select.complete.min.js"></script>
     <%= javascript_importmap_tags %>
   </head>
 
@@ -34,6 +36,9 @@
             <% if user_signed_in? %>
               <div class="ml-6 flex space-x-8">
                 <%= link_to "イベント", events_path, class: "inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-900 border-b-2 border-transparent hover:border-gray-300" %>
+                <%= link_to "対戦一覧", matches_path, class: "inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-900 border-b-2 border-transparent hover:border-gray-300" %>
+                <%= link_to "ローテーション", rotations_path, class: "inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-900 border-b-2 border-transparent hover:border-gray-300" %>
+                <%= link_to "統計", statistics_path, class: "inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-900 border-b-2 border-transparent hover:border-gray-300" %>
                 <%= link_to "機体マスタ", mobile_suits_path, class: "inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-900 border-b-2 border-transparent hover:border-gray-300" %>
                 <% if current_user.is_admin? %>
                   <%= link_to "ユーザー管理", users_path, class: "inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-900 border-b-2 border-transparent hover:border-gray-300" %>
@@ -41,9 +46,51 @@
               </div>
             <% end %>
           </div>
-          <div class="flex items-center">
+          <div class="flex items-center space-x-4">
             <% if user_signed_in? %>
-              <span class="text-sm text-gray-700 mr-4"><%= current_user.nickname %></span>
+              <!-- 管理者用: ユーザー視点切り替え -->
+              <% if current_user.is_admin? %>
+                <div class="flex items-center space-x-2">
+                  <select onchange="if(this.value) switchUserView(this.value);" class="text-sm border border-gray-300 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 <%= viewing_as_someone_else? ? 'bg-orange-50 border-orange-300' : '' %>">
+                    <% if viewing_as_someone_else? %>
+                      <option value=""><%= viewing_as_user.nickname %>の視点 ▼</option>
+                      <option value="clear">--- 自分の視点に戻す ---</option>
+                    <% else %>
+                      <option value="">視点切り替え...</option>
+                    <% end %>
+                    <% User.where(is_admin: false).order(:nickname).each do |user| %>
+                      <% unless viewing_as_someone_else? && user.id == viewing_as_user.id %>
+                        <option value="<%= user.id %>"><%= user.nickname %></option>
+                      <% end %>
+                    <% end %>
+                  </select>
+
+                  <script>
+                    function switchUserView(userId) {
+                      const form = document.createElement('form');
+                      form.method = 'POST';
+
+                      if (userId === 'clear') {
+                        form.action = '/users/clear_view';
+                      } else {
+                        form.action = '/users/' + userId + '/switch_view';
+                      }
+
+                      const token = document.querySelector('meta[name="csrf-token"]').content;
+                      const csrfInput = document.createElement('input');
+                      csrfInput.type = 'hidden';
+                      csrfInput.name = 'authenticity_token';
+                      csrfInput.value = token;
+
+                      form.appendChild(csrfInput);
+                      document.body.appendChild(form);
+                      form.submit();
+                    }
+                  </script>
+                </div>
+              <% end %>
+
+              <span class="text-sm text-gray-700"><%= current_user.nickname %></span>
               <%= button_to "ログアウト", destroy_user_session_path, method: :delete, class: "text-sm text-gray-700 hover:text-gray-900" %>
             <% else %>
               <%= link_to "ログイン", new_user_session_path, class: "text-sm text-gray-700 hover:text-gray-900" %>

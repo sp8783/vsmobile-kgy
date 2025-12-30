@@ -8,7 +8,7 @@ class EventsController < ApplicationController
   end
 
   def show
-    @matches = @event.matches.includes(:match_players, :event).order(played_at: :desc)
+    @matches = @event.matches.includes(:event, match_players: [:user, :mobile_suit]).order(played_at: :desc)
     @rotations = @event.rotations.order(created_at: :desc)
   end
 

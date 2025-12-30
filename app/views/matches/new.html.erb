@@ -3,7 +3,7 @@
     <%= link_to "← イベントに戻る", event_path(@event), class: "text-blue-600 hover:text-blue-500" %>
   </div>
 
-  <h1 class="text-3xl font-bold text-gray-900 mb-6">試合記録入力</h1>
+  <h1 class="text-3xl font-bold text-gray-900 mb-6">対戦記録入力</h1>
   <p class="text-sm text-gray-600 mb-6"><%= @event.name %></p>
 
   <%= form_with(model: [@event, @match], class: "space-y-6") do |form| %>
@@ -27,7 +27,7 @@
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">プレイヤー1</label>
             <%= player_form.collection_select :user_id, @users, :id, :nickname, { prompt: "選択してください" }, class: "w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" %>
-            <%= player_form.collection_select :mobile_suit_id, @mobile_suits, :id, :name, { prompt: "機体を選択" }, class: "mt-2 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" %>
+            <%= player_form.collection_select :mobile_suit_id, @mobile_suits, :id, :name, { prompt: "機体を選択" }, { class: "mt-2 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500", data: { controller: "select2", placeholder: "機体を検索..." } } %>
           </div>
         <% end %>
 
@@ -37,7 +37,7 @@
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">プレイヤー2</label>
             <%= player_form.collection_select :user_id, @users, :id, :nickname, { prompt: "選択してください" }, class: "w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" %>
-            <%= player_form.collection_select :mobile_suit_id, @mobile_suits, :id, :name, { prompt: "機体を選択" }, class: "mt-2 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" %>
+            <%= player_form.collection_select :mobile_suit_id, @mobile_suits, :id, :name, { prompt: "機体を選択" }, { class: "mt-2 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500", data: { controller: "select2", placeholder: "機体を検索..." } } %>
           </div>
         <% end %>
       </div>
@@ -52,7 +52,7 @@
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">プレイヤー3</label>
             <%= player_form.collection_select :user_id, @users, :id, :nickname, { prompt: "選択してください" }, class: "w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" %>
-            <%= player_form.collection_select :mobile_suit_id, @mobile_suits, :id, :name, { prompt: "機体を選択" }, class: "mt-2 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" %>
+            <%= player_form.collection_select :mobile_suit_id, @mobile_suits, :id, :name, { prompt: "機体を選択" }, { class: "mt-2 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500", data: { controller: "select2", placeholder: "機体を検索..." } } %>
           </div>
         <% end %>
 
@@ -62,7 +62,7 @@
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">プレイヤー4</label>
             <%= player_form.collection_select :user_id, @users, :id, :nickname, { prompt: "選択してください" }, class: "w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" %>
-            <%= player_form.collection_select :mobile_suit_id, @mobile_suits, :id, :name, { prompt: "機体を選択" }, class: "mt-2 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" %>
+            <%= player_form.collection_select :mobile_suit_id, @mobile_suits, :id, :name, { prompt: "機体を選択" }, { class: "mt-2 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500", data: { controller: "select2", placeholder: "機体を検索..." } } %>
           </div>
         <% end %>
       </div>

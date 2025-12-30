@@ -1,10 +1,10 @@
 class UsersController < ApplicationController
   before_action :authenticate_user!
-  before_action :require_admin
+  before_action :require_admin, except: [:switch_view, :clear_view]
   before_action :set_user, only: [:edit, :update, :destroy]
 
   def index
-    @users = User.all.order(:username)
+    @users = User.all.order(is_admin: :desc, nickname: :asc)
   end
 
   def new
@@ -59,6 +59,29 @@ class UsersController < ApplicationController
     username = @user.username
     @user.destroy
     redirect_to users_path, notice: "ユーザー「#{username}」を削除しました。"
+  end
+
+  # ユーザー視点切り替え（管理者のみ）
+  def switch_view
+    unless current_user.is_admin?
+      redirect_to root_path, alert: '管理者権限が必要です。'
+      return
+    end
+
+    user = User.find(params[:id])
+    session[:view_as_user_id] = user.id
+    redirect_back fallback_location: root_path, notice: "#{user.nickname}さんの視点に切り替えました"
+  end
+
+  # 視点切り替え解除
+  def clear_view
+    unless current_user.is_admin?
+      redirect_to root_path, alert: '管理者権限が必要です。'
+      return
+    end
+
+    session.delete(:view_as_user_id)
+    redirect_back fallback_location: root_path, notice: "自分の視点に戻しました"
   end
 
   private

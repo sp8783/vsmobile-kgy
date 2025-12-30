@@ -4,6 +4,9 @@ class User < ApplicationRecord
   devise :database_authenticatable,
          :rememberable, :validatable
 
+  # Associations
+  has_many :match_players, dependent: :destroy
+
   # Validations
   validates :username, presence: true, uniqueness: { case_sensitive: false }
   validates :nickname, presence: true

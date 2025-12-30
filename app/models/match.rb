@@ -10,4 +10,9 @@ class Match < ApplicationRecord
   validates :played_at, presence: true
   validates :winning_team, presence: true, inclusion: { in: [1, 2] }
   validates :match_players, length: { is: 4 }
+
+  # イベント内での試合番号を取得（古い順に1から採番）
+  def match_number
+    event.matches.where('played_at < ?', played_at).count + 1
+  end
 end
