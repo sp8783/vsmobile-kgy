@@ -1,10 +1,11 @@
 class RotationsController < ApplicationController
   before_action :authenticate_user!
+  before_action :require_admin, except: [:index, :show, :player_view]
   before_action :set_rotation, only: [:show, :edit, :update, :destroy, :activate, :next_match, :record_match, :player_view]
   before_action :set_event, only: [:new, :create]
 
   def index
-    @rotations = Rotation.includes(:event).order(created_at: :desc)
+    @rotations = Rotation.includes(:event, :rotation_matches).order(created_at: :desc)
   end
 
   def show
@@ -77,6 +78,13 @@ class RotationsController < ApplicationController
   def next_match
     if @rotation.current_match_index < @rotation.rotation_matches.count - 1
       @rotation.increment!(:current_match_index)
+
+      # Broadcast update via Action Cable
+      RotationChannel.broadcast_to(@rotation, {
+        type: 'rotation_updated',
+        current_match_index: @rotation.current_match_index
+      })
+
       redirect_to @rotation, notice: '次の試合に進みました。'
     else
       redirect_to @rotation, alert: 'これが最後の試合です。'
@@ -126,6 +134,12 @@ class RotationsController < ApplicationController
           @rotation.increment!(:current_match_index)
         end
 
+        # Broadcast update via Action Cable
+        RotationChannel.broadcast_to(@rotation, {
+          type: 'rotation_updated',
+          current_match_index: @rotation.current_match_index
+        })
+
         Rails.logger.info "Match recorded successfully: #{match.id}"
         redirect_to @rotation, notice: '試合を記録しました。'
       else
@@ -150,8 +164,7 @@ class RotationsController < ApplicationController
       @matches_until_next = @next_match.match_index - @rotation.current_match_index
     end
 
-    # Auto-refresh every 30 seconds
-    response.headers['Refresh'] = '30'
+    # Real-time updates via Action Cable (no HTTP refresh needed)
   end
 
   # Copy rotation for next round

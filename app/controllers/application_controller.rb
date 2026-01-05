@@ -5,6 +5,9 @@ class ApplicationController < ActionController::Base
   # Changes to the importmap will invalidate the etag for HTML responses
   stale_when_importmap_changes
 
+  # Set user_id in cookies for Action Cable authentication
+  before_action :set_user_cookie
+
   # ユーザー視点切り替え機能
   helper_method :viewing_as_user, :viewing_as_someone_else?
 
@@ -22,5 +25,21 @@ class ApplicationController < ActionController::Base
   # 視点切り替え中かどうか
   def viewing_as_someone_else?
     current_user&.is_admin && session[:view_as_user_id].present? && session[:view_as_user_id] != current_user.id
+  end
+
+  private
+
+  # Set user_id in encrypted cookies for Action Cable
+  def set_user_cookie
+    if current_user
+      cookies.encrypted[:user_id] = current_user.id
+    end
+  end
+
+  # 管理者権限チェック
+  def require_admin
+    unless current_user&.is_admin?
+      redirect_to root_path, alert: "管理者権限が必要です。"
+    end
   end
 end

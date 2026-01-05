@@ -93,10 +93,4 @@ class UsersController < ApplicationController
   def user_params
     params.require(:user).permit(:username, :nickname, :is_admin, :notification_enabled)
   end
-
-  def require_admin
-    unless current_user.is_admin?
-      redirect_to root_path, alert: '管理者権限が必要です。'
-    end
-  end
 end

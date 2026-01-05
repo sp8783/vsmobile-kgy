@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_12_29_051442) do
+ActiveRecord::Schema[8.1].define(version: 2025_12_30_220603) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -32,8 +32,11 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_29_051442) do
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
     t.index ["match_id", "position"], name: "index_match_players_on_match_id_and_position", unique: true
+    t.index ["match_id", "team_number"], name: "index_match_players_on_match_id_and_team_number"
     t.index ["match_id"], name: "index_match_players_on_match_id"
     t.index ["mobile_suit_id"], name: "index_match_players_on_mobile_suit_id"
+    t.index ["team_number"], name: "index_match_players_on_team_number"
+    t.index ["user_id", "mobile_suit_id"], name: "index_match_players_on_user_id_and_mobile_suit_id"
     t.index ["user_id"], name: "index_match_players_on_user_id"
   end
 
@@ -44,6 +47,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_29_051442) do
     t.bigint "rotation_match_id"
     t.datetime "updated_at", null: false
     t.integer "winning_team", null: false
+    t.index ["event_id", "played_at"], name: "index_matches_on_event_id_and_played_at"
     t.index ["event_id"], name: "index_matches_on_event_id"
     t.index ["played_at"], name: "index_matches_on_played_at"
     t.index ["rotation_match_id"], name: "index_matches_on_rotation_match_id"

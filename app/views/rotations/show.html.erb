@@ -13,20 +13,24 @@
             <%= @rotation.round_number %>周目
           </span>
           <% if @rotation.is_active %>
-            <span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-              アクティブ
+            <span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
+              🔴 アクティブ
             </span>
           <% end %>
         </div>
       </div>
 
       <div class="flex flex-wrap gap-3">
-        <%= link_to "📱 プレイヤー画面", player_view_rotation_path(@rotation), class: "px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700", target: "_blank" %>
-        <% unless @rotation.is_active %>
-          <%= button_to "アクティブにする", activate_rotation_path(@rotation), method: :post, class: "px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700" %>
+        <% unless current_user.is_admin? %>
+          <%= link_to "📱 プレイヤー画面", player_view_rotation_path(@rotation), class: "px-4 py-2 bg-indigo-600 text-white font-semibold rounded-md hover:bg-indigo-700", target: "_blank" %>
         <% end %>
-        <%= button_to "周回をコピー", copy_for_next_round_rotation_path(@rotation), method: :post, class: "px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50" %>
-        <%= link_to "一覧に戻る", rotations_path, class: "px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50" %>
+        <% if current_user.is_admin? %>
+          <% unless @rotation.is_active %>
+            <%= button_to "アクティブにする", activate_rotation_path(@rotation), method: :post, class: "px-4 py-2 bg-indigo-600 text-white font-semibold rounded-md hover:bg-indigo-700" %>
+          <% end %>
+          <%= button_to "周回をコピー", copy_for_next_round_rotation_path(@rotation), method: :post, class: "px-4 py-2 bg-gray-600 text-white font-semibold rounded-md hover:bg-gray-700" %>
+        <% end %>
+        <%= link_to "一覧に戻る", rotations_path, class: "px-4 py-2 bg-gray-600 text-white font-semibold rounded-md hover:bg-gray-700" %>
       </div>
     </div>
   </div>
@@ -51,7 +55,7 @@
       <div class="flex justify-between items-start mb-4">
         <h3 class="text-xl font-bold text-blue-900">現在の試合（第<%= @rotation.current_match_index + 1 %>試合）</h3>
         <% if @current_match.match.present? %>
-          <span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+          <span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
             記録済み
           </span>
         <% else %>
@@ -99,7 +103,10 @@
       <!-- Record Match Form -->
       <% unless @current_match.match.present? %>
         <div class="bg-white rounded-lg p-6 shadow">
-          <h4 class="text-lg font-semibold text-gray-900 mb-4">試合結果を記録</h4>
+          <div class="flex items-center justify-between mb-4">
+            <h4 class="text-lg font-semibold text-gray-900">試合結果を記録</h4>
+            <span class="text-xs text-gray-500 hidden md:inline">💡 Tip: Tabキーで次の項目へ移動できます</span>
+          </div>
           <form action="<%= record_match_rotation_path(@rotation) %>" method="post" data-turbo="false" id="match-record-form">
             <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
 
@@ -171,18 +178,36 @@
             </div>
 
             <!-- Submit Button -->
-            <div class="mt-6 flex justify-end">
-              <button type="submit" class="px-6 py-3 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                試合を記録して次へ
-              </button>
+            <div class="mt-6 flex justify-between items-center">
+              <div class="text-xs text-gray-500">
+                <span class="font-medium">必須項目：</span>各プレイヤーの機体 + 勝利チーム
+              </div>
+              <div class="flex space-x-3">
+                <button type="button" onclick="if(confirm('この試合をスキップしますか？')) { document.getElementById('skip-match-form').submit(); }" class="px-4 py-2 bg-gray-600 text-white font-semibold rounded-md hover:bg-gray-700">
+                  試合をスキップ
+                </button>
+                <button type="submit" class="px-6 py-3 bg-indigo-600 text-white font-semibold rounded-md hover:bg-indigo-700">
+                  ✓ 記録して次へ
+                </button>
+              </div>
             </div>
+          </form>
+
+          <!-- Skip Match Form (hidden) -->
+          <form id="skip-match-form" action="<%= next_match_rotation_path(@rotation) %>" method="post" style="display:none;" data-turbo="false">
+            <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
           </form>
 
           <script>
             // Initialize Tom-Select for mobile suit selects
-            document.addEventListener('DOMContentLoaded', function() {
+            function initializeTomSelect() {
               const selects = document.querySelectorAll('select[name*="_suit"]');
               selects.forEach(function(select) {
+                // Skip if already initialized
+                if (select.tomselect) {
+                  return;
+                }
+
                 new TomSelect(select, {
                   placeholder: '機体を検索...',
                   allowEmptyOption: true,
@@ -194,18 +219,86 @@
                   }
                 });
               });
+            }
+
+            function initializeFormValidation() {
+              const form = document.getElementById('match-record-form');
+              if (!form) return;
+
+              // Form validation
+              form.addEventListener('submit', function(e) {
+                const team1p1 = document.querySelector('select[name="team1_player1_suit"]').value;
+                const team1p2 = document.querySelector('select[name="team1_player2_suit"]').value;
+                const team2p1 = document.querySelector('select[name="team2_player1_suit"]').value;
+                const team2p2 = document.querySelector('select[name="team2_player2_suit"]').value;
+                const winner = document.querySelector('input[name="winning_team"]:checked');
+
+                if (!team1p1 || !team1p2 || !team2p1 || !team2p2) {
+                  e.preventDefault();
+                  alert('すべてのプレイヤーの機体を選択してください');
+                  return false;
+                }
+
+                if (!winner) {
+                  e.preventDefault();
+                  alert('勝利チームを選択してください');
+                  return false;
+                }
+
+                return true;
+              });
+
+              // Keyboard shortcuts
+              document.addEventListener('keydown', function(e) {
+                // Ctrl/Cmd + Enter to submit form
+                if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                  e.preventDefault();
+                  if (form.reportValidity()) {
+                    form.submit();
+                  }
+                }
+              });
+            }
+
+            // Initialize on both DOMContentLoaded and turbo:load
+            document.addEventListener('DOMContentLoaded', function() {
+              initializeTomSelect();
+              initializeFormValidation();
             });
+
+            document.addEventListener('turbo:load', function() {
+              initializeTomSelect();
+              initializeFormValidation();
+            });
+
+            // Also initialize immediately in case the script runs after DOM is ready
+            if (document.readyState === 'loading') {
+              // DOM not ready, wait for event
+            } else {
+              // DOM is ready, initialize now
+              initializeTomSelect();
+              initializeFormValidation();
+            }
           </script>
         </div>
       <% else %>
-        <div class="bg-green-50 border border-green-200 rounded-lg p-4">
-          <p class="text-sm text-green-800">
-            この試合は記録済みです。
-            <%= link_to "試合詳細を見る", @current_match.match, class: "font-semibold underline" %>
-          </p>
-          <% if @rotation.current_match_index < @rotation_matches.count - 1 %>
-            <%= button_to "次の試合へ", next_match_rotation_path(@rotation), method: :post, class: "mt-3 px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700", form: { data: { turbo: false } } %>
-          <% end %>
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div class="flex items-center justify-between">
+            <div class="flex-1">
+              <p class="text-sm text-blue-800 flex items-center">
+                <svg class="h-5 w-5 text-blue-600 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+                この試合は記録済みです。
+                <%= link_to "試合詳細を見る", @current_match.match, class: "font-semibold underline ml-2" %>
+              </p>
+            </div>
+            <% if @rotation.current_match_index < @rotation_matches.count - 1 %>
+              <%= button_to "次の試合へ →", next_match_rotation_path(@rotation), method: :post, class: "ml-4 px-4 py-2 bg-indigo-600 text-white font-semibold rounded-md hover:bg-indigo-700", form: { data: { turbo: false } } %>
+            <% else %>
+              <span class="ml-4 px-4 py-2 text-sm font-medium text-gray-500">全試合完了</span>
+            <% end %>
+          </div>
         </div>
       <% end %>
     </div>
@@ -214,7 +307,23 @@
   <!-- All Matches List -->
   <div class="bg-white shadow sm:rounded-lg">
     <div class="px-6 py-5 border-b border-gray-200">
-      <h3 class="text-lg font-semibold text-gray-900">全試合一覧</h3>
+      <div class="flex items-center justify-between">
+        <h3 class="text-lg font-semibold text-gray-900">全試合一覧</h3>
+        <div class="flex items-center space-x-2 text-xs text-gray-500">
+          <div class="flex items-center">
+            <span class="w-3 h-3 bg-blue-100 border border-blue-300 rounded mr-1"></span>
+            <span>記録済み</span>
+          </div>
+          <div class="flex items-center ml-3">
+            <span class="w-3 h-3 bg-blue-50 border border-blue-300 rounded mr-1"></span>
+            <span>現在の試合</span>
+          </div>
+          <div class="flex items-center ml-3">
+            <span class="w-3 h-3 bg-gray-100 border border-gray-300 rounded mr-1"></span>
+            <span>スキップ</span>
+          </div>
+        </div>
+      </div>
     </div>
     <div class="overflow-x-auto">
       <table class="min-w-full divide-y divide-gray-200">
@@ -271,7 +380,7 @@
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-center">
                 <% if rm.match %>
-                  <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                  <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
                     記録済み
                   </span>
                 <% elsif index < @rotation.current_match_index %>
@@ -287,9 +396,11 @@
               <td class="px-6 py-4 whitespace-nowrap text-center">
                 <% if rm.match %>
                   <% if rm.match.winning_team == 1 %>
-                    <span class="text-sm font-semibold text-blue-600">チーム1 勝利</span>
+                    <span class="px-2 py-1 text-xs font-bold rounded bg-blue-600 text-white">WIN</span>
+                    <span class="text-xs text-gray-500 ml-1">(チーム1)</span>
                   <% else %>
-                    <span class="text-sm font-semibold text-red-600">チーム2 勝利</span>
+                    <span class="px-2 py-1 text-xs font-bold rounded bg-blue-600 text-white">WIN</span>
+                    <span class="text-xs text-gray-500 ml-1">(チーム2)</span>
                   <% end %>
                   <div class="text-xs text-gray-500 mt-1">
                     <%= link_to "詳細", rm.match, class: "text-blue-600 hover:text-blue-800" %>
@@ -308,8 +419,13 @@
   <!-- Player Statistics -->
   <div class="mt-6 bg-white shadow sm:rounded-lg">
     <div class="px-6 py-5 border-b border-gray-200">
-      <h3 class="text-lg font-semibold text-gray-900">プレイヤー統計（平等性チェック）</h3>
-      <p class="mt-1 text-sm text-gray-500">各プレイヤーの試合数、ペア回数、対戦相手回数が均等に配分されているか確認できます</p>
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-lg font-semibold text-gray-900">プレイヤー統計（平等性チェック）</h3>
+          <p class="mt-1 text-sm text-gray-500">各プレイヤーの試合数、ペア回数、対戦相手回数が均等に配分されているか確認できます</p>
+        </div>
+        <span class="text-xs text-gray-500" title="試合数の偏りがないか確認">ℹ️ 公平性</span>
+      </div>
     </div>
     <div class="overflow-x-auto">
       <table class="min-w-full divide-y divide-gray-200">

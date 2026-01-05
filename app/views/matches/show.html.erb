@@ -12,10 +12,12 @@
             <%= @match.played_at.strftime('%Y年%m月%d日') %>
           </p>
         </div>
-        <div class="flex space-x-3">
-          <%= link_to "編集", edit_match_path(@match), class: "bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded" %>
-          <%= button_to "削除", match_path(@match), method: :delete, data: { turbo_confirm: "この対戦記録を削除してもよろしいですか？" }, class: "bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded" %>
-        </div>
+        <% if current_user.is_admin? %>
+          <div class="flex space-x-3">
+            <%= link_to "編集", edit_match_path(@match), class: "bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded" %>
+            <%= button_to "削除", match_path(@match), method: :delete, data: { turbo_confirm: "この対戦記録を削除してもよろしいですか？" }, class: "bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded" %>
+          </div>
+        <% end %>
       </div>
     </div>
 
@@ -30,13 +32,13 @@
         <% team2_players = @match.match_players.where(team_number: 2).order(:position) %>
 
         <!-- Team 1 -->
-        <div class="<%= @match.winning_team == 1 ? 'bg-green-50 border-2 border-green-500 rounded-lg p-6' : 'bg-gray-50 border border-gray-200 rounded-lg p-6' %>">
+        <div class="<%= @match.winning_team == 1 ? 'bg-blue-50 border-2 border-blue-400 rounded-lg p-6' : 'bg-red-50 border-2 border-red-400 rounded-lg p-6' %>">
           <div class="flex items-center justify-between mb-4">
             <h3 class="text-lg font-semibold text-gray-900">チーム1</h3>
             <% if @match.winning_team == 1 %>
-              <span class="px-3 py-1 bg-green-600 text-white rounded-full text-sm font-semibold">勝利</span>
+              <span class="px-3 py-1 bg-blue-600 text-white rounded-full text-sm font-semibold">WIN</span>
             <% else %>
-              <span class="px-3 py-1 bg-gray-400 text-white rounded-full text-sm font-semibold">敗北</span>
+              <span class="px-3 py-1 bg-red-600 text-white rounded-full text-sm font-semibold">LOSE</span>
             <% end %>
           </div>
 
@@ -68,13 +70,13 @@
         </div>
 
         <!-- Team 2 -->
-        <div class="<%= @match.winning_team == 2 ? 'bg-green-50 border-2 border-green-500 rounded-lg p-6' : 'bg-gray-50 border border-gray-200 rounded-lg p-6' %>">
+        <div class="<%= @match.winning_team == 2 ? 'bg-blue-50 border-2 border-blue-400 rounded-lg p-6' : 'bg-red-50 border-2 border-red-400 rounded-lg p-6' %>">
           <div class="flex items-center justify-between mb-4">
             <h3 class="text-lg font-semibold text-gray-900">チーム2</h3>
             <% if @match.winning_team == 2 %>
-              <span class="px-3 py-1 bg-green-600 text-white rounded-full text-sm font-semibold">勝利</span>
+              <span class="px-3 py-1 bg-blue-600 text-white rounded-full text-sm font-semibold">WIN</span>
             <% else %>
-              <span class="px-3 py-1 bg-gray-400 text-white rounded-full text-sm font-semibold">敗北</span>
+              <span class="px-3 py-1 bg-red-600 text-white rounded-full text-sm font-semibold">LOSE</span>
             <% end %>
           </div>
 

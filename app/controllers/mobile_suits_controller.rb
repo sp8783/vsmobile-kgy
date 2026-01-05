@@ -47,10 +47,4 @@ class MobileSuitsController < ApplicationController
   def mobile_suit_params
     params.require(:mobile_suit).permit(:name, :series, :cost)
   end
-
-  def require_admin
-    unless current_user.is_admin?
-      redirect_to mobile_suits_path, alert: '管理者権限が必要です。'
-    end
-  end
 end

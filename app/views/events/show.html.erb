@@ -11,13 +11,14 @@
           <%= @event.held_on.strftime('%Y年%m月%d日') %>
         </p>
       </div>
-      <div class="flex space-x-3">
-        <%= link_to "試合を登録", new_event_match_path(@event), class: "bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded" %>
-        <%= link_to "ローテーション作成", new_event_rotation_path(@event), class: "bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded" %>
-        <% if current_user.is_admin? %>
-          <%= link_to "編集", edit_event_path(@event), class: "bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded" %>
-        <% end %>
-      </div>
+      <% if current_user.is_admin? %>
+        <div class="flex flex-wrap gap-3">
+          <%= link_to "試合を登録", new_event_match_path(@event), class: "bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded" %>
+          <%= link_to "ローテーション作成", new_event_rotation_path(@event), class: "bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded" %>
+          <%= link_to "編集", edit_event_path(@event), class: "bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded" %>
+          <%= button_to "削除", event_path(@event), method: :delete, data: { turbo_confirm: "イベント「#{@event.name}」を削除してもよろしいですか？関連する試合やローテーションもすべて削除されます。" }, class: "bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded" %>
+        </div>
+      <% end %>
     </div>
     <% if @event.description.present? %>
       <div class="border-t border-gray-200 px-4 py-5 sm:px-6">
@@ -38,33 +39,48 @@
             <% @matches.first(10).each do |match| %>
               <%= link_to match_path(match), class: "block hover:bg-gray-50" do %>
                 <li class="px-4 py-3">
-                  <div class="flex items-center justify-between mb-2">
-                    <% if match.winning_team == 1 %>
-                      <span class="text-xs font-semibold text-green-600">チーム1勝利</span>
-                    <% else %>
-                      <span class="text-xs font-semibold text-blue-600">チーム2勝利</span>
-                    <% end %>
-                  </div>
-                  <div class="grid grid-cols-2 gap-2 text-xs">
-                    <div class="<%= match.winning_team == 1 ? 'font-semibold' : '' %>">
-                      <div class="text-gray-500 mb-1">チーム1</div>
-                      <% match.match_players.where(team_number: 1).order(:position).each_with_index do |player, index| %>
-                        <div class="text-gray-700">
-                          <span class="<%= index == 0 ? 'text-red-600 font-bold' : '' %>">
+                  <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+                    <% team1_players = match.match_players.where(team_number: 1).order(:position) %>
+                    <% team2_players = match.match_players.where(team_number: 2).order(:position) %>
+
+                    <!-- Team 1 -->
+                    <div class="<%= match.winning_team == 1 ? 'bg-blue-50 border-2 border-blue-400 rounded p-2' : 'bg-red-50 border-2 border-red-400 rounded p-2' %>">
+                      <div class="text-xs font-semibold text-gray-500 mb-2 flex items-center justify-between">
+                        <span>チーム1</span>
+                        <span class="px-2 py-0.5 rounded text-xs font-bold <%= match.winning_team == 1 ? 'bg-blue-600 text-white' : 'bg-red-600 text-white' %>">
+                          <%= match.winning_team == 1 ? 'WIN' : 'LOSE' %>
+                        </span>
+                      </div>
+                      <% team1_players.each_with_index do |player, index| %>
+                        <div class="mb-1">
+                          <span class="<%= index == 0 ? 'text-red-600 font-bold' : 'text-gray-700' %>">
                             <%= player.user.nickname %>
                             <% if index == 0 %>
-                              <span class="px-1 py-0.5 bg-red-100 text-red-700 rounded text-xs font-semibold">配信台</span>
+                              <span class="ml-1 px-1 py-0.5 bg-red-100 text-red-700 rounded text-xs font-semibold">配信台</span>
                             <% end %>
                           </span>
-                          / <%= player.mobile_suit.name %>
+                          <div class="text-gray-500"><%= player.mobile_suit.name %></div>
                         </div>
                       <% end %>
                     </div>
-                    <div class="<%= match.winning_team == 2 ? 'font-semibold' : '' %>">
-                      <div class="text-gray-500 mb-1">チーム2</div>
-                      <% match.match_players.where(team_number: 2).order(:position).each do |player| %>
-                        <div class="text-gray-700">
-                          <%= player.user.nickname %> / <%= player.mobile_suit.name %>
+
+                    <!-- VS -->
+                    <div class="flex items-center justify-center text-gray-400 font-bold text-lg">
+                      VS
+                    </div>
+
+                    <!-- Team 2 -->
+                    <div class="<%= match.winning_team == 2 ? 'bg-blue-50 border-2 border-blue-400 rounded p-2' : 'bg-red-50 border-2 border-red-400 rounded p-2' %>">
+                      <div class="text-xs font-semibold text-gray-500 mb-2 flex items-center justify-between">
+                        <span>チーム2</span>
+                        <span class="px-2 py-0.5 rounded text-xs font-bold <%= match.winning_team == 2 ? 'bg-blue-600 text-white' : 'bg-red-600 text-white' %>">
+                          <%= match.winning_team == 2 ? 'WIN' : 'LOSE' %>
+                        </span>
+                      </div>
+                      <% team2_players.each do |player| %>
+                        <div class="mb-1">
+                          <span class="text-gray-700"><%= player.user.nickname %></span>
+                          <div class="text-gray-500"><%= player.mobile_suit.name %></div>
                         </div>
                       <% end %>
                     </div>
@@ -105,7 +121,7 @@
                           <%= rotation.round_number %>周目
                         </span>
                         <% if rotation.is_active %>
-                          <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                          <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
                             アクティブ
                           </span>
                         <% end %>
