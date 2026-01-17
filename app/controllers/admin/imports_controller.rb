@@ -179,7 +179,12 @@ module Admin
       players_data.each do |player_data|
         # ユーザーを検索、存在しない場合は自動作成
         user = User.find_or_create_by(nickname: player_data[:nickname]) do |u|
-          u.username = player_data[:nickname]
+          # 連番でusernameを自動生成（user_1, user_2, ...）
+          max_user_number = User.where("username LIKE 'user_%'")
+                                 .pluck(:username)
+                                 .map { |name| name.sub('user_', '').to_i }
+                                 .max || 0
+          u.username = "user_#{max_user_number + 1}"
           u.password = 'password'
           u.password_confirmation = 'password'
           u.is_admin = false

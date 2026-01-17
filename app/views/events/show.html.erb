@@ -144,7 +144,9 @@
         <% else %>
           <div class="px-4 py-3 text-center">
             <p class="text-sm text-gray-500">まだローテーションがありません</p>
-            <%= link_to "ローテーションを作成", new_event_rotation_path(@event), class: "mt-2 inline-block text-sm text-blue-600 hover:text-blue-500" %>
+            <% if current_user.is_admin? %>
+              <%= link_to "ローテーションを作成", new_event_rotation_path(@event), class: "mt-2 inline-block text-sm text-blue-600 hover:text-blue-500" %>
+            <% end %>
           </div>
         <% end %>
       </div>

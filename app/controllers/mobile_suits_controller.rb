@@ -1,6 +1,6 @@
 class MobileSuitsController < ApplicationController
   before_action :authenticate_user!
-  before_action :require_admin, only: [:new, :create, :edit, :update, :destroy]
+  before_action :require_admin
   before_action :set_mobile_suit, only: [:edit, :update, :destroy]
 
   def index

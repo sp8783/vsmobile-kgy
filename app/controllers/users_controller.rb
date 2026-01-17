@@ -81,7 +81,7 @@ class UsersController < ApplicationController
     end
 
     session.delete(:view_as_user_id)
-    redirect_back fallback_location: root_path, notice: "自分の視点に戻しました"
+    redirect_back fallback_location: root_path, notice: "管理者視点に戻しました"
   end
 
   private
