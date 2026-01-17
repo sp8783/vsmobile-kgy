@@ -8,8 +8,13 @@ class User < ApplicationRecord
   has_many :match_players, dependent: :destroy
 
   # Validations
-  validates :username, presence: true, uniqueness: { case_sensitive: false }
+  validates :username, presence: true, uniqueness: { case_sensitive: false },
+            format: { with: /\A[a-zA-Z0-9_-]+\z/, message: "は半角英数字と記号（_ -）のみ使用できます" }
   validates :nickname, presence: true
+
+  # Scopes
+  scope :regular_users, -> { where(is_admin: false, is_guest: false) }
+  scope :non_guest, -> { where(is_guest: false) }
 
   # Virtual email attribute (maps to username for Devise compatibility)
   def email

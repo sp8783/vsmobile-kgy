@@ -14,6 +14,17 @@ admin = User.find_or_create_by!(username: 'admin') do |user|
 end
 puts "  Created admin user: #{admin.username}"
 
+# Guest user
+guest = User.find_or_create_by!(username: 'guest') do |user|
+  user.nickname = 'ゲスト'
+  user.password = 'guestpassword'
+  user.password_confirmation = 'guestpassword'
+  user.is_admin = false
+  user.is_guest = true
+  user.notification_enabled = false
+end
+puts "  Created guest user: #{guest.username}"
+
 # Test users
 test_users = [
   { username: 'player1', nickname: 'プレイヤー1' },
