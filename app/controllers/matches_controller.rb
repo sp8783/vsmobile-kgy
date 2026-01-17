@@ -32,7 +32,7 @@ class MatchesController < ApplicationController
 
     # フィルター用のデータ
     @all_events = Event.order(held_on: :desc)
-    @all_users = User.where(is_admin: false).order(:nickname)
+    @all_users = User.regular_users.order(:nickname)
 
     # 選択されたフィルター値
     @filter_events = params[:events].present? ? params[:events].reject(&:blank?).map(&:to_i) : []
@@ -46,7 +46,7 @@ class MatchesController < ApplicationController
   def new
     @match = @event.matches.build(played_at: Time.current)
     4.times { |i| @match.match_players.build(position: i + 1) }
-    @users = User.all.order(:nickname)
+    @users = User.non_guest.order(:nickname)
     @mobile_suits = MobileSuit.all.order(Arel.sql('position IS NULL, position ASC, cost DESC, name ASC'))
   end
 
@@ -57,14 +57,14 @@ class MatchesController < ApplicationController
     if @match.save
       redirect_to @event, notice: "対戦記録を登録しました。"
     else
-      @users = User.all.order(:nickname)
+      @users = User.non_guest.order(:nickname)
       @mobile_suits = MobileSuit.all.order(Arel.sql('position IS NULL, position ASC, cost DESC, name ASC'))
       render :new, status: :unprocessable_entity
     end
   end
 
   def edit
-    @users = User.all.order(:nickname)
+    @users = User.non_guest.order(:nickname)
     @mobile_suits = MobileSuit.all.order(Arel.sql('position IS NULL, position ASC, cost DESC, name ASC'))
   end
 
@@ -72,7 +72,7 @@ class MatchesController < ApplicationController
     if @match.update(match_params)
       redirect_to @match, notice: "対戦記録を更新しました。"
     else
-      @users = User.all.order(:nickname)
+      @users = User.non_guest.order(:nickname)
       @mobile_suits = MobileSuit.all.order(Arel.sql('position IS NULL, position ASC, cost DESC, name ASC'))
       render :edit, status: :unprocessable_entity
     end
@@ -80,6 +80,7 @@ class MatchesController < ApplicationController
 
   def destroy
     event = @match.event
+    rotation_match = RotationMatch.find_by(match_id: @match.id)
 
     ActiveRecord::Base.transaction do
       # rotation_matchesの参照を解除
@@ -87,11 +88,29 @@ class MatchesController < ApplicationController
 
       # 試合を削除
       @match.destroy
+
+      # ローテーションがある場合、current_match_indexを更新
+      if rotation_match && rotation_match.rotation
+        rotation = rotation_match.rotation
+        next_unrecorded_index = find_next_unrecorded_match_index(rotation)
+        if next_unrecorded_index
+          rotation.update!(current_match_index: next_unrecorded_index)
+        end
+      end
     end
 
-    redirect_to event_path(event), notice: "対戦記録を削除しました。"
+    # ローテーションページから削除した場合はローテーションページに戻る
+    if rotation_match && rotation_match.rotation
+      redirect_to rotation_path(rotation_match.rotation), notice: "対戦記録を削除しました。"
+    else
+      redirect_to event_path(event), notice: "対戦記録を削除しました。"
+    end
   rescue => e
-    redirect_to event_path(event), alert: "削除に失敗しました: #{e.message}"
+    if rotation_match && rotation_match.rotation
+      redirect_to rotation_path(rotation_match.rotation), alert: "削除に失敗しました: #{e.message}"
+    else
+      redirect_to event_path(event), alert: "削除に失敗しました: #{e.message}"
+    end
   end
 
   def bulk_destroy
@@ -104,11 +123,22 @@ class MatchesController < ApplicationController
 
     # rotation_matchesの参照を解除してから削除
     ActiveRecord::Base.transaction do
+      # 影響を受けるローテーションを取得
+      affected_rotations = RotationMatch.where(match_id: match_ids).includes(:rotation).map(&:rotation).compact.uniq
+
       # rotation_matchesのmatch_idをnullに設定
       RotationMatch.where(match_id: match_ids).update_all(match_id: nil)
 
       # 試合を削除
       deleted_count = Match.where(id: match_ids).destroy_all.count
+
+      # 影響を受けた各ローテーションのcurrent_match_indexを更新
+      affected_rotations.each do |rotation|
+        next_unrecorded_index = find_next_unrecorded_match_index(rotation)
+        if next_unrecorded_index
+          rotation.update!(current_match_index: next_unrecorded_index)
+        end
+      end
 
       redirect_to matches_path, notice: "#{deleted_count}件の対戦記録を削除しました。"
     end
@@ -128,5 +158,27 @@ class MatchesController < ApplicationController
 
   def match_params
     params.require(:match).permit(:winning_team, :played_at, match_players_attributes: [:id, :user_id, :mobile_suit_id, :team_number, :position])
+  end
+
+  # Find the next unrecorded match starting from current position
+  def find_next_unrecorded_match_index(rotation)
+    rotation_matches = rotation.rotation_matches.includes(:match).order(:match_index)
+
+    # Start searching from the current match index
+    rotation_matches.each do |rm|
+      if rm.match_index > rotation.current_match_index && rm.match.nil?
+        return rm.match_index
+      end
+    end
+
+    # If no unrecorded match found after current position, check from the beginning
+    rotation_matches.each do |rm|
+      if rm.match.nil?
+        return rm.match_index
+      end
+    end
+
+    # All matches are recorded, stay at the last match
+    return rotation.rotation_matches.count - 1
   end
 end
