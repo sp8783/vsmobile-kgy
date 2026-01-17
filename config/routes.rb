@@ -2,6 +2,11 @@ Rails.application.routes.draw do
   devise_for :users, controllers: {
     sessions: 'users/sessions'
   }
+
+  # Guest login
+  devise_scope :user do
+    post 'users/guest', to: 'users/sessions#guest', as: :guest_login
+  end
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
@@ -17,6 +22,9 @@ Rails.application.routes.draw do
 
   # Dashboard
   get "dashboard", to: "dashboard#index", as: :dashboard
+
+  # Profile (User settings)
+  resource :profile, only: [:edit, :update]
 
   # Statistics
   get "statistics", to: "statistics#index", as: :statistics
@@ -51,10 +59,13 @@ Rails.application.routes.draw do
   resources :rotations do
     member do
       post :activate
+      post :deactivate
       post :next_match
+      post :go_to_match
       post :record_match
+      post :update_match_record
       post :copy_for_next_round
-      get :player_view
+      # get :player_view  # Deprecated: Player view is now integrated into the dashboard
     end
   end
 
