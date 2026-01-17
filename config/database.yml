@@ -77,18 +77,20 @@ test:
 production:
   primary: &primary_production
     <<: *default
-    database: vsmobile_kgy_production
-    username: vsmobile_kgy
-    password: <%= ENV["VSMOBILE_KGY_DATABASE_PASSWORD"] %>
+    database: <%= ENV.fetch("POSTGRES_DB", "vsmobile_production") %>
+    username: <%= ENV.fetch("POSTGRES_USER", "vsmobile") %>
+    password: <%= ENV["POSTGRES_PASSWORD"] %>
+    host: <%= ENV.fetch("DB_HOST", "localhost") %>
+    port: <%= ENV.fetch("DB_PORT", "5432") %>
   cache:
     <<: *primary_production
-    database: vsmobile_kgy_production_cache
+    database: <%= ENV.fetch("POSTGRES_DB", "vsmobile_production") %>_cache
     migrations_paths: db/cache_migrate
   queue:
     <<: *primary_production
-    database: vsmobile_kgy_production_queue
+    database: <%= ENV.fetch("POSTGRES_DB", "vsmobile_production") %>_queue
     migrations_paths: db/queue_migrate
   cable:
     <<: *primary_production
-    database: vsmobile_kgy_production_cable
+    database: <%= ENV.fetch("POSTGRES_DB", "vsmobile_production") %>_cable
     migrations_paths: db/cable_migrate
