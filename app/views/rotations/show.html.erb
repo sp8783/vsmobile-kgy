@@ -1,3 +1,63 @@
+<!-- All Matches Completed Modal -->
+<% if @show_completion_modal %>
+  <div id="completion-modal" class="fixed inset-0 flex items-center justify-center z-50" style="background-color: rgba(0, 0, 0, 0.5);">
+    <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 animate-fade-in">
+      <div class="p-6">
+        <div class="flex items-center justify-center w-12 h-12 mx-auto bg-green-100 rounded-full mb-4">
+          <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+          </svg>
+        </div>
+        <h3 class="text-lg font-bold text-gray-900 text-center mb-2">全試合完了しました！</h3>
+        <p class="text-sm text-gray-600 text-center mb-6">
+          <%= @rotation.name %>の全試合が記録されました。<br>
+          同じローテーション設定で<%= @rotation.round_number + 1 %>周目を作成しますか？
+        </p>
+        <div class="flex flex-col space-y-3">
+          <%= button_to "#{@rotation.round_number + 1}周目を作成する", copy_for_next_round_rotation_path(@rotation), method: :post, class: "w-full px-4 py-3 bg-indigo-600 text-white font-semibold rounded-md hover:bg-indigo-700", form: { data: { turbo: false } } %>
+          <button onclick="closeCompletionModal()" class="w-full px-4 py-2 bg-gray-200 text-gray-700 font-semibold rounded-md hover:bg-gray-300">
+            後で作成する
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: scale(0.9);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+    .animate-fade-in {
+      animation: fadeIn 0.3s ease-out;
+    }
+  </style>
+
+  <script>
+    function closeCompletionModal() {
+      const modal = document.getElementById('completion-modal');
+      modal.style.opacity = '0';
+      setTimeout(() => {
+        modal.style.display = 'none';
+      }, 200);
+    }
+
+    // Prevent closing modal by clicking outside (optional)
+    document.getElementById('completion-modal').addEventListener('click', function(e) {
+      if (e.target === this) {
+        // Optionally allow closing by clicking backdrop
+        // closeCompletionModal();
+      }
+    });
+  </script>
+<% end %>
+
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
   <!-- Header -->
   <div class="mb-6">
@@ -21,14 +81,54 @@
       </div>
 
       <div class="flex flex-wrap gap-3">
-        <% unless current_user.is_admin? %>
-          <%= link_to "📱 プレイヤー画面", player_view_rotation_path(@rotation), class: "px-4 py-2 bg-indigo-600 text-white font-semibold rounded-md hover:bg-indigo-700", target: "_blank" %>
-        <% end %>
         <% if current_user.is_admin? %>
-          <% unless @rotation.is_active %>
+          <% if @rotation.is_active %>
+            <%= button_to "非アクティブにする", deactivate_rotation_path(@rotation), method: :post, class: "px-4 py-2 bg-gray-600 text-white font-semibold rounded-md hover:bg-gray-700" %>
+          <% else %>
             <%= button_to "アクティブにする", activate_rotation_path(@rotation), method: :post, class: "px-4 py-2 bg-indigo-600 text-white font-semibold rounded-md hover:bg-indigo-700" %>
           <% end %>
-          <%= button_to "周回をコピー", copy_for_next_round_rotation_path(@rotation), method: :post, class: "px-4 py-2 bg-gray-600 text-white font-semibold rounded-md hover:bg-gray-700" %>
+
+          <!-- Actions Dropdown -->
+          <div class="relative inline-block text-left" data-controller="dropdown">
+            <button type="button" onclick="toggleDropdown()" class="inline-flex justify-center items-center px-4 py-2 bg-gray-600 text-white font-semibold rounded-md hover:bg-gray-700">
+              その他
+              <svg class="-mr-1 ml-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+              </svg>
+            </button>
+            <div id="dropdown-menu" class="hidden absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10">
+              <div class="py-1">
+                <%= button_to copy_for_next_round_rotation_path(@rotation), method: :post, class: "w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center", form: { data: { turbo: false } } do %>
+                  <svg class="mr-3 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                  </svg>
+                  周回をコピー
+                <% end %>
+                <%= button_to rotation_path(@rotation), method: :delete, data: { turbo_confirm: "ローテーション「#{@rotation.name}」を削除してもよろしいですか？関連する試合データは削除されません。" }, class: "w-full text-left px-4 py-2 text-sm text-red-700 hover:bg-gray-100 flex items-center" do %>
+                  <svg class="mr-3 h-5 w-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                  </svg>
+                  削除
+                <% end %>
+              </div>
+            </div>
+          </div>
+
+          <script>
+            function toggleDropdown() {
+              const menu = document.getElementById('dropdown-menu');
+              menu.classList.toggle('hidden');
+            }
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function(event) {
+              const dropdown = document.querySelector('[data-controller="dropdown"]');
+              const menu = document.getElementById('dropdown-menu');
+              if (dropdown && !dropdown.contains(event.target)) {
+                menu.classList.add('hidden');
+              }
+            });
+          </script>
         <% end %>
         <%= link_to "一覧に戻る", rotations_path, class: "px-4 py-2 bg-gray-600 text-white font-semibold rounded-md hover:bg-gray-700" %>
       </div>
@@ -37,23 +137,24 @@
 
   <!-- Progress Bar -->
   <div class="mb-6 bg-white shadow sm:rounded-lg p-6">
+    <% completed_count = @rotation_matches.count { |rm| rm.match.present? } %>
     <div class="flex justify-between items-center mb-2">
       <h3 class="text-lg font-semibold text-gray-900">進捗状況</h3>
       <span class="text-sm text-gray-600">
-        <%= @rotation.current_match_index + 1 %> / <%= @rotation_matches.count %> 試合
+        <%= completed_count %> / <%= @rotation_matches.count %> 試合
       </span>
     </div>
     <div class="w-full bg-gray-200 rounded-full h-4">
-      <% progress = @rotation_matches.count > 0 ? ((@rotation.current_match_index + 1).to_f / @rotation_matches.count * 100) : 0 %>
+      <% progress = @rotation_matches.count > 0 ? (completed_count.to_f / @rotation_matches.count * 100) : 0 %>
       <div class="bg-blue-600 h-4 rounded-full transition-all duration-300" style="width: <%= progress %>%"></div>
     </div>
   </div>
 
   <!-- Current Match -->
   <% if @current_match.present? %>
-    <div class="mb-6 bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-300 shadow-lg sm:rounded-lg p-6">
+    <div class="mb-6 bg-indigo-100 shadow sm:rounded-lg p-6">
       <div class="flex justify-between items-start mb-4">
-        <h3 class="text-xl font-bold text-blue-900">現在の試合（第<%= @rotation.current_match_index + 1 %>試合）</h3>
+        <h3 class="text-xl font-bold text-gray-900">現在の試合（第<%= @rotation.current_match_index + 1 %>試合）</h3>
         <% if @current_match.match.present? %>
           <span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
             記録済み
@@ -101,14 +202,21 @@
       </div>
 
       <!-- Record Match Form -->
-      <% unless @current_match.match.present? %>
-        <div class="bg-white rounded-lg p-6 shadow">
+      <% if current_user.is_admin? %>
+        <div class="bg-white rounded-lg p-6 shadow" id="match-record-container">
           <div class="flex items-center justify-between mb-4">
-            <h4 class="text-lg font-semibold text-gray-900">試合結果を記録</h4>
+            <h4 class="text-lg font-semibold text-gray-900" id="form-title">
+              <% if @current_match.match.present? %>
+                試合結果を編集
+              <% else %>
+                試合結果を記録
+              <% end %>
+            </h4>
             <span class="text-xs text-gray-500 hidden md:inline">💡 Tip: Tabキーで次の項目へ移動できます</span>
           </div>
-          <form action="<%= record_match_rotation_path(@rotation) %>" method="post" data-turbo="false" id="match-record-form">
+          <form action="<% if @current_match.match.present? %><%= update_match_record_rotation_path(@rotation) %><% else %><%= record_match_rotation_path(@rotation) %><% end %>" method="post" data-turbo="false" id="match-record-form">
             <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
+            <%= hidden_field_tag :match_index, @rotation.current_match_index, id: 'editing_match_index' %>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <!-- Team 1 Suits -->
@@ -183,11 +291,25 @@
                 <span class="font-medium">必須項目：</span>各プレイヤーの機体 + 勝利チーム
               </div>
               <div class="flex space-x-3">
-                <button type="button" onclick="if(confirm('この試合をスキップしますか？')) { document.getElementById('skip-match-form').submit(); }" class="px-4 py-2 bg-gray-600 text-white font-semibold rounded-md hover:bg-gray-700">
-                  試合をスキップ
+                <button type="button" id="cancel-edit-btn" onclick="cancelEdit()" class="px-4 py-2 bg-gray-600 text-white font-semibold rounded-md hover:bg-gray-700" style="display: none;">
+                  キャンセル
                 </button>
-                <button type="submit" class="px-6 py-3 bg-indigo-600 text-white font-semibold rounded-md hover:bg-indigo-700">
-                  ✓ 記録して次へ
+                <% unless @current_match.match.present? %>
+                  <button type="button" id="skip-match-btn" onclick="if(confirm('この試合をスキップしますか？')) { document.getElementById('skip-match-form').submit(); }" class="px-4 py-2 bg-gray-600 text-white font-semibold rounded-md hover:bg-gray-700">
+                    試合をスキップ
+                  </button>
+                <% end %>
+                <% if @current_match.match.present? && @rotation.current_match_index < @rotation_matches.count - 1 %>
+                  <%= button_to "次の試合へ →", next_match_rotation_path(@rotation), method: :post, id: "next-match-btn", class: "px-4 py-2 bg-green-600 text-white font-semibold rounded-md hover:bg-green-700", form: { data: { turbo: false } } %>
+                <% end %>
+                <button type="submit" id="submit-btn" class="px-6 py-3 bg-indigo-600 text-white font-semibold rounded-md hover:bg-indigo-700">
+                  <span id="submit-btn-text">
+                    <% if @current_match.match.present? %>
+                      ✓ 更新
+                    <% else %>
+                      ✓ 記録して次へ
+                    <% end %>
+                  </span>
                 </button>
               </div>
             </div>
@@ -199,6 +321,74 @@
           </form>
 
           <script>
+            // Edit match function with simplified parameters
+            function editMatchById(matchIndex, matchId, winningTeam, suit1, suit2, suit3, suit4) {
+              console.log('Editing match:', matchIndex, matchId, winningTeam, suit1, suit2, suit3, suit4);
+
+              // Update form title
+              document.getElementById('form-title').textContent = '試合結果を編集（第' + (matchIndex + 1) + '試合）';
+
+              // Update form action to update endpoint
+              const form = document.getElementById('match-record-form');
+              form.action = '<%= update_match_record_rotation_path(@rotation) %>';
+
+              // Set match index
+              document.getElementById('editing_match_index').value = matchIndex;
+
+              // Set mobile suits using TomSelect
+              const select1 = document.querySelector('select[name="team1_player1_suit"]');
+              if (select1 && select1.tomselect) {
+                select1.tomselect.setValue(suit1.toString());
+              }
+
+              const select2 = document.querySelector('select[name="team1_player2_suit"]');
+              if (select2 && select2.tomselect) {
+                select2.tomselect.setValue(suit2.toString());
+              }
+
+              const select3 = document.querySelector('select[name="team2_player1_suit"]');
+              if (select3 && select3.tomselect) {
+                select3.tomselect.setValue(suit3.toString());
+              }
+
+              const select4 = document.querySelector('select[name="team2_player2_suit"]');
+              if (select4 && select4.tomselect) {
+                select4.tomselect.setValue(suit4.toString());
+              }
+
+              // Set winning team
+              if (winningTeam === 1) {
+                document.getElementById('team1_win').checked = true;
+              } else {
+                document.getElementById('team2_win').checked = true;
+              }
+
+              // Update button text and visibility
+              document.getElementById('submit-btn-text').textContent = '✓ 更新';
+
+              const skipBtn = document.getElementById('skip-match-btn');
+              if (skipBtn) {
+                skipBtn.style.display = 'none';
+              }
+
+              document.getElementById('cancel-edit-btn').style.display = 'inline-block';
+
+              // Hide "next match" button if editing a different match
+              const nextMatchBtn = document.getElementById('next-match-btn');
+              if (nextMatchBtn) {
+                nextMatchBtn.style.display = 'none';
+              }
+
+              // Scroll to form
+              document.getElementById('match-record-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+
+            // Cancel edit function
+            function cancelEdit() {
+              // Reload the page to reset to current match state
+              window.location.reload();
+            }
+
             // Initialize Tom-Select for mobile suit selects
             function initializeTomSelect() {
               const selects = document.querySelectorAll('select[name*="_suit"]');
@@ -224,6 +414,10 @@
             function initializeFormValidation() {
               const form = document.getElementById('match-record-form');
               if (!form) return;
+
+              // Check if already initialized
+              if (form.dataset.validationInitialized === 'true') return;
+              form.dataset.validationInitialized = 'true';
 
               // Form validation
               form.addEventListener('submit', function(e) {
@@ -264,11 +458,37 @@
             document.addEventListener('DOMContentLoaded', function() {
               initializeTomSelect();
               initializeFormValidation();
+
+              <% if @current_match.match.present? && !@show_completion_modal %>
+                // Load current match data for editing
+                <%
+                  mp1 = @current_match.match.match_players.find { |mp| mp.team_number == 1 && mp.position == 1 }
+                  mp2 = @current_match.match.match_players.find { |mp| mp.team_number == 1 && mp.position == 2 }
+                  mp3 = @current_match.match.match_players.find { |mp| mp.team_number == 2 && mp.position == 3 }
+                  mp4 = @current_match.match.match_players.find { |mp| mp.team_number == 2 && mp.position == 4 }
+                %>
+                setTimeout(function() {
+                  editMatchById(<%= @rotation.current_match_index %>, <%= @current_match.match.id %>, <%= @current_match.match.winning_team %>, <%= mp1&.mobile_suit_id %>, <%= mp2&.mobile_suit_id %>, <%= mp3&.mobile_suit_id %>, <%= mp4&.mobile_suit_id %>);
+                }, 100);
+              <% end %>
             });
 
             document.addEventListener('turbo:load', function() {
               initializeTomSelect();
               initializeFormValidation();
+
+              <% if @current_match.match.present? && !@show_completion_modal %>
+                // Load current match data for editing
+                <%
+                  mp1 = @current_match.match.match_players.find { |mp| mp.team_number == 1 && mp.position == 1 }
+                  mp2 = @current_match.match.match_players.find { |mp| mp.team_number == 1 && mp.position == 2 }
+                  mp3 = @current_match.match.match_players.find { |mp| mp.team_number == 2 && mp.position == 3 }
+                  mp4 = @current_match.match.match_players.find { |mp| mp.team_number == 2 && mp.position == 4 }
+                %>
+                setTimeout(function() {
+                  editMatchById(<%= @rotation.current_match_index %>, <%= @current_match.match.id %>, <%= @current_match.match.winning_team %>, <%= mp1&.mobile_suit_id %>, <%= mp2&.mobile_suit_id %>, <%= mp3&.mobile_suit_id %>, <%= mp4&.mobile_suit_id %>);
+                }, 100);
+              <% end %>
             });
 
             // Also initialize immediately in case the script runs after DOM is ready
@@ -278,29 +498,23 @@
               // DOM is ready, initialize now
               initializeTomSelect();
               initializeFormValidation();
+
+              <% if @current_match.match.present? && !@show_completion_modal %>
+                // Load current match data for editing
+                <%
+                  mp1 = @current_match.match.match_players.find { |mp| mp.team_number == 1 && mp.position == 1 }
+                  mp2 = @current_match.match.match_players.find { |mp| mp.team_number == 1 && mp.position == 2 }
+                  mp3 = @current_match.match.match_players.find { |mp| mp.team_number == 2 && mp.position == 3 }
+                  mp4 = @current_match.match.match_players.find { |mp| mp.team_number == 2 && mp.position == 4 }
+                %>
+                setTimeout(function() {
+                  editMatchById(<%= @rotation.current_match_index %>, <%= @current_match.match.id %>, <%= @current_match.match.winning_team %>, <%= mp1&.mobile_suit_id %>, <%= mp2&.mobile_suit_id %>, <%= mp3&.mobile_suit_id %>, <%= mp4&.mobile_suit_id %>);
+                }, 100);
+              <% end %>
             }
           </script>
         </div>
-      <% else %>
-        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <div class="flex items-center justify-between">
-            <div class="flex-1">
-              <p class="text-sm text-blue-800 flex items-center">
-                <svg class="h-5 w-5 text-blue-600 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                </svg>
-                この試合は記録済みです。
-                <%= link_to "試合詳細を見る", @current_match.match, class: "font-semibold underline ml-2" %>
-              </p>
-            </div>
-            <% if @rotation.current_match_index < @rotation_matches.count - 1 %>
-              <%= button_to "次の試合へ →", next_match_rotation_path(@rotation), method: :post, class: "ml-4 px-4 py-2 bg-indigo-600 text-white font-semibold rounded-md hover:bg-indigo-700", form: { data: { turbo: false } } %>
-            <% else %>
-              <span class="ml-4 px-4 py-2 text-sm font-medium text-gray-500">全試合完了</span>
-            <% end %>
-          </div>
-        </div>
-      <% end %>
+<% end %>
     </div>
   <% end %>
 
@@ -315,7 +529,7 @@
             <span>記録済み</span>
           </div>
           <div class="flex items-center ml-3">
-            <span class="w-3 h-3 bg-blue-50 border border-blue-300 rounded mr-1"></span>
+            <span class="w-3 h-3 bg-indigo-100 border border-indigo-300 rounded mr-1"></span>
             <span>現在の試合</span>
           </div>
           <div class="flex items-center ml-3">
@@ -349,14 +563,37 @@
             </th>
           </tr>
         </thead>
-        <tbody class="bg-white divide-y divide-gray-200">
+        <tbody class="bg-white">
           <% @rotation_matches.each_with_index do |rm, index| %>
-            <tr class="<%= 'bg-blue-50' if index == @rotation.current_match_index %> hover:bg-gray-50">
+            <%
+              # 3試合1セットの計算
+              set_number = index / 3
+              is_set_start = (index % 3 == 0)
+              in_set_position = index % 3
+
+              # 背景色（現在の試合のみハイライト）
+              if index == @rotation.current_match_index
+                row_bg = "bg-indigo-100"  # 現在の試合
+              else
+                row_bg = "bg-white"
+              end
+
+              # セット間の境界線（セットの最初かつ最初の試合ではない場合）
+              border_class = (is_set_start && index > 0) ? "border-t-4 border-indigo-300" : "border-t border-gray-200"
+            %>
+            <tr class="<%= row_bg %> <%= border_class %> hover:bg-gray-100 transition <%= rm.match ? 'cursor-pointer' : '' %>" <% if rm.match %>onclick="window.location='<%= match_path(rm.match) %>'"<% end %>>
               <td class="px-6 py-4 whitespace-nowrap">
                 <div class="flex items-center">
-                  <span class="text-sm font-medium text-gray-900">第<%= index + 1 %>試合</span>
+                  <% if is_set_start %>
+                    <div class="flex flex-col items-start">
+                      <span class="text-xs font-semibold text-indigo-600 mb-1">第<%= set_number + 1 %>セット</span>
+                      <span class="text-sm font-medium text-gray-900">第<%= index + 1 %>試合</span>
+                    </div>
+                  <% else %>
+                    <span class="text-sm font-medium text-gray-900 ml-1">第<%= index + 1 %>試合</span>
+                  <% end %>
                   <% if index == @rotation.current_match_index %>
-                    <span class="ml-2 px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                    <span class="ml-2 px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-600 text-white">
                       現在
                     </span>
                   <% end %>
@@ -395,15 +632,38 @@
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-center">
                 <% if rm.match %>
-                  <% if rm.match.winning_team == 1 %>
-                    <span class="px-2 py-1 text-xs font-bold rounded bg-blue-600 text-white">WIN</span>
-                    <span class="text-xs text-gray-500 ml-1">(チーム1)</span>
-                  <% else %>
-                    <span class="px-2 py-1 text-xs font-bold rounded bg-blue-600 text-white">WIN</span>
-                    <span class="text-xs text-gray-500 ml-1">(チーム2)</span>
-                  <% end %>
-                  <div class="text-xs text-gray-500 mt-1">
-                    <%= link_to "詳細", rm.match, class: "text-blue-600 hover:text-blue-800" %>
+                  <div class="flex flex-col items-center space-y-2">
+                    <div>
+                      <% if rm.match.winning_team == 1 %>
+                        <span class="px-3 py-1 text-sm font-bold rounded bg-blue-600 text-white">
+                          チーム1
+                        </span>
+                      <% else %>
+                        <span class="px-3 py-1 text-sm font-bold rounded bg-red-600 text-white">
+                          チーム2
+                        </span>
+                      <% end %>
+                    </div>
+                    <% if current_user.is_admin? %>
+                      <div class="flex items-center justify-center space-x-2" onclick="event.stopPropagation()">
+                        <a href="#match-record-container"
+                           onclick="editMatchById(<%= index %>, <%= rm.match.id %>, <%= rm.match.winning_team %>, <%= rm.match.match_players.find { |mp| mp.team_number == 1 && mp.position == 1 }.mobile_suit_id %>, <%= rm.match.match_players.find { |mp| mp.team_number == 1 && mp.position == 2 }.mobile_suit_id %>, <%= rm.match.match_players.find { |mp| mp.team_number == 2 && mp.position == 3 }.mobile_suit_id %>, <%= rm.match.match_players.find { |mp| mp.team_number == 2 && mp.position == 4 }.mobile_suit_id %>); return false;"
+                           class="text-xs text-blue-600 hover:text-blue-800 underline cursor-pointer">
+                          編集
+                        </a>
+                        <span class="text-gray-300">|</span>
+                        <%= button_to "削除", match_path(rm.match), method: :delete, data: { turbo_confirm: "この試合記録を削除してもよろしいですか？" }, class: "text-xs text-red-600 hover:text-red-800 underline", form: { style: "display: inline;" } %>
+                      </div>
+                    <% end %>
+                  </div>
+                <% elsif index < @rotation.current_match_index %>
+                  <div class="flex flex-col items-center space-y-1">
+                    <span class="text-xs text-gray-400">-</span>
+                    <% if current_user.is_admin? %>
+                      <div onclick="event.stopPropagation()">
+                        <%= button_to "ここに戻る", go_to_match_rotation_path(@rotation, match_index: index), method: :post, class: "text-xs text-gray-500 hover:text-gray-700 underline", form: { data: { turbo: false } } %>
+                      </div>
+                    <% end %>
                   </div>
                 <% else %>
                   <span class="text-sm text-gray-400">-</span>

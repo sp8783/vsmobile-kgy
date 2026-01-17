@@ -1,7 +1,7 @@
 class RotationsController < ApplicationController
   before_action :authenticate_user!
-  before_action :require_admin, except: [:index, :show, :player_view]
-  before_action :set_rotation, only: [:show, :edit, :update, :destroy, :activate, :next_match, :record_match, :player_view]
+  before_action :require_admin, except: [:index, :show]
+  before_action :set_rotation, only: [:show, :edit, :update, :destroy, :activate, :deactivate, :next_match, :record_match, :go_to_match, :update_match_record]
   before_action :set_event, only: [:new, :create]
 
   def index
@@ -14,16 +14,22 @@ class RotationsController < ApplicationController
                                   .order(:match_index)
     @current_match = @rotation_matches[@rotation.current_match_index]
     @player_statistics = @rotation.player_statistics
+
+    # Check if we should show completion modal
+    if session[:show_completion_modal] == @rotation.id
+      @show_completion_modal = true
+      session.delete(:show_completion_modal)
+    end
   end
 
   def new
     @rotation = @event.rotations.build
-    @players = User.where.not(is_admin: true).order(:nickname)
+    @players = User.regular_users.order(:nickname)
   end
 
   def create
     @rotation = @event.rotations.build(rotation_params)
-    @players = User.where.not(is_admin: true).order(:nickname)
+    @players = User.regular_users.order(:nickname)
 
     # Validate player count
     player_ids = params[:player_ids]&.reject(&:blank?) || []
@@ -47,14 +53,14 @@ class RotationsController < ApplicationController
   end
 
   def edit
-    @players = User.where.not(is_admin: true).order(:nickname)
+    @players = User.regular_users.order(:nickname)
   end
 
   def update
     if @rotation.update(rotation_params)
       redirect_to @rotation, notice: 'ローテーションを更新しました。'
     else
-      @players = User.where.not(is_admin: true).order(:nickname)
+      @players = User.regular_users.order(:nickname)
       render :edit, status: :unprocessable_entity
     end
   end
@@ -74,6 +80,12 @@ class RotationsController < ApplicationController
     redirect_to @rotation, notice: 'ローテーションをアクティブにしました。'
   end
 
+  # Deactivate this rotation
+  def deactivate
+    @rotation.update(is_active: false)
+    redirect_to @rotation, notice: 'ローテーションを非アクティブにしました。'
+  end
+
   # Move to next match
   def next_match
     if @rotation.current_match_index < @rotation.rotation_matches.count - 1
@@ -88,6 +100,25 @@ class RotationsController < ApplicationController
       redirect_to @rotation, notice: '次の試合に進みました。'
     else
       redirect_to @rotation, alert: 'これが最後の試合です。'
+    end
+  end
+
+  # Go to specific match (for skipped matches)
+  def go_to_match
+    match_index = params[:match_index].to_i
+
+    if match_index >= 0 && match_index < @rotation.rotation_matches.count
+      @rotation.update!(current_match_index: match_index)
+
+      # Broadcast update via Action Cable
+      RotationChannel.broadcast_to(@rotation, {
+        type: 'rotation_updated',
+        current_match_index: @rotation.current_match_index
+      })
+
+      redirect_to @rotation, notice: "第#{match_index + 1}試合に戻りました。"
+    else
+      redirect_to @rotation, alert: '無効な試合番号です。'
     end
   end
 
@@ -129,9 +160,10 @@ class RotationsController < ApplicationController
         # Link rotation match to match
         rotation_match.update(match: match)
 
-        # Move to next match
-        if @rotation.current_match_index < @rotation.rotation_matches.count - 1
-          @rotation.increment!(:current_match_index)
+        # Move to next unrecorded match
+        next_unrecorded_index = find_next_unrecorded_match_index(@rotation)
+        if next_unrecorded_index
+          @rotation.update!(current_match_index: next_unrecorded_index)
         end
 
         # Broadcast update via Action Cable
@@ -140,8 +172,19 @@ class RotationsController < ApplicationController
           current_match_index: @rotation.current_match_index
         })
 
+        # Check if all matches are completed
+        all_completed = @rotation.rotation_matches.all? { |rm| rm.match.present? }
+
         Rails.logger.info "Match recorded successfully: #{match.id}"
-        redirect_to @rotation, notice: '試合を記録しました。'
+
+        if all_completed
+          # All matches completed - deactivate this rotation and show modal to create next round
+          @rotation.update!(is_active: false)
+          session[:show_completion_modal] = @rotation.id
+          redirect_to @rotation, notice: '試合を記録しました。'
+        else
+          redirect_to @rotation, notice: '試合を記録しました。'
+        end
       else
         Rails.logger.error "Match save failed: #{match.errors.full_messages}"
         redirect_to @rotation, alert: "試合の記録に失敗しました: #{match.errors.full_messages.join(', ')}"
@@ -154,17 +197,56 @@ class RotationsController < ApplicationController
   end
 
   # Player view for real-time status
-  def player_view
-    @current_user_id = viewing_as_user.id
-    @next_match = @rotation.next_match_for_player(@current_user_id)
-    @player_statistics = @rotation.player_statistics
+  # DEPRECATED: Player view is now integrated into the dashboard
+  # def player_view
+  #   @current_user_id = viewing_as_user.id
+  #   @next_match = @rotation.next_match_for_player(@current_user_id)
+  #   @player_statistics = @rotation.player_statistics
+  #
+  #   if @next_match
+  #     @match_info = @rotation.match_info_for_player(@next_match, @current_user_id)
+  #     @matches_until_next = @next_match.match_index - @rotation.current_match_index
+  #   end
+  #
+  #   # Real-time updates via Action Cable (no HTTP refresh needed)
+  # end
 
-    if @next_match
-      @match_info = @rotation.match_info_for_player(@next_match, @current_user_id)
-      @matches_until_next = @next_match.match_index - @rotation.current_match_index
+  # Update existing match record without moving rotation
+  def update_match_record
+    rotation_match = @rotation.rotation_matches.find_by(match_index: params[:match_index].to_i)
+
+    unless rotation_match && rotation_match.match
+      redirect_to @rotation, alert: '試合が見つかりません。' and return
     end
 
-    # Real-time updates via Action Cable (no HTTP refresh needed)
+    match = rotation_match.match
+
+    # Update match record
+    match.winning_team = params[:winning_team].to_i
+
+    # Update match players
+    match.match_players.destroy_all
+    [
+      { user: rotation_match.team1_player1, mobile_suit_id: params[:team1_player1_suit], team: 1, position: 1 },
+      { user: rotation_match.team1_player2, mobile_suit_id: params[:team1_player2_suit], team: 1, position: 2 },
+      { user: rotation_match.team2_player1, mobile_suit_id: params[:team2_player1_suit], team: 2, position: 3 },
+      { user: rotation_match.team2_player2, mobile_suit_id: params[:team2_player2_suit], team: 2, position: 4 }
+    ].each do |mp|
+      match.match_players.build(
+        user: mp[:user],
+        mobile_suit_id: mp[:mobile_suit_id],
+        team_number: mp[:team],
+        position: mp[:position]
+      )
+    end
+
+    if match.save
+      redirect_to @rotation, notice: '試合記録を更新しました。'
+    else
+      redirect_to @rotation, alert: "試合記録の更新に失敗しました: #{match.errors.full_messages.join(', ')}"
+    end
+  rescue => e
+    redirect_to @rotation, alert: "試合記録の更新中にエラーが発生しました: #{e.message}"
   end
 
   # Copy rotation for next round
@@ -172,7 +254,7 @@ class RotationsController < ApplicationController
     @rotation = Rotation.find(params[:id])
 
     new_rotation = @rotation.event.rotations.create!(
-      name: "#{@rotation.name} - #{@rotation.round_number + 1}周目",
+      name: @rotation.name,
       round_number: @rotation.round_number + 1,
       base_rotation_id: @rotation.id
     )
@@ -187,6 +269,12 @@ class RotationsController < ApplicationController
         team2_player2: rm.team2_player2
       )
     end
+
+    # Deactivate all rotations for this event
+    @rotation.event.rotations.update_all(is_active: false)
+
+    # Activate the new rotation
+    new_rotation.update!(is_active: true)
 
     redirect_to new_rotation, notice: "#{new_rotation.round_number}周目のローテーションを作成しました。"
   end
@@ -203,6 +291,28 @@ class RotationsController < ApplicationController
 
   def rotation_params
     params.require(:rotation).permit(:name, :round_number)
+  end
+
+  # Find the next unrecorded match starting from current position
+  def find_next_unrecorded_match_index(rotation)
+    rotation_matches = rotation.rotation_matches.includes(:match).order(:match_index)
+
+    # Start searching from the current match index
+    rotation_matches.each do |rm|
+      if rm.match_index > rotation.current_match_index && rm.match.nil?
+        return rm.match_index
+      end
+    end
+
+    # If no unrecorded match found after current position, check from the beginning
+    rotation_matches.each do |rm|
+      if rm.match.nil?
+        return rm.match_index
+      end
+    end
+
+    # All matches are recorded, stay at the last match
+    return rotation.rotation_matches.count - 1
   end
 
   def generate_rotation_matches(rotation, player_ids)
