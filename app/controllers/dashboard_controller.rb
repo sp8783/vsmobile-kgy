@@ -165,8 +165,10 @@ class DashboardController < ApplicationController
     return unless @active_rotation
 
     # ローテーション表から情報を取得（既にロード済み）
-    @rotation_total_matches = @active_rotation.rotation_matches.size
+    @rotation_matches = @active_rotation.rotation_matches.sort_by(&:match_index)
+    @rotation_total_matches = @rotation_matches.size
     @rotation_current_match_index = @active_rotation.current_match_index
+    @current_rotation_match = @rotation_matches[@rotation_current_match_index]
 
     # 現在のユーザーの次の試合を取得（メモリ内で検索）
     @user_next_rotation_match = @active_rotation.rotation_matches.find do |rm|
@@ -197,30 +199,6 @@ class DashboardController < ApplicationController
         type: 'warning',
         icon: '⚠️',
         message: "もうすぐあなたの出番です！あと#{@matches_until_user_turn}試合"
-      }
-    end
-
-    # 連勝通知（ユニークな試合のみを使用）
-    winning_streak = 0
-    seen_match_ids = Set.new
-    @all_user_matches.each do |mp|
-      unless seen_match_ids.include?(mp.match_id)
-        seen_match_ids.add(mp.match_id)
-        is_win = (mp.match.winning_team == mp.team_number)
-        if is_win
-          winning_streak += 1
-        else
-          break
-        end
-        break if seen_match_ids.size >= 10
-      end
-    end
-
-    if winning_streak >= 3
-      @notifications << {
-        type: 'success',
-        icon: '🔥',
-        message: "#{winning_streak}連勝中！調子が良いですね！"
       }
     end
 

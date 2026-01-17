@@ -12,15 +12,23 @@
 
       <!-- 今日のイベント管理 -->
       <% if @today_event %>
-        <div class="bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-lg rounded-lg p-6">
+        <div class="bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-lg rounded-lg p-6" <%= @active_rotation ? "data-controller=\"rotation-subscriber\" data-rotation-subscriber-rotation-id-value=\"#{@active_rotation.id}\"" : "" %>>
           <div class="flex items-center justify-between mb-4">
             <div>
               <h2 class="text-xl font-bold">🎮 本日のイベント</h2>
               <p class="text-sm text-white text-opacity-90 mt-1"><%= @today_event.name %></p>
             </div>
-            <span class="bg-white text-purple-600 px-3 py-1 rounded-full text-sm font-semibold">
-              <%= @today_event.held_on.strftime('%Y/%m/%d') %>
-            </span>
+            <div class="flex items-center space-x-2">
+              <% if @active_rotation %>
+                <div class="inline-flex items-center px-2 py-1 bg-red-100 border border-red-300 rounded-full">
+                  <span class="w-2 h-2 bg-red-500 rounded-full mr-1 animate-pulse"></span>
+                  <span class="text-xs font-medium text-red-800">リアルタイム更新中</span>
+                </div>
+              <% end %>
+              <span class="bg-white text-purple-600 px-3 py-1 rounded-full text-sm font-semibold">
+                <%= @today_event.held_on.strftime('%Y/%m/%d') %>
+              </span>
+            </div>
           </div>
 
           <% if @active_rotation %>
@@ -35,10 +43,11 @@
 
             <!-- 現在の試合 -->
             <% if @current_rotation_match %>
-              <div class="bg-blue-50 border-2 border-blue-300 rounded-lg p-4 mb-4">
-                <div class="text-sm font-semibold mb-3 text-blue-900">📍 現在の試合（第<%= @active_rotation.current_match_index + 1 %>試合）</div>
+              <div class="bg-white text-gray-900 rounded-lg p-4 mb-4 shadow-sm">
+                <div class="text-sm font-semibold mb-3 text-gray-700">📍 現在の試合</div>
+                <div class="text-3xl font-bold text-gray-900 mb-3 text-center">第<%= @active_rotation.current_match_index + 1 %>試合</div>
                 <div class="grid grid-cols-3 gap-3 text-sm">
-                  <div class="bg-white rounded p-2">
+                  <div class="bg-gray-50 rounded p-2">
                     <div class="text-xs text-gray-500 mb-1">チーム1</div>
                     <div class="flex items-center">
                       <span class="font-bold text-red-600"><%= @current_rotation_match.team1_player1.nickname %></span>
@@ -49,7 +58,7 @@
                   <div class="flex items-center justify-center">
                     <span class="text-xl font-bold text-gray-400">VS</span>
                   </div>
-                  <div class="bg-white rounded p-2">
+                  <div class="bg-gray-50 rounded p-2">
                     <div class="text-xs text-gray-500 mb-1">チーム2</div>
                     <div class="font-medium text-gray-900"><%= @current_rotation_match.team2_player1.nickname %></div>
                     <div class="text-gray-700 mt-1"><%= @current_rotation_match.team2_player2.nickname %></div>
