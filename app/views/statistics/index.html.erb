@@ -1,79 +1,162 @@
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
   <!-- Header -->
   <div class="mb-6">
-    <h1 class="text-3xl font-bold text-gray-900">統計分析</h1>
-    <p class="mt-2 text-sm text-gray-600">詳細な戦績データを分析できます</p>
+    <h1 class="text-3xl font-bold text-gray-900">統計</h1>
+    <p class="mt-2 text-sm text-gray-600">詳細な戦績データを確認できます</p>
   </div>
 
-  <!-- Tab Navigation -->
-  <div class="border-b border-gray-200 mb-6">
-    <nav class="-mb-px flex space-x-8" aria-label="Tabs">
-      <%= link_to statistics_path(tab: 'overview', events: params[:events], mobile_suits: params[:mobile_suits], partners: params[:partners]),
-          class: "#{@active_tab == 'overview' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm" do %>
-        総合統計
+  <!-- Tab Navigation - Mobile Dropdown -->
+  <div class="mobile-only-view mb-6">
+    <label for="mobile-tab-select" class="sr-only">統計タブを選択</label>
+    <select id="mobile-tab-select" onchange="navigateToTab(this.value)" class="block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-base focus:border-indigo-500 focus:outline-none focus:ring-indigo-500">
+      <optgroup label="全体">
+        <option value="overall" <%= 'selected' if @active_tab == 'overall' %>>全体統計</option>
+      </optgroup>
+      <optgroup label="個人">
+        <% if current_user.is_guest %>
+          <option disabled>総合戦績（要アカウント）</option>
+          <option disabled>イベント別戦績（要アカウント）</option>
+          <option disabled>イベント内期間別戦績（要アカウント）</option>
+          <option disabled>使用機体別戦績（要アカウント）</option>
+          <option disabled>対戦機体別戦績（要アカウント）</option>
+          <option disabled>パートナー別戦績（要アカウント）</option>
+          <option disabled>対戦相手別戦績（要アカウント）</option>
+        <% else %>
+          <option value="overview" <%= 'selected' if @active_tab == 'overview' %>>総合戦績</option>
+          <option value="events" <%= 'selected' if @active_tab == 'events' %>>イベント別戦績</option>
+          <option value="event_progression" <%= 'selected' if @active_tab == 'event_progression' %>>イベント内期間別戦績</option>
+          <option value="mobile_suits" <%= 'selected' if @active_tab == 'mobile_suits' %>>使用機体別戦績</option>
+          <option value="opponent_suits" <%= 'selected' if @active_tab == 'opponent_suits' %>>対戦機体別戦績</option>
+          <option value="partners" <%= 'selected' if @active_tab == 'partners' %>>パートナー別戦績</option>
+          <option value="opponents" <%= 'selected' if @active_tab == 'opponents' %>>対戦相手別戦績</option>
+        <% end %>
+      </optgroup>
+    </select>
+    <script>
+      function navigateToTab(tab) {
+        if (tab) {
+          const url = new URL(window.location.href);
+          url.searchParams.set('tab', tab);
+          window.location.href = url.toString();
+        }
+      }
+    </script>
+  </div>
+
+  <!-- Tab Navigation - Desktop -->
+  <div class="desktop-only-view border-b border-gray-200 mb-6">
+    <nav class="-mb-px flex items-center space-x-2 overflow-x-auto" aria-label="Tabs">
+      <!-- 全体統計カテゴリ -->
+      <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider px-2 py-4">全体</span>
+      <%= link_to statistics_path(tab: 'overall'),
+          class: "#{@active_tab == 'overall' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm" do %>
+        全体統計
       <% end %>
-      <%= link_to statistics_path(tab: 'partners', events: params[:events], mobile_suits: params[:mobile_suits], partners: params[:partners]),
-          class: "#{@active_tab == 'partners' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm" do %>
-        パートナー分析
-      <% end %>
-      <%= link_to statistics_path(tab: 'mobile_suits', events: params[:events], mobile_suits: params[:mobile_suits], partners: params[:partners]),
-          class: "#{@active_tab == 'mobile_suits' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm" do %>
-        機体分析
-      <% end %>
-      <%= link_to statistics_path(tab: 'events', events: params[:events], mobile_suits: params[:mobile_suits], partners: params[:partners]),
-          class: "#{@active_tab == 'events' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm" do %>
-        イベント別分析
-      <% end %>
-      <%= link_to statistics_path(tab: 'opponents', events: params[:events], mobile_suits: params[:mobile_suits], partners: params[:partners]),
-          class: "#{@active_tab == 'opponents' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm" do %>
-        対戦相手分析
+
+      <!-- 区切り -->
+      <span class="text-gray-300 px-2">|</span>
+
+      <!-- 個人統計カテゴリ -->
+      <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider px-2 py-4">個人</span>
+      <% if current_user.is_guest %>
+        <!-- ゲストユーザー: 個人統計タブを無効化 -->
+        <span class="whitespace-nowrap py-4 px-1 border-b-2 border-transparent text-gray-300 font-medium text-sm cursor-not-allowed" title="個人統計を見るには管理者にアカウント発行を依頼してください">総合戦績</span>
+        <span class="whitespace-nowrap py-4 px-1 border-b-2 border-transparent text-gray-300 font-medium text-sm ml-4 cursor-not-allowed" title="個人統計を見るには管理者にアカウント発行を依頼してください">イベント別戦績</span>
+        <span class="whitespace-nowrap py-4 px-1 border-b-2 border-transparent text-gray-300 font-medium text-sm ml-4 cursor-not-allowed" title="個人統計を見るには管理者にアカウント発行を依頼してください">イベント内期間別戦績</span>
+        <span class="whitespace-nowrap py-4 px-1 border-b-2 border-transparent text-gray-300 font-medium text-sm ml-4 cursor-not-allowed" title="個人統計を見るには管理者にアカウント発行を依頼してください">使用機体別戦績</span>
+        <span class="whitespace-nowrap py-4 px-1 border-b-2 border-transparent text-gray-300 font-medium text-sm ml-4 cursor-not-allowed" title="個人統計を見るには管理者にアカウント発行を依頼してください">対戦機体別戦績</span>
+        <span class="whitespace-nowrap py-4 px-1 border-b-2 border-transparent text-gray-300 font-medium text-sm ml-4 cursor-not-allowed" title="個人統計を見るには管理者にアカウント発行を依頼してください">パートナー別戦績</span>
+        <span class="whitespace-nowrap py-4 px-1 border-b-2 border-transparent text-gray-300 font-medium text-sm ml-4 cursor-not-allowed" title="個人統計を見るには管理者にアカウント発行を依頼してください">対戦相手別戦績</span>
+      <% else %>
+        <%= link_to statistics_path(tab: 'overview', events: params[:events], mobile_suits: params[:mobile_suits], partners: params[:partners]),
+            class: "#{@active_tab == 'overview' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm" do %>
+          総合戦績
+        <% end %>
+        <%= link_to statistics_path(tab: 'events', events: params[:events], mobile_suits: params[:mobile_suits], partners: params[:partners]),
+            class: "#{@active_tab == 'events' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ml-4" do %>
+          イベント別戦績
+        <% end %>
+        <%= link_to statistics_path(tab: 'event_progression', events: params[:events], mobile_suits: params[:mobile_suits], partners: params[:partners]),
+            class: "#{@active_tab == 'event_progression' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ml-4" do %>
+          イベント内期間別戦績
+        <% end %>
+        <%= link_to statistics_path(tab: 'mobile_suits', events: params[:events], mobile_suits: params[:mobile_suits], partners: params[:partners]),
+            class: "#{@active_tab == 'mobile_suits' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ml-4" do %>
+          使用機体別戦績
+        <% end %>
+        <%= link_to statistics_path(tab: 'opponent_suits', events: params[:events], mobile_suits: params[:mobile_suits], partners: params[:partners]),
+            class: "#{@active_tab == 'opponent_suits' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ml-4" do %>
+          対戦機体別戦績
+        <% end %>
+        <%= link_to statistics_path(tab: 'partners', events: params[:events], mobile_suits: params[:mobile_suits], partners: params[:partners]),
+            class: "#{@active_tab == 'partners' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ml-4" do %>
+          パートナー別戦績
+        <% end %>
+        <%= link_to statistics_path(tab: 'opponents', events: params[:events], mobile_suits: params[:mobile_suits], partners: params[:partners]),
+            class: "#{@active_tab == 'opponents' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ml-4" do %>
+          対戦相手別戦績
+        <% end %>
       <% end %>
     </nav>
   </div>
 
   <!-- Common Filters -->
+  <% if @active_tab == 'overall' %>
+    <!-- 全体統計タブ: シンプルなイベント選択 -->
+    <div class="bg-white shadow rounded-lg px-6 py-4 mb-6">
+      <div class="flex items-center flex-wrap gap-2">
+        <span class="text-sm font-medium text-gray-700 mr-2">対象:</span>
+        <%= link_to "全イベント", statistics_path(tab: 'overall'),
+            class: "px-3 py-1.5 text-sm font-medium rounded-md #{@filter_events.empty? ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}" %>
+        <% @all_events.each do |event| %>
+          <%= link_to event.name, statistics_path(tab: 'overall', events: [event.id]),
+              class: "px-3 py-1.5 text-sm font-medium rounded-md #{@filter_events.include?(event.id) ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}" %>
+        <% end %>
+      </div>
+    </div>
+  <% else %>
   <div class="bg-white shadow rounded-lg p-6 mb-6">
     <h3 class="text-lg font-semibold text-gray-900 mb-4">フィルター</h3>
     <%= form_with url: statistics_path, method: :get, local: true, class: "space-y-4" do |form| %>
       <%= hidden_field_tag :tab, @active_tab %>
+        <!-- 個人統計タブ: 全フィルター -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          <!-- Event Filter -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">イベント</label>
+            <select name="events[]" id="event-filter" multiple class="w-full">
+              <% @all_events.each do |event| %>
+                <option value="<%= event.id %>" <%= 'selected' if @filter_events.include?(event.id) %>>
+                  <%= event.name %> (<%= event.held_on.strftime('%Y/%m/%d') %>)
+                </option>
+              <% end %>
+            </select>
+          </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <!-- Event Filter -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">イベント</label>
-          <select name="events[]" id="event-filter" multiple class="w-full">
-            <% @all_events.each do |event| %>
-              <option value="<%= event.id %>" <%= 'selected' if @filter_events.include?(event.id) %>>
-                <%= event.name %> (<%= event.held_on.strftime('%Y/%m/%d') %>)
-              </option>
-            <% end %>
-          </select>
-        </div>
+          <!-- Mobile Suit Filter -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">使用機体</label>
+            <select name="mobile_suits[]" id="mobile-suit-filter" multiple class="w-full">
+              <% @all_mobile_suits.each do |suit| %>
+                <option value="<%= suit.id %>" <%= 'selected' if @filter_mobile_suits.include?(suit.id) %>>
+                  <%= suit.name %> (<%= suit.cost %>)
+                </option>
+              <% end %>
+            </select>
+          </div>
 
-        <!-- Mobile Suit Filter -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">使用機体</label>
-          <select name="mobile_suits[]" id="mobile-suit-filter" multiple class="w-full">
-            <% @all_mobile_suits.each do |suit| %>
-              <option value="<%= suit.id %>" <%= 'selected' if @filter_mobile_suits.include?(suit.id) %>>
-                <%= suit.name %> (<%= suit.cost %>)
-              </option>
-            <% end %>
-          </select>
+          <!-- Partner Filter -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">パートナー</label>
+            <select name="partners[]" id="partner-filter" multiple class="w-full">
+              <% @all_partners.each do |partner| %>
+                <option value="<%= partner.id %>" <%= 'selected' if @filter_partners.include?(partner.id) %>>
+                  <%= partner.nickname %>
+                </option>
+              <% end %>
+            </select>
+          </div>
         </div>
-
-        <!-- Partner Filter -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">パートナー</label>
-          <select name="partners[]" id="partner-filter" multiple class="w-full">
-            <% @all_partners.each do |partner| %>
-              <option value="<%= partner.id %>" <%= 'selected' if @filter_partners.include?(partner.id) %>>
-                <%= partner.nickname %>
-              </option>
-            <% end %>
-          </select>
-        </div>
-      </div>
 
       <div class="flex space-x-3">
         <%= form.submit "フィルター適用", class: "bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded" %>
@@ -81,28 +164,29 @@
       </div>
     <% end %>
   </div>
+  <% end %>
 
   <!-- Tab Content -->
   <% if @active_tab == 'overview' %>
     <!-- Overview Tab -->
     <div class="space-y-6">
       <!-- Summary Cards -->
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div class="bg-white rounded-lg shadow p-6">
-          <div class="text-sm font-medium text-gray-500">総試合数</div>
-          <div class="mt-2 text-3xl font-bold text-gray-900"><%= @total_matches %></div>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+        <div class="bg-white rounded-lg shadow p-4 sm:p-6">
+          <div class="text-xs sm:text-sm font-medium text-gray-500">総試合数</div>
+          <div class="mt-1 sm:mt-2 text-2xl sm:text-3xl font-bold text-blue-600"><%= @total_matches %></div>
         </div>
-        <div class="bg-white rounded-lg shadow p-6">
-          <div class="text-sm font-medium text-gray-500">勝利数</div>
-          <div class="mt-2 text-3xl font-bold text-green-600"><%= @total_wins %></div>
+        <div class="bg-white rounded-lg shadow p-4 sm:p-6">
+          <div class="text-xs sm:text-sm font-medium text-gray-500">勝利数</div>
+          <div class="mt-1 sm:mt-2 text-2xl sm:text-3xl font-bold text-green-600"><%= @total_wins %></div>
         </div>
-        <div class="bg-white rounded-lg shadow p-6">
-          <div class="text-sm font-medium text-gray-500">勝率</div>
-          <div class="mt-2 text-3xl font-bold text-blue-600"><%= @win_rate %>%</div>
+        <div class="bg-white rounded-lg shadow p-4 sm:p-6">
+          <div class="text-xs sm:text-sm font-medium text-gray-500">勝率</div>
+          <div class="mt-1 sm:mt-2 text-2xl sm:text-3xl font-bold text-purple-600"><%= @win_rate %>%</div>
         </div>
-        <div class="bg-white rounded-lg shadow p-6">
-          <div class="text-sm font-medium text-gray-500">最多連勝</div>
-          <div class="mt-2 text-3xl font-bold text-orange-600"><%= @max_winning_streak %></div>
+        <div class="bg-white rounded-lg shadow p-4 sm:p-6">
+          <div class="text-xs sm:text-sm font-medium text-gray-500">最多連勝</div>
+          <div class="mt-1 sm:mt-2 text-2xl sm:text-3xl font-bold text-orange-600"><%= @max_winning_streak %></div>
         </div>
       </div>
 
@@ -135,14 +219,14 @@
         <div class="bg-white rounded-lg shadow p-6">
           <h3 class="text-lg font-semibold text-gray-900 mb-4">ローテーション周回別成績</h3>
           <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
+            <table class="min-w-full divide-y divide-gray-200 sortable">
               <thead class="bg-gray-50">
                 <tr>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">周回</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">試合数</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">勝利</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">敗北</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">勝率</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap" data-sort="number">周回</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap" data-sort="number">試合数</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap" data-sort="number">勝利</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap" data-sort="number">敗北</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap" data-sort="percent">勝率</th>
                 </tr>
               </thead>
               <tbody class="bg-white divide-y divide-gray-200">
@@ -160,8 +244,8 @@
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-red-600">
                       <%= stat[:losses] %>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      <span class="font-semibold"><%= stat[:win_rate] %>%</span>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                      <span class="font-semibold text-purple-600"><%= stat[:win_rate] %>%</span>
                     </td>
                   </tr>
                 <% end %>
@@ -174,7 +258,13 @@
 
     <!-- Chart.js initialization for Overview tab -->
     <script>
-      document.addEventListener('turbo:load', function() {
+      window.initOverviewCharts = function() {
+        // Ensure Chart.js is loaded
+        if (typeof Chart === 'undefined') {
+          console.error('Chart.js is not loaded');
+          return;
+        }
+
         // Initialize Event Win Rates Chart
         const eventCtx = document.getElementById('eventWinRatesChart');
         if (eventCtx) {
@@ -190,9 +280,11 @@
               datasets: [{
                 label: '勝率 (%)',
                 data: <%= raw @event_win_rates.map { |d| d[:win_rate] }.to_json %>,
-                borderColor: 'rgb(59, 130, 246)',
-                backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                tension: 0.4
+                borderColor: 'rgb(147, 51, 234)',
+                backgroundColor: 'rgba(147, 51, 234, 0.1)',
+                tension: 0.4,
+                pointBackgroundColor: 'rgb(147, 51, 234)',
+                pointRadius: 5
               }]
             },
             options: {
@@ -213,11 +305,30 @@
                 }
               },
               plugins: {
+                legend: {
+                  display: false
+                },
                 tooltip: {
                   callbacks: {
                     label: function(context) {
                       return context.dataset.label + ': ' + context.parsed.y + '%';
                     }
+                  }
+                },
+                datalabels: {
+                  color: 'rgb(147, 51, 234)',
+                  anchor: function(context) {
+                    return context.dataset.data[context.dataIndex] > 70 ? 'start' : 'end';
+                  },
+                  align: function(context) {
+                    return context.dataset.data[context.dataIndex] > 70 ? 'bottom' : 'top';
+                  },
+                  font: {
+                    weight: 'bold',
+                    size: 14
+                  },
+                  formatter: function(value) {
+                    return value + '%';
                   }
                 }
               }
@@ -240,8 +351,8 @@
               datasets: [{
                 label: '勝率 (%)',
                 data: <%= raw @cost_win_rates.map { |d| d[:win_rate] }.to_json %>,
-                backgroundColor: 'rgba(16, 185, 129, 0.6)',
-                borderColor: 'rgb(16, 185, 129)',
+                backgroundColor: 'rgba(147, 51, 234, 0.6)',
+                borderColor: 'rgb(147, 51, 234)',
                 borderWidth: 1
               }]
             },
@@ -260,39 +371,58 @@
                 }
               },
               plugins: {
+                legend: {
+                  display: false
+                },
                 tooltip: {
                   callbacks: {
                     label: function(context) {
                       return context.dataset.label + ': ' + context.parsed.y + '%';
                     }
                   }
+                },
+                datalabels: {
+                  color: 'rgb(147, 51, 234)',
+                  anchor: function(context) {
+                    return context.dataset.data[context.dataIndex] > 70 ? 'center' : 'end';
+                  },
+                  align: function(context) {
+                    return context.dataset.data[context.dataIndex] > 70 ? 'center' : 'top';
+                  },
+                  font: {
+                    weight: 'bold',
+                    size: 14
+                  },
+                  formatter: function(value) {
+                    return value + '%';
+                  }
                 }
               }
             }
           });
         }
-      });
+      };
     </script>
 
   <% elsif @active_tab == 'partners' %>
     <!-- Partners Tab -->
     <div class="bg-white rounded-lg shadow">
       <div class="px-6 py-5 border-b border-gray-200">
-        <h3 class="text-lg font-semibold text-gray-900">パートナー別成績</h3>
+        <h3 class="text-lg font-semibold text-gray-900">パートナー別戦績</h3>
         <p class="mt-1 text-sm text-gray-500">各パートナーとの戦績と相性の良い機体組み合わせを確認できます</p>
       </div>
 
       <% if @partners_list.any? %>
         <div class="overflow-x-auto">
-          <table class="min-w-full divide-y divide-gray-200">
+          <table class="min-w-full divide-y divide-gray-200 sortable">
             <thead class="bg-gray-50">
               <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">パートナー</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">試合数</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">勝利</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">勝率</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap" data-sort="string">パートナー</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap" data-sort="number">試合数</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap" data-sort="number">勝利</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap" data-sort="percent">勝率</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">よく使う組み合わせ</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">最終対戦日</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap" data-sort="date">最終対戦日</th>
               </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
@@ -311,9 +441,9 @@
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
                     <div class="flex items-center">
-                      <span class="text-sm font-semibold text-gray-900"><%= partner[:win_rate] %>%</span>
-                      <div class="ml-3 w-32 bg-gray-200 rounded-full h-2">
-                        <div class="bg-blue-600 h-2 rounded-full" style="width: <%= partner[:win_rate].to_f %>%"></div>
+                      <span class="text-sm font-semibold text-purple-600"><%= partner[:win_rate] %>%</span>
+                      <div class="ml-2 sm:ml-3 w-16 sm:w-24 md:w-32 bg-gray-200 rounded-full h-2">
+                        <div class="bg-purple-600 h-2 rounded-full" style="width: <%= partner[:win_rate].to_f %>%"></div>
                       </div>
                     </div>
                   </td>
@@ -346,169 +476,159 @@
     </div>
 
   <% elsif @active_tab == 'mobile_suits' %>
-    <!-- Mobile Suits Tab -->
-    <div class="space-y-6">
-      <!-- 使用機体別成績 -->
-      <div class="bg-white rounded-lg shadow">
-        <div class="px-6 py-5 border-b border-gray-200">
-          <h3 class="text-lg font-semibold text-gray-900">使用機体別成績</h3>
-          <p class="mt-1 text-sm text-gray-500">各機体の使用回数、勝率、よく組むパートナー機体を確認できます</p>
-        </div>
-
-        <% if @mobile_suits_list.any? %>
-          <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-              <thead class="bg-gray-50">
-                <tr>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">機体名</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">コスト</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">使用回数</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">勝利</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">勝率</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">よく組むパートナー機体</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">最終使用日</th>
-                </tr>
-              </thead>
-              <tbody class="bg-white divide-y divide-gray-200">
-                <% @mobile_suits_list.each do |suit_stat| %>
-                  <tr class="hover:bg-gray-50">
-                    <td class="px-6 py-4 whitespace-nowrap">
-                      <div class="text-sm font-medium text-gray-900">
-                        <%= suit_stat[:mobile_suit].name %>
-                      </div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                      <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                        <%= suit_stat[:mobile_suit].cost %>
-                      </span>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      <%= suit_stat[:total] %>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-green-600 font-semibold">
-                      <%= suit_stat[:wins] %>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                      <div class="flex items-center">
-                        <span class="text-sm font-semibold text-gray-900"><%= suit_stat[:win_rate] %>%</span>
-                        <div class="ml-3 w-32 bg-gray-200 rounded-full h-2">
-                          <div class="bg-green-600 h-2 rounded-full" style="width: <%= suit_stat[:win_rate].to_f %>%"></div>
-                        </div>
-                      </div>
-                    </td>
-                    <td class="px-6 py-4 text-sm text-gray-500">
-                      <% if suit_stat[:top_partner_suits].any? %>
-                        <div class="space-y-1">
-                          <% suit_stat[:top_partner_suits].each do |suit_name, count| %>
-                            <div class="text-xs">
-                              <%= suit_name %> (<%= count %>回)
-                            </div>
-                          <% end %>
-                        </div>
-                      <% else %>
-                        <span class="text-gray-400">-</span>
-                      <% end %>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      <%= suit_stat[:last_used_at]&.strftime('%Y/%m/%d') || '-' %>
-                    </td>
-                  </tr>
-                <% end %>
-              </tbody>
-            </table>
-          </div>
-        <% else %>
-          <div class="px-6 py-12 text-center">
-            <p class="text-gray-500">機体データがありません</p>
-          </div>
-        <% end %>
+    <!-- Mobile Suits Tab (使用機体) -->
+    <div class="bg-white rounded-lg shadow">
+      <div class="px-6 py-5 border-b border-gray-200">
+        <h3 class="text-lg font-semibold text-gray-900">使用機体別戦績</h3>
+        <p class="mt-1 text-sm text-gray-500">各機体の使用回数、勝率、よく組むパートナー機体を確認できます</p>
       </div>
 
-      <!-- 対戦機体別成績 -->
-      <div class="bg-white rounded-lg shadow">
-        <div class="px-6 py-5 border-b border-gray-200">
-          <h3 class="text-lg font-semibold text-gray-900">対戦機体別成績</h3>
-          <p class="mt-1 text-sm text-gray-500">敵が使用した機体ごとの勝率を確認できます</p>
-        </div>
-
-        <% if @opponent_suits_list.any? %>
-          <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-              <thead class="bg-gray-50">
-                <tr>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">機体名</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">コスト</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">対戦回数</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">勝利</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">敗北</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">勝率</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">最終対戦日</th>
+      <% if @mobile_suits_list.any? %>
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200 sortable">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap" data-sort="string">機体名</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap" data-sort="number">コスト</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap" data-sort="number">使用回数</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap" data-sort="number">勝利</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap" data-sort="percent">勝率</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">よく組むパートナー機体</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap" data-sort="date">最終使用日</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              <% @mobile_suits_list.each do |suit_stat| %>
+                <tr class="hover:bg-gray-50">
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm font-medium text-gray-900">
+                      <%= suit_stat[:mobile_suit].name %>
+                    </div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <%= cost_badge(suit_stat[:mobile_suit].cost) %>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <%= suit_stat[:total] %>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-green-600 font-semibold">
+                    <%= suit_stat[:wins] %>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="flex items-center">
+                      <span class="text-sm font-semibold text-purple-600"><%= suit_stat[:win_rate] %>%</span>
+                      <div class="ml-2 sm:ml-3 w-16 sm:w-24 md:w-32 bg-gray-200 rounded-full h-2">
+                        <div class="bg-purple-600 h-2 rounded-full" style="width: <%= suit_stat[:win_rate].to_f %>%"></div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="px-6 py-4 text-sm text-gray-500">
+                    <% if suit_stat[:top_partner_suits].any? %>
+                      <div class="space-y-1">
+                        <% suit_stat[:top_partner_suits].each do |suit_name, count| %>
+                          <div class="text-xs">
+                            <%= suit_name %> (<%= count %>回)
+                          </div>
+                        <% end %>
+                      </div>
+                    <% else %>
+                      <span class="text-gray-400">-</span>
+                    <% end %>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <%= suit_stat[:last_used_at]&.strftime('%Y/%m/%d') || '-' %>
+                  </td>
                 </tr>
-              </thead>
-              <tbody class="bg-white divide-y divide-gray-200">
-                <% @opponent_suits_list.each do |suit_stat| %>
-                  <tr class="hover:bg-gray-50">
-                    <td class="px-6 py-4 whitespace-nowrap">
-                      <div class="text-sm font-medium text-gray-900">
-                        <%= suit_stat[:mobile_suit].name %>
-                      </div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                      <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-                        <%= suit_stat[:mobile_suit].cost %>
-                      </span>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      <%= suit_stat[:total] %>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-green-600 font-semibold">
-                      <%= suit_stat[:wins] %>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-red-600">
-                      <%= suit_stat[:total] - suit_stat[:wins] %>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                      <div class="flex items-center">
-                        <span class="text-sm font-semibold text-gray-900"><%= suit_stat[:win_rate] %>%</span>
-                        <div class="ml-3 w-32 bg-gray-200 rounded-full h-2">
-                          <div class="bg-orange-600 h-2 rounded-full" style="width: <%= suit_stat[:win_rate].to_f %>%"></div>
-                        </div>
-                      </div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      <%= suit_stat[:last_faced_at]&.strftime('%Y/%m/%d') || '-' %>
-                    </td>
-                  </tr>
-                <% end %>
-              </tbody>
-            </table>
-          </div>
-        <% else %>
-          <div class="px-6 py-12 text-center">
-            <p class="text-gray-500">対戦機体データがありません</p>
-          </div>
-        <% end %>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% else %>
+        <div class="px-6 py-12 text-center">
+          <p class="text-gray-500">機体データがありません</p>
+        </div>
+      <% end %>
+    </div>
+
+  <% elsif @active_tab == 'opponent_suits' %>
+    <!-- Opponent Suits Tab (対戦機体) -->
+    <div class="bg-white rounded-lg shadow">
+      <div class="px-6 py-5 border-b border-gray-200">
+        <h3 class="text-lg font-semibold text-gray-900">対戦機体別戦績</h3>
+        <p class="mt-1 text-sm text-gray-500">敵が使用した機体ごとの勝率を確認できます</p>
       </div>
+
+      <% if @opponent_suits_list.any? %>
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200 sortable">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap" data-sort="string">機体名</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap" data-sort="number">コスト</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap" data-sort="number">対戦回数</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap" data-sort="number">勝利</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap" data-sort="percent">勝率</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap" data-sort="date">最終対戦日</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              <% @opponent_suits_list.each do |suit_stat| %>
+                <tr class="hover:bg-gray-50">
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm font-medium text-gray-900">
+                      <%= suit_stat[:mobile_suit].name %>
+                    </div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <%= cost_badge(suit_stat[:mobile_suit].cost) %>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <%= suit_stat[:total] %>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-green-600 font-semibold">
+                    <%= suit_stat[:wins] %>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="flex items-center">
+                      <span class="text-sm font-semibold text-purple-600"><%= suit_stat[:win_rate] %>%</span>
+                      <div class="ml-2 sm:ml-3 w-16 sm:w-24 md:w-32 bg-gray-200 rounded-full h-2">
+                        <div class="bg-purple-600 h-2 rounded-full" style="width: <%= suit_stat[:win_rate].to_f %>%"></div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <%= suit_stat[:last_faced_at]&.strftime('%Y/%m/%d') || '-' %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% else %>
+        <div class="px-6 py-12 text-center">
+          <p class="text-gray-500">対戦機体データがありません</p>
+        </div>
+      <% end %>
     </div>
 
   <% elsif @active_tab == 'events' %>
     <!-- Events Tab -->
     <div class="bg-white rounded-lg shadow">
       <div class="px-6 py-5 border-b border-gray-200">
-        <h3 class="text-lg font-semibold text-gray-900">イベント別成績</h3>
+        <h3 class="text-lg font-semibold text-gray-900">イベント別戦績</h3>
         <p class="mt-1 text-sm text-gray-500">各イベントの戦績、使用機体、パートナーを確認できます</p>
       </div>
 
       <% if @events_list.any? %>
         <div class="overflow-x-auto">
-          <table class="min-w-full divide-y divide-gray-200">
+          <table class="min-w-full divide-y divide-gray-200 sortable">
             <thead class="bg-gray-50">
               <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">イベント名</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">開催日</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">試合数</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">勝利</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">勝率</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap" data-sort="string">イベント名</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap" data-sort="date">開催日</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap" data-sort="number">試合数</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap" data-sort="number">勝利</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap" data-sort="percent">勝率</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">よく使った機体</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">よく組んだパートナー</th>
               </tr>
@@ -532,9 +652,9 @@
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
                     <div class="flex items-center">
-                      <span class="text-sm font-semibold text-gray-900"><%= event_stat[:win_rate] %>%</span>
-                      <div class="ml-3 w-32 bg-gray-200 rounded-full h-2">
-                        <div class="bg-blue-600 h-2 rounded-full" style="width: <%= event_stat[:win_rate].to_f %>%"></div>
+                      <span class="text-sm font-semibold text-purple-600"><%= event_stat[:win_rate] %>%</span>
+                      <div class="ml-2 sm:ml-3 w-16 sm:w-24 md:w-32 bg-gray-200 rounded-full h-2">
+                        <div class="bg-purple-600 h-2 rounded-full" style="width: <%= event_stat[:win_rate].to_f %>%"></div>
                       </div>
                     </div>
                   </td>
@@ -576,26 +696,186 @@
       <% end %>
     </div>
 
+  <% elsif @active_tab == 'event_progression' %>
+    <!-- Event Progression Tab -->
+    <div class="space-y-6">
+      <div class="bg-white rounded-lg shadow p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-2">イベント内期間別戦績</h3>
+        <p class="text-sm text-gray-500 mb-6">各イベント内でのローテーション別の勝率推移を確認できます。ローテーションが定義されていないイベントでは、試合を時系列順に4分割したターム別で集計します。</p>
+
+        <% if @event_progression_list.any? %>
+          <% @event_progression_list.each do |event_prog| %>
+            <div class="mb-8 last:mb-0 bg-white border border-gray-200 rounded-lg shadow-sm">
+              <!-- イベントヘッダー -->
+              <div class="px-6 py-4 border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <h4 class="text-xl font-bold text-gray-900"><%= event_prog[:event].name %></h4>
+                    <p class="text-gray-500 text-sm mt-1"><%= event_prog[:event].held_on.strftime('%Y年%m月%d日') %></p>
+                  </div>
+                  <div class="text-right">
+                    <div class="text-gray-500 text-sm">総試合数: <%= event_prog[:total_matches] %></div>
+                    <div class="text-2xl font-bold text-purple-600">勝率 <%= event_prog[:overall_win_rate] %>%</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- グラフ・テーブルコンテナ -->
+              <div class="p-6">
+                <!-- グラフ -->
+                <div class="mb-4" style="position: relative; height: 250px;">
+                <canvas id="eventProgressionChart_<%= event_prog[:event].id %>"></canvas>
+              </div>
+
+              <!-- テーブル -->
+              <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                  <thead class="bg-gray-50">
+                    <tr>
+                      <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><%= event_prog[:has_rotation] ? 'ローテーション' : 'ターム' %></th>
+                      <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">試合数</th>
+                      <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">勝利</th>
+                      <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">敗北</th>
+                      <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">勝率</th>
+                    </tr>
+                  </thead>
+                  <tbody class="bg-white divide-y divide-gray-200">
+                    <% event_prog[:rotations].each do |rotation| %>
+                      <tr class="hover:bg-gray-50">
+                        <td class="px-4 py-3 text-sm font-medium text-gray-900"><%= rotation[:rotation_name] %></td>
+                        <td class="px-4 py-3 text-sm text-gray-500"><%= rotation[:total] %></td>
+                        <td class="px-4 py-3 text-sm text-green-600 font-semibold"><%= rotation[:wins] %></td>
+                        <td class="px-4 py-3 text-sm text-red-600 font-semibold"><%= rotation[:losses] %></td>
+                        <td class="px-4 py-3">
+                          <div class="flex items-center">
+                            <span class="text-sm font-semibold text-purple-600"><%= rotation[:win_rate] %>%</span>
+                            <div class="ml-2 sm:ml-3 w-12 sm:w-20 md:w-24 bg-gray-200 rounded-full h-2">
+                              <div class="bg-purple-600 h-2 rounded-full" style="width: <%= rotation[:win_rate].to_f %>%"></div>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    <% end %>
+                  </tbody>
+                </table>
+              </div>
+              </div>
+            </div>
+          <% end %>
+        <% else %>
+          <div class="py-12 text-center">
+            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+            <p class="mt-2 text-sm text-gray-500">ローテーションデータがありません</p>
+            <p class="mt-1 text-xs text-gray-400">ローテーション表から試合を記録すると、イベント内の推移が表示されます</p>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- Chart.js Script for Event Progression -->
+    <script>
+      window.initEventProgressionCharts = function() {
+        // Ensure Chart.js is loaded
+        if (typeof Chart === 'undefined') {
+          console.error('Chart.js is not loaded');
+          return;
+        }
+
+        <% @event_progression_list.each do |event_prog| %>
+          const ctx_<%= event_prog[:event].id %> = document.getElementById('eventProgressionChart_<%= event_prog[:event].id %>');
+          if (ctx_<%= event_prog[:event].id %>) {
+            // Destroy existing chart if any
+            if (ctx_<%= event_prog[:event].id %>.chart) {
+              ctx_<%= event_prog[:event].id %>.chart.destroy();
+            }
+
+            ctx_<%= event_prog[:event].id %>.chart = new Chart(ctx_<%= event_prog[:event].id %>, {
+              type: 'line',
+              data: {
+                labels: <%= raw event_prog[:rotations].map { |r| r[:rotation_name] }.to_json %>,
+                datasets: [{
+                  label: '勝率 (%)',
+                  data: <%= raw event_prog[:rotations].map { |r| r[:win_rate] }.to_json %>,
+                  borderColor: 'rgb(147, 51, 234)',
+                  backgroundColor: 'rgba(147, 51, 234, 0.1)',
+                  tension: 0.4,
+                  pointBackgroundColor: 'rgb(147, 51, 234)',
+                  pointRadius: 5
+                }]
+              },
+              options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                  x: {
+                    offset: true
+                  },
+                  y: {
+                    beginAtZero: true,
+                    max: 100,
+                    ticks: {
+                      callback: function(value) {
+                        return value + '%';
+                      }
+                    }
+                  }
+                },
+                plugins: {
+                  legend: {
+                    display: false
+                  },
+                  tooltip: {
+                    callbacks: {
+                      label: function(context) {
+                        return context.dataset.label + ': ' + context.parsed.y + '%';
+                      }
+                    }
+                  },
+                  datalabels: {
+                    color: 'rgb(147, 51, 234)',
+                    anchor: function(context) {
+                      return context.dataset.data[context.dataIndex] > 70 ? 'start' : 'end';
+                    },
+                    align: function(context) {
+                      return context.dataset.data[context.dataIndex] > 70 ? 'bottom' : 'top';
+                    },
+                    font: {
+                      weight: 'bold',
+                      size: 14
+                    },
+                    formatter: function(value) {
+                      return value + '%';
+                    }
+                  }
+                }
+              }
+            });
+          }
+        <% end %>
+      };
+    </script>
+
   <% elsif @active_tab == 'opponents' %>
     <!-- Opponents Tab -->
     <div class="bg-white rounded-lg shadow">
       <div class="px-6 py-5 border-b border-gray-200">
-        <h3 class="text-lg font-semibold text-gray-900">対戦相手別成績</h3>
+        <h3 class="text-lg font-semibold text-gray-900">対戦相手別戦績</h3>
         <p class="mt-1 text-sm text-gray-500">各対戦相手との戦績、相手がよく使う機体を確認できます</p>
       </div>
 
       <% if @opponents_list.any? %>
         <div class="overflow-x-auto">
-          <table class="min-w-full divide-y divide-gray-200">
+          <table class="min-w-full divide-y divide-gray-200 sortable">
             <thead class="bg-gray-50">
               <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">対戦相手</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">対戦回数</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">勝利</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">敗北</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">勝率</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap" data-sort="string">対戦相手</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap" data-sort="number">対戦回数</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap" data-sort="number">勝利</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap" data-sort="percent">勝率</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">よく使う機体</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">最終対戦日</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap" data-sort="date">最終対戦日</th>
               </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
@@ -612,13 +892,10 @@
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-green-600 font-semibold">
                     <%= opponent_stat[:wins] %>
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-red-600">
-                    <%= opponent_stat[:total] - opponent_stat[:wins] %>
-                  </td>
                   <td class="px-6 py-4 whitespace-nowrap">
                     <div class="flex items-center">
-                      <span class="text-sm font-semibold text-gray-900"><%= opponent_stat[:win_rate] %>%</span>
-                      <div class="ml-3 w-32 bg-gray-200 rounded-full h-2">
+                      <span class="text-sm font-semibold text-purple-600"><%= opponent_stat[:win_rate] %>%</span>
+                      <div class="ml-2 sm:ml-3 w-16 sm:w-24 md:w-32 bg-gray-200 rounded-full h-2">
                         <div class="bg-purple-600 h-2 rounded-full" style="width: <%= opponent_stat[:win_rate].to_f %>%"></div>
                       </div>
                     </div>
@@ -650,40 +927,479 @@
         </div>
       <% end %>
     </div>
+
+  <% elsif @active_tab == 'overall' %>
+    <!-- Overall Statistics Tab -->
+    <div class="space-y-6">
+      <!-- 全体サマリー -->
+      <div class="overall-summary-grid gap-4">
+        <div class="bg-white rounded-lg shadow p-4 sm:p-6">
+          <div class="text-xs sm:text-sm font-medium text-gray-500">総試合数</div>
+          <div class="mt-1 sm:mt-2 text-2xl sm:text-3xl font-bold text-blue-600"><%= @overall_total_matches %></div>
+        </div>
+        <div class="bg-white rounded-lg shadow p-4 sm:p-6">
+          <div class="text-xs sm:text-sm font-medium text-gray-500">参加プレイヤー数</div>
+          <div class="mt-1 sm:mt-2 text-2xl sm:text-3xl font-bold text-green-600"><%= @overall_total_players %></div>
+        </div>
+        <div class="bg-white rounded-lg shadow p-4 sm:p-6">
+          <div class="text-xs sm:text-sm font-medium text-gray-500">開催イベント数</div>
+          <div class="mt-1 sm:mt-2 text-2xl sm:text-3xl font-bold text-purple-600"><%= @overall_total_events %></div>
+        </div>
+      </div>
+
+      <!-- 環境支配機体ランキング -->
+      <div class="bg-white rounded-lg shadow">
+        <div class="px-6 py-5 border-b border-gray-200">
+          <h3 class="text-lg font-semibold text-gray-900">環境支配機体ランキング TOP10</h3>
+          <p class="mt-1 text-sm text-gray-500">環境支配度（勝率 × 使用回数）が高い機体</p>
+        </div>
+        <% if @dominant_suits.any? %>
+          <div class="divide-y divide-gray-200">
+            <% @dominant_suits.each_with_index do |suit_stat, index| %>
+              <div class="px-6 py-4 flex items-center justify-between">
+                <div class="flex items-center">
+                  <span class="text-lg font-bold text-gray-400 w-6"><%= index + 1 %></span>
+                  <div class="ml-3">
+                    <div class="text-sm font-medium text-gray-900 flex items-center gap-2">
+                      <%= suit_stat[:mobile_suit].name %>
+                      <%= cost_badge(suit_stat[:mobile_suit].cost) %>
+                    </div>
+                    <div class="text-xs text-gray-500">
+                      <%= suit_stat[:total] %>回使用 / 勝率 <%= suit_stat[:win_rate] %>%
+                    </div>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <div class="text-lg font-bold text-orange-600"><%= suit_stat[:dominance].to_i %></div>
+                  <div class="text-xs text-gray-500">環境支配度</div>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        <% else %>
+          <div class="px-6 py-12 text-center">
+            <p class="text-gray-500">データがありません</p>
+          </div>
+        <% end %>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- 人気機体ランキング -->
+        <div class="bg-white rounded-lg shadow">
+          <div class="px-6 py-5 border-b border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-900">人気機体ランキング TOP10</h3>
+            <p class="mt-1 text-sm text-gray-500">使用回数が多い機体</p>
+          </div>
+          <% if @popular_suits.any? %>
+            <div class="divide-y divide-gray-200">
+              <% @popular_suits.each_with_index do |suit_stat, index| %>
+                <div class="px-6 py-4 flex items-center justify-between">
+                  <div class="flex items-center">
+                    <span class="text-lg font-bold text-gray-400 w-6"><%= index + 1 %></span>
+                    <div class="ml-3">
+                      <div class="text-sm font-medium text-gray-900 flex items-center gap-2">
+                        <%= suit_stat[:mobile_suit].name %>
+                        <%= cost_badge(suit_stat[:mobile_suit].cost) %>
+                      </div>
+                      <div class="text-xs text-gray-500"><%= suit_stat[:mobile_suit].series %></div>
+                    </div>
+                  </div>
+                  <div class="text-right">
+                    <div class="text-sm font-semibold text-blue-600"><%= suit_stat[:usage_count] %>回</div>
+                    <div class="text-xs text-gray-500">使用率 <%= suit_stat[:usage_rate] %>%</div>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+          <% else %>
+            <div class="px-6 py-12 text-center">
+              <p class="text-gray-500">データがありません</p>
+            </div>
+          <% end %>
+        </div>
+
+        <!-- 高勝率機体ランキング -->
+        <div class="bg-white rounded-lg shadow">
+          <div class="px-6 py-5 border-b border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-900">高勝率機体ランキング TOP10</h3>
+            <p class="mt-1 text-sm text-gray-500">勝率が高い機体（5試合以上使用）</p>
+          </div>
+          <% if @high_winrate_suits.any? %>
+            <div class="divide-y divide-gray-200">
+              <% @high_winrate_suits.each_with_index do |suit_stat, index| %>
+                <div class="px-6 py-4 flex items-center justify-between">
+                  <div class="flex items-center">
+                    <span class="text-lg font-bold text-gray-400 w-6"><%= index + 1 %></span>
+                    <div class="ml-3">
+                      <div class="text-sm font-medium text-gray-900 flex items-center gap-2">
+                        <%= suit_stat[:mobile_suit].name %>
+                        <%= cost_badge(suit_stat[:mobile_suit].cost) %>
+                      </div>
+                      <div class="text-xs text-gray-500"><%= suit_stat[:wins] %>勝<%= suit_stat[:total] - suit_stat[:wins] %>敗</div>
+                    </div>
+                  </div>
+                  <div class="text-right">
+                    <div class="text-lg font-bold text-purple-600"><%= suit_stat[:win_rate] %>%</div>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+          <% else %>
+            <div class="px-6 py-12 text-center">
+              <p class="text-gray-500">データがありません</p>
+            </div>
+          <% end %>
+        </div>
+      </div>
+
+      <!-- コスト帯別統計 -->
+      <div class="bg-white rounded-lg shadow">
+        <div class="px-6 py-5 border-b border-gray-200">
+          <h3 class="text-lg font-semibold text-gray-900">コスト帯別統計</h3>
+          <p class="mt-1 text-sm text-gray-500">各コスト帯の使用率と勝率</p>
+        </div>
+        <% if @cost_stats.any? %>
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">コスト</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">使用回数</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">使用率</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">勝率</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200">
+                <% @cost_stats.each do |cost_stat| %>
+                  <tr>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <%= cost_badge(cost_stat[:cost]) %>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <%= cost_stat[:usage_count] %>回
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="flex items-center">
+                        <span class="text-sm text-gray-900"><%= cost_stat[:usage_rate] %>%</span>
+                        <div class="ml-2 sm:ml-3 w-12 sm:w-20 md:w-24 bg-gray-200 rounded-full h-2">
+                          <div class="bg-blue-600 h-2 rounded-full" style="width: <%= cost_stat[:usage_rate] %>%"></div>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="flex items-center">
+                        <span class="text-sm font-semibold text-purple-600"><%= cost_stat[:win_rate] %>%</span>
+                        <div class="ml-2 sm:ml-3 w-12 sm:w-20 md:w-24 bg-gray-200 rounded-full h-2">
+                          <div class="bg-purple-600 h-2 rounded-full" style="width: <%= cost_stat[:win_rate] %>%"></div>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+        <% else %>
+          <div class="px-6 py-12 text-center">
+            <p class="text-gray-500">データがありません</p>
+          </div>
+        <% end %>
+      </div>
+
+      <!-- イベント別参加統計 -->
+      <div class="bg-white rounded-lg shadow">
+        <div class="px-6 py-5 border-b border-gray-200">
+          <h3 class="text-lg font-semibold text-gray-900">イベント別参加統計</h3>
+          <p class="mt-1 text-sm text-gray-500">各イベントの試合数と参加者数</p>
+        </div>
+        <% if @event_stats.any? %>
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">イベント名</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">開催日</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">試合数</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">参加者数</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200">
+                <% @event_stats.each do |event_stat| %>
+                  <tr>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="text-sm font-medium text-gray-900"><%= event_stat[:event].name %></div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <%= event_stat[:event].held_on.strftime('%Y/%m/%d') %>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <%= event_stat[:match_count] %>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <%= event_stat[:player_count] %>人
+                    </td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+        <% else %>
+          <div class="px-6 py-12 text-center">
+            <p class="text-gray-500">データがありません</p>
+          </div>
+        <% end %>
+      </div>
+    </div>
   <% end %>
 </div>
 
-<!-- Chart.js -->
+<!-- Load Chart.js and plugins -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
 
-<!-- Initialize Tom Select -->
+<!-- Register ChartDataLabels plugin once -->
 <script>
-  document.addEventListener('turbo:load', function() {
-    // Destroy existing instances if any
-    ['#event-filter', '#mobile-suit-filter', '#partner-filter'].forEach(selector => {
-      const element = document.querySelector(selector);
-      if (element && element.tomselect) {
-        element.tomselect.destroy();
+  (function() {
+    if (typeof Chart !== 'undefined' && typeof ChartDataLabels !== 'undefined') {
+      if (!Chart.registry.plugins.get('datalabels')) {
+        Chart.register(ChartDataLabels);
       }
-    });
-
-    // Create new instances
-    new TomSelect('#event-filter', {
-      plugins: ['remove_button'],
-      placeholder: 'イベントを選択...',
-      maxOptions: null
-    });
-
-    new TomSelect('#mobile-suit-filter', {
-      plugins: ['remove_button'],
-      placeholder: '機体を選択...',
-      maxOptions: null
-    });
-
-    new TomSelect('#partner-filter', {
-      plugins: ['remove_button'],
-      placeholder: 'パートナーを選択...',
-      maxOptions: null
-    });
-  });
+    }
+  })();
 </script>
+
+<!-- Initialize Charts and Tom Select -->
+<script>
+  (function() {
+    // TomSelectインスタンスを管理
+    const tomSelectSelectors = ['#event-filter', '#mobile-suit-filter', '#partner-filter'];
+    const placeholders = {
+      '#event-filter': 'イベントを選択...',
+      '#mobile-suit-filter': '機体を選択...',
+      '#partner-filter': 'パートナーを選択...'
+    };
+
+    function destroyTomSelects() {
+      tomSelectSelectors.forEach(selector => {
+        const element = document.querySelector(selector);
+        if (element && element.tomselect) {
+          element.tomselect.destroy();
+        }
+      });
+    }
+
+    function initTomSelects() {
+      tomSelectSelectors.forEach(selector => {
+        const element = document.querySelector(selector);
+        if (element && !element.tomselect) {
+          new TomSelect(selector, {
+            plugins: ['remove_button'],
+            placeholder: placeholders[selector],
+            maxOptions: null
+          });
+        }
+      });
+    }
+
+    // Turboキャッシュ前にTomSelectを破棄
+    document.addEventListener('turbo:before-cache', destroyTomSelects);
+
+    // Initialize function that will be called on load
+    window.initializeStatisticsPage = function() {
+      // Initialize Tom Select
+      initTomSelects();
+
+      // Sortable tables
+      if (typeof initSortableTables === 'function') {
+        initSortableTables();
+      }
+
+      // Initialize charts - wait for Chart.js to load
+      window.initializeChartsWhenReady();
+    };
+
+  window.initializeChartsWhenReady = function(retryCount = 0) {
+    const maxRetries = 50; // Maximum 2.5 seconds (50 * 50ms)
+
+    // Check if Chart.js is loaded
+    if (typeof Chart === 'undefined' || typeof ChartDataLabels === 'undefined') {
+      if (retryCount < maxRetries) {
+        setTimeout(() => initializeChartsWhenReady(retryCount + 1), 50);
+      } else {
+        console.error('Chart.js libraries failed to load');
+      }
+      return;
+    }
+
+    // Check if canvas elements exist for the current tab
+    <% if @active_tab == 'overview' %>
+      const eventWinRatesCanvas = document.getElementById('eventWinRatesChart');
+      const costWinRatesCanvas = document.getElementById('costWinRatesChart');
+      // Wait until at least one canvas is available
+      if (!eventWinRatesCanvas && !costWinRatesCanvas) {
+        if (retryCount < maxRetries) {
+          setTimeout(() => window.initializeChartsWhenReady(retryCount + 1), 50);
+        } else {
+          console.error('Overview chart canvas elements not found after ' + maxRetries + ' retries');
+        }
+        return;
+      }
+      if (typeof window.initOverviewCharts === 'function') {
+        window.initOverviewCharts();
+      }
+    <% elsif @active_tab == 'event_progression' %>
+      // Check if at least one event progression chart canvas exists
+      const hasCanvas = document.querySelector('[id^="eventProgressionChart_"]');
+      if (!hasCanvas) {
+        if (retryCount < maxRetries) {
+          setTimeout(() => window.initializeChartsWhenReady(retryCount + 1), 50);
+        } else {
+          console.error('Event progression chart canvas elements not found after ' + maxRetries + ' retries');
+        }
+        return;
+      }
+      if (typeof window.initEventProgressionCharts === 'function') {
+        window.initEventProgressionCharts();
+      }
+    <% end %>
+  };
+
+  // 初期化（DOMContentLoadedまたは即時実行）
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', window.initializeStatisticsPage, { once: true });
+  } else {
+    // DOM is already loaded
+    window.initializeStatisticsPage();
+  }
+
+  })();
+
+  function initSortableTables() {
+    document.querySelectorAll('table.sortable').forEach(table => {
+      const headers = table.querySelectorAll('th[data-sort]');
+      headers.forEach((header, index) => {
+        // Skip if already initialized
+        if (header.querySelector('.sort-buttons')) return;
+
+        // Create sort buttons container
+        const buttonsContainer = document.createElement('span');
+        buttonsContainer.className = 'sort-buttons inline-flex flex-row ml-1 gap-0.5';
+
+        // Ascending button (▲)
+        const ascBtn = document.createElement('button');
+        ascBtn.type = 'button';
+        ascBtn.className = 'sort-btn-asc text-gray-400 hover:text-blue-600 leading-none text-xs focus:outline-none';
+        ascBtn.innerHTML = '▲';
+        ascBtn.title = '昇順';
+        ascBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          sortTable(table, index, header.dataset.sort, 'asc', header);
+        });
+
+        // Descending button (▼)
+        const descBtn = document.createElement('button');
+        descBtn.type = 'button';
+        descBtn.className = 'sort-btn-desc text-gray-400 hover:text-blue-600 leading-none text-xs focus:outline-none';
+        descBtn.innerHTML = '▼';
+        descBtn.title = '降順';
+        descBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          sortTable(table, index, header.dataset.sort, 'desc', header);
+        });
+
+        buttonsContainer.appendChild(ascBtn);
+        buttonsContainer.appendChild(descBtn);
+        header.appendChild(buttonsContainer);
+      });
+    });
+  }
+
+  function sortTable(table, columnIndex, sortType, direction, clickedHeader) {
+    const tbody = table.querySelector('tbody');
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+    const headers = table.querySelectorAll('th[data-sort]');
+
+    // Reset all headers' button styles
+    headers.forEach(h => {
+      const ascBtn = h.querySelector('.sort-btn-asc');
+      const descBtn = h.querySelector('.sort-btn-desc');
+      if (ascBtn) ascBtn.className = 'sort-btn-asc text-gray-400 hover:text-blue-600 leading-none text-xs focus:outline-none';
+      if (descBtn) descBtn.className = 'sort-btn-desc text-gray-400 hover:text-blue-600 leading-none text-xs focus:outline-none';
+    });
+
+    // Highlight active button
+    const activeBtn = clickedHeader.querySelector(direction === 'asc' ? '.sort-btn-asc' : '.sort-btn-desc');
+    if (activeBtn) {
+      activeBtn.className = activeBtn.className.replace('text-gray-400', 'text-blue-600');
+    }
+
+    // Sort rows
+    rows.sort((a, b) => {
+      const aCell = a.cells[columnIndex];
+      const bCell = b.cells[columnIndex];
+      let aValue = getCellValue(aCell, sortType);
+      let bValue = getCellValue(bCell, sortType);
+
+      let comparison = 0;
+      if (sortType === 'number' || sortType === 'percent') {
+        comparison = aValue - bValue;
+      } else if (sortType === 'date') {
+        comparison = aValue - bValue;
+      } else {
+        comparison = aValue.localeCompare(bValue, 'ja');
+      }
+
+      return direction === 'asc' ? comparison : -comparison;
+    });
+
+    // Reorder rows
+    rows.forEach(row => tbody.appendChild(row));
+  }
+
+  function getCellValue(cell, sortType) {
+    const text = cell.textContent.trim();
+
+    if (sortType === 'number') {
+      // Extract number from text (handles "123回" format)
+      const match = text.match(/[\d.]+/);
+      return match ? parseFloat(match[0]) : 0;
+    } else if (sortType === 'percent') {
+      // Extract percentage value
+      const match = text.match(/[\d.]+/);
+      return match ? parseFloat(match[0]) : 0;
+    } else if (sortType === 'date') {
+      // Parse date (handles "2024/01/15" format)
+      if (text === '-' || text === '') return new Date(0);
+      const parts = text.split('/');
+      if (parts.length === 3) {
+        return new Date(parts[0], parts[1] - 1, parts[2]);
+      }
+      return new Date(0);
+    }
+    return text;
+  }
+</script>
+
+<style>
+  /* モバイル（768px未満）*/
+  .mobile-only-view { display: block !important; }
+  .desktop-only-view { display: none !important; }
+  /* デスクトップ（768px以上）*/
+  @media (min-width: 768px) {
+    .mobile-only-view { display: none !important; }
+    .desktop-only-view { display: block !important; }
+  }
+
+  /* 全体サマリーグリッド */
+  .overall-summary-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  @media (min-width: 640px) {
+    .overall-summary-grid {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+    }
+  }
+</style>

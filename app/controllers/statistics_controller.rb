@@ -4,17 +4,30 @@ class StatisticsController < ApplicationController
   before_action :apply_filters
 
   def index
-    @active_tab = params[:tab] || 'overview'
+    @active_tab = params[:tab] || 'overall'
+
+    # ゲストユーザーは個人統計タブにアクセス不可
+    personal_tabs = %w[overview events event_progression mobile_suits opponent_suits partners opponents]
+    if current_user.is_guest && personal_tabs.include?(@active_tab)
+      redirect_to statistics_path(tab: 'overall'), alert: '個人統計を見るには管理者にアカウント発行を依頼してください'
+      return
+    end
 
     case @active_tab
     when 'overview'
       calculate_overview_stats
+    when 'overall'
+      calculate_overall_stats
     when 'partners'
       calculate_partner_stats
     when 'mobile_suits'
       calculate_mobile_suit_stats
+    when 'opponent_suits'
+      calculate_mobile_suit_stats
     when 'events'
       calculate_event_stats
+    when 'event_progression'
+      calculate_event_progression_stats
     when 'opponents'
       calculate_opponent_stats
     end
@@ -22,7 +35,7 @@ class StatisticsController < ApplicationController
     # フィルター用のデータ
     @all_events = Event.order(held_on: :desc)
     @all_mobile_suits = MobileSuit.order(:name)
-    @all_partners = User.where.not(id: viewing_as_user.id).order(:nickname)
+    @all_partners = User.regular_users.where.not(id: viewing_as_user.id).order(:nickname)
   end
 
   private
@@ -166,12 +179,15 @@ class StatisticsController < ApplicationController
     end
 
     cost_data.map do |cost_combo, data|
+      costs = cost_combo.split("+").map(&:to_i)
       {
         cost_combo: cost_combo,
+        cost1: costs[0],
+        cost2: costs[1],
         win_rate: data[:total] > 0 ? (data[:wins].to_f / data[:total] * 100).round(1) : 0,
         total: data[:total]
       }
-    end.sort_by { |d| -d[:win_rate] }
+    end.sort_by { |d| [-d[:cost1], -d[:cost2]] }
   end
 
   def calculate_rotation_round_stats
@@ -417,5 +433,200 @@ class StatisticsController < ApplicationController
         last_played_at: data[:last_played_at]
       }
     end.sort_by { |o| -o[:total] }
+  end
+
+  def calculate_event_progression_stats
+    # イベントごとにデータを集計
+    event_progression_data = Hash.new do |h, k|
+      h[k] = {
+        event: nil,
+        has_rotation: false,
+        rotations: Hash.new { |h2, k2| h2[k2] = { wins: 0, total: 0, rotation_name: nil, matches: [] } },
+        all_matches: []
+      }
+    end
+
+    @filtered_matches.each do |my_mp|
+      match = my_mp.match
+      my_team = my_mp.team_number
+      event_id = match.event_id
+
+      event_progression_data[event_id][:event] = match.event
+      event_progression_data[event_id][:all_matches] << my_mp
+
+      # rotation_matchがある場合、ローテーション情報を取得
+      if match.rotation_match && match.rotation_match.rotation
+        event_progression_data[event_id][:has_rotation] = true
+        rotation_id = match.rotation_match.rotation_id
+        rotation_name = match.rotation_match.rotation.name
+
+        event_progression_data[event_id][:rotations][rotation_id][:rotation_name] = rotation_name
+        event_progression_data[event_id][:rotations][rotation_id][:total] += 1
+        event_progression_data[event_id][:rotations][rotation_id][:wins] += 1 if match.winning_team == my_team
+        event_progression_data[event_id][:rotations][rotation_id][:matches] << my_mp
+      end
+    end
+
+    @event_progression_list = event_progression_data.map do |event_id, data|
+      if data[:has_rotation]
+        # ローテーションがある場合：ローテーション別に表示
+        rotations_stats = data[:rotations].map do |rotation_id, rotation_data|
+          {
+            rotation_name: rotation_data[:rotation_name],
+            wins: rotation_data[:wins],
+            total: rotation_data[:total],
+            losses: rotation_data[:total] - rotation_data[:wins],
+            win_rate: rotation_data[:total] > 0 ? (rotation_data[:wins].to_f / rotation_data[:total] * 100).round(1) : 0
+          }
+        end
+      else
+        # ローテーションがない場合：試合を時系列順に4等分（ターム表示）
+        sorted_matches = data[:all_matches].sort_by { |mp| mp.match.played_at }
+        total_matches = sorted_matches.size
+
+        if total_matches > 0
+          # 4等分（第1ターム、第2ターム、第3ターム、第4ターム）
+          quarter_size = (total_matches / 4.0).ceil
+          quarters = [
+            { name: "第1ターム", matches: sorted_matches[0...quarter_size] },
+            { name: "第2ターム", matches: sorted_matches[quarter_size...(quarter_size * 2)] },
+            { name: "第3ターム", matches: sorted_matches[(quarter_size * 2)...(quarter_size * 3)] },
+            { name: "第4ターム", matches: sorted_matches[(quarter_size * 3)..-1] }
+          ]
+
+          rotations_stats = quarters.map do |quarter|
+            next if quarter[:matches].nil? || quarter[:matches].empty?
+
+            wins = quarter[:matches].count { |mp| mp.match.winning_team == mp.team_number }
+            total = quarter[:matches].size
+
+            {
+              rotation_name: quarter[:name],
+              wins: wins,
+              total: total,
+              losses: total - wins,
+              win_rate: total > 0 ? (wins.to_f / total * 100).round(1) : 0
+            }
+          end.compact
+        else
+          rotations_stats = []
+        end
+      end
+
+      {
+        event: data[:event],
+        has_rotation: data[:has_rotation],
+        rotations: rotations_stats,
+        total_matches: rotations_stats.sum { |r| r[:total] },
+        overall_win_rate: rotations_stats.sum { |r| r[:total] } > 0 ?
+          (rotations_stats.sum { |r| r[:wins] }.to_f / rotations_stats.sum { |r| r[:total] } * 100).round(1) : 0
+      }
+    end.select { |e| e[:rotations].any? }.sort_by { |e| e[:event].held_on }.reverse
+  end
+
+  def calculate_overall_stats
+    # イベントフィルター適用
+    base_matches = Match.all
+    base_match_players = MatchPlayer.joins(:match).includes(:match, :mobile_suit)
+
+    if @filter_events.any?
+      base_matches = base_matches.where(event_id: @filter_events)
+      base_match_players = base_match_players.where(matches: { event_id: @filter_events })
+    end
+
+    # 全体サマリー
+    @overall_total_matches = base_matches.count
+    @overall_total_players = base_match_players.distinct.count(:user_id)
+    @overall_total_events = @filter_events.any? ? @filter_events.size : Event.joins(:matches).distinct.count
+
+    # 人気機体ランキング（使用回数TOP10）
+    suit_usage = base_match_players.group(:mobile_suit_id).count
+    @popular_suits = suit_usage.sort_by { |_, count| -count }.first(10).map do |suit_id, count|
+      suit = MobileSuit.find(suit_id)
+      {
+        mobile_suit: suit,
+        usage_count: count,
+        usage_rate: (@overall_total_matches * 4 > 0 ? (count.to_f / (@overall_total_matches * 4) * 100).round(1) : 0)
+      }
+    end
+
+    # 高勝率機体ランキング（最低5試合以上、勝率TOP10）
+    suit_stats = {}
+    base_match_players.find_each do |mp|
+      suit_id = mp.mobile_suit_id
+      suit_stats[suit_id] ||= { wins: 0, total: 0 }
+      suit_stats[suit_id][:total] += 1
+      suit_stats[suit_id][:wins] += 1 if mp.match.winning_team == mp.team_number
+    end
+
+    @high_winrate_suits = suit_stats
+      .select { |_, stats| stats[:total] >= 5 }
+      .map do |suit_id, stats|
+        {
+          mobile_suit: MobileSuit.find(suit_id),
+          wins: stats[:wins],
+          total: stats[:total],
+          win_rate: (stats[:wins].to_f / stats[:total] * 100).round(1)
+        }
+      end
+      .sort_by { |s| -s[:win_rate] }
+      .first(10)
+
+    # コスト帯別統計
+    cost_stats = {}
+    base_match_players.find_each do |mp|
+      cost = mp.mobile_suit.cost
+      cost_stats[cost] ||= { wins: 0, total: 0 }
+      cost_stats[cost][:total] += 1
+      cost_stats[cost][:wins] += 1 if mp.match.winning_team == mp.team_number
+    end
+
+    total_usage = cost_stats.values.sum { |s| s[:total] }
+    @cost_stats = cost_stats.sort_by { |cost, _| -cost }.map do |cost, stats|
+      {
+        cost: cost,
+        usage_count: stats[:total],
+        usage_rate: (total_usage > 0 ? (stats[:total].to_f / total_usage * 100).round(1) : 0),
+        wins: stats[:wins],
+        win_rate: (stats[:total] > 0 ? (stats[:wins].to_f / stats[:total] * 100).round(1) : 0)
+      }
+    end
+
+    # 環境支配機体ランキング（環境支配度 = 勝率 × 使用回数）
+    @dominant_suits = suit_stats
+      .map do |suit_id, stats|
+        win_rate = stats[:total] > 0 ? (stats[:wins].to_f / stats[:total] * 100).round(1) : 0
+        dominance = (win_rate * stats[:total]).round(1)
+        {
+          mobile_suit: MobileSuit.find(suit_id),
+          wins: stats[:wins],
+          total: stats[:total],
+          win_rate: win_rate,
+          dominance: dominance
+        }
+      end
+      .sort_by { |s| -s[:dominance] }
+      .first(10)
+
+    # イベント別参加統計
+    events_query = Event.joins(:matches)
+                        .select("events.*, COUNT(DISTINCT matches.id) as match_count")
+                        .group("events.id")
+                        .order(held_on: :desc)
+                        .limit(10)
+
+    events_query = events_query.where(id: @filter_events) if @filter_events.any?
+
+    @event_stats = events_query.map do |event|
+      player_count = MatchPlayer.joins(:match)
+                                .where(matches: { event_id: event.id })
+                                .distinct
+                                .count(:user_id)
+      {
+        event: event,
+        match_count: event.match_count,
+        player_count: player_count
+      }
+    end
   end
 end
