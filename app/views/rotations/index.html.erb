@@ -1,13 +1,39 @@
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-  <div class="mb-6 flex justify-between items-center">
-    <div>
-      <h1 class="text-3xl font-bold text-gray-900">ローテーション一覧</h1>
-      <p class="mt-2 text-sm text-gray-600">イベントごとのローテーション表を管理できます</p>
-    </div>
+  <div class="mb-6">
+    <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">ローテーション一覧</h1>
+    <p class="mt-2 text-sm text-gray-600">イベントごとのローテーション表を管理できます</p>
   </div>
 
   <% if @rotations.any? %>
-    <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+    <!-- モバイル用カードビュー -->
+    <div class="mobile-only-view space-y-4">
+      <% @rotations.each do |rotation| %>
+        <% completed_count = rotation.rotation_matches.count { |rm| rm.match.present? } %>
+        <% progress = rotation.rotation_matches.count > 0 ? (completed_count.to_f / rotation.rotation_matches.count * 100) : 0 %>
+        <%= link_to rotation_path(rotation), class: "block bg-white shadow rounded-lg p-4 hover:bg-gray-50" do %>
+          <div class="flex items-center justify-between mb-2">
+            <div class="text-sm font-medium text-blue-600"><%= rotation.name %></div>
+            <% if rotation.is_active %>
+              <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-purple-100 text-purple-800">アクティブ</span>
+            <% else %>
+              <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">非アクティブ</span>
+            <% end %>
+          </div>
+          <div class="text-sm text-gray-900"><%= rotation.event.name %></div>
+          <div class="text-xs text-gray-500"><%= rotation.event.held_on.strftime('%Y/%m/%d') %></div>
+          <div class="flex items-center justify-between mt-3">
+            <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-purple-100 text-purple-800"><%= rotation.round_number %>周目</span>
+            <span class="text-xs text-gray-600"><%= completed_count %> / <%= rotation.rotation_matches.count %> 試合</span>
+          </div>
+          <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
+            <div class="bg-blue-600 h-2 rounded-full" style="width: <%= progress %>%"></div>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+
+    <!-- デスクトップ用テーブルビュー -->
+    <div class="desktop-only-view bg-white shadow overflow-hidden sm:rounded-lg">
       <table class="min-w-full divide-y divide-gray-200">
         <thead class="bg-gray-50">
           <tr>
@@ -36,15 +62,15 @@
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
           <% @rotations.each do |rotation| %>
-            <tr class="hover:bg-gray-50">
+            <tr class="hover:bg-gray-50 cursor-pointer" onclick="window.location='<%= rotation_path(rotation) %>'">
               <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm font-medium text-gray-900">
-                  <%= link_to rotation.name, rotation, class: "text-blue-600 hover:text-blue-800" %>
+                <div class="text-sm font-medium text-blue-600">
+                  <%= rotation.name %>
                 </div>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
                 <div class="text-sm text-gray-900">
-                  <%= link_to rotation.event.name, rotation.event, class: "text-blue-600 hover:text-blue-800" %>
+                  <%= rotation.event.name %>
                 </div>
                 <div class="text-xs text-gray-500">
                   <%= rotation.event.held_on.strftime('%Y/%m/%d') %>
@@ -56,11 +82,12 @@
                 </span>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
+                <% completed_count = rotation.rotation_matches.count { |rm| rm.match.present? } %>
                 <div class="text-sm text-gray-900">
-                  <%= rotation.current_match_index + 1 %> / <%= rotation.rotation_matches.count %>
+                  <%= completed_count %> / <%= rotation.rotation_matches.count %> 試合
                 </div>
                 <div class="w-full bg-gray-200 rounded-full h-2 mt-1">
-                  <% progress = rotation.rotation_matches.count > 0 ? ((rotation.current_match_index + 1).to_f / rotation.rotation_matches.count * 100) : 0 %>
+                  <% progress = rotation.rotation_matches.count > 0 ? (completed_count.to_f / rotation.rotation_matches.count * 100) : 0 %>
                   <div class="bg-blue-600 h-2 rounded-full" style="width: <%= progress %>%"></div>
                 </div>
               </td>
@@ -78,8 +105,7 @@
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                 <%= rotation.created_at.strftime('%Y/%m/%d') %>
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                <%= link_to "詳細", rotation, class: "text-blue-600 hover:text-blue-900 mr-3" %>
+              <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium" onclick="event.stopPropagation()">
                 <% if current_user.is_admin %>
                   <%= button_to "削除", rotation, method: :delete, data: { turbo_confirm: "本当に削除しますか？" }, class: "text-red-600 hover:text-red-900 inline", form: { style: "display: inline;" } %>
                 <% end %>
@@ -96,8 +122,23 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
         </svg>
         <h3 class="mt-2 text-sm font-medium text-gray-900">ローテーションがありません</h3>
-        <p class="mt-1 text-sm text-gray-500">まずはイベントページからローテーションを作成してください。</p>
+        <% if current_user.is_admin? %>
+          <p class="mt-1 text-sm text-gray-500">まずはイベントページからローテーションを作成してください。</p>
+        <% else %>
+          <p class="mt-1 text-sm text-gray-500">管理者によってローテーションが作成されるとここに表示されます。</p>
+        <% end %>
       </div>
     </div>
   <% end %>
 </div>
+
+<style>
+  /* モバイル（768px未満）*/
+  .mobile-only-view { display: block !important; }
+  .desktop-only-view { display: none !important; }
+  /* デスクトップ（768px以上）*/
+  @media (min-width: 768px) {
+    .mobile-only-view { display: none !important; }
+    .desktop-only-view { display: block !important; }
+  }
+</style>

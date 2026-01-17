@@ -1,15 +1,35 @@
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-  <div class="flex justify-between items-center mb-6">
-    <h1 class="text-3xl font-bold text-gray-900">機体マスタ</h1>
+  <div class="page-header mb-6">
+    <h1 class="text-2xl font-bold text-gray-900">機体マスタ</h1>
     <% if current_user.is_admin? %>
-      <div class="flex space-x-3">
+      <div class="flex flex-wrap gap-2">
         <%= link_to "新規登録", new_mobile_suit_path, class: "bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded" %>
         <%= link_to "CSVインポート", new_mobile_suits_admin_imports_path, class: "bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded" %>
       </div>
     <% end %>
   </div>
 
-  <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+  <!-- モバイル用カードビュー -->
+  <div class="mobile-only-view space-y-3">
+    <% @mobile_suits.each do |mobile_suit| %>
+      <div class="bg-white shadow rounded-lg p-4">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-sm font-medium text-gray-900"><%= mobile_suit.name %></span>
+          <%= cost_badge(mobile_suit.cost) %>
+        </div>
+        <div class="text-xs text-gray-500 mb-2"><%= mobile_suit.series %></div>
+        <% if current_user.is_admin? %>
+          <div class="flex items-center gap-3 pt-2 border-t border-gray-100">
+            <%= link_to "編集", edit_mobile_suit_path(mobile_suit), class: "text-blue-600 hover:text-blue-900 text-sm" %>
+            <%= button_to "削除", mobile_suit_path(mobile_suit), method: :delete, data: { turbo_confirm: "本当に削除しますか？" }, class: "text-red-600 hover:text-red-900 text-sm" %>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+
+  <!-- デスクトップ用テーブルビュー -->
+  <div class="desktop-only-view bg-white shadow overflow-hidden sm:rounded-lg">
     <table class="min-w-full divide-y divide-gray-200">
       <thead class="bg-gray-50">
         <tr>
@@ -26,7 +46,7 @@
           <tr>
             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"><%= mobile_suit.name %></td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><%= mobile_suit.series %></td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><%= mobile_suit.cost %></td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><%= cost_badge(mobile_suit.cost) %></td>
             <% if current_user.is_admin? %>
               <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                 <%= link_to "編集", edit_mobile_suit_path(mobile_suit), class: "text-blue-600 hover:text-blue-900 mr-3" %>
@@ -43,3 +63,28 @@
     全 <%= @mobile_suits.count %> 機体
   </div>
 </div>
+
+<style>
+  /* ページヘッダー */
+  .page-header {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  @media (min-width: 640px) {
+    .page-header {
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+    }
+  }
+
+  /* モバイル（768px未満）*/
+  .mobile-only-view { display: block !important; }
+  .desktop-only-view { display: none !important; }
+  /* デスクトップ（768px以上）*/
+  @media (min-width: 768px) {
+    .mobile-only-view { display: none !important; }
+    .desktop-only-view { display: block !important; }
+  }
+</style>

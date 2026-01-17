@@ -37,33 +37,124 @@
     <nav class="bg-white shadow-sm">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
+          <!-- ロゴとデスクトップメニュー -->
           <div class="flex">
             <div class="flex-shrink-0 flex items-center">
-              <%= link_to "VSモバイル KGY版", root_path, class: "text-xl font-bold text-gray-900" %>
+              <%= link_to "VSモバイル KGY版", root_path, class: "text-lg sm:text-xl font-bold text-gray-900" %>
             </div>
             <% if user_signed_in? %>
-              <div class="ml-6 flex space-x-8">
+              <!-- デスクトップナビゲーション（768px以上で表示） -->
+              <div class="desktop-menu ml-6 space-x-4 lg:space-x-8">
                 <%= link_to "ダッシュボード", dashboard_path, class: "inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-900 border-b-2 #{current_page?(dashboard_path) || current_page?(root_path) ? 'border-indigo-500' : 'border-transparent hover:border-gray-300'}" %>
                 <%= link_to "イベント", events_path, class: "inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-900 border-b-2 #{current_page?(events_path) ? 'border-indigo-500' : 'border-transparent hover:border-gray-300'}" %>
-                <%= link_to "対戦一覧", matches_path, class: "inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-900 border-b-2 #{current_page?(matches_path) ? 'border-indigo-500' : 'border-transparent hover:border-gray-300'}" %>
                 <%= link_to "ローテーション", rotations_path, class: "inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-900 border-b-2 #{current_page?(rotations_path) ? 'border-indigo-500' : 'border-transparent hover:border-gray-300'}" %>
+                <%= link_to "対戦履歴", matches_path, class: "inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-900 border-b-2 #{current_page?(matches_path) ? 'border-indigo-500' : 'border-transparent hover:border-gray-300'}" %>
                 <%= link_to "統計", statistics_path, class: "inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-900 border-b-2 #{current_page?(statistics_path) ? 'border-indigo-500' : 'border-transparent hover:border-gray-300'}" %>
-                <%= link_to "機体マスタ", mobile_suits_path, class: "inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-900 border-b-2 #{current_page?(mobile_suits_path) ? 'border-indigo-500' : 'border-transparent hover:border-gray-300'}" %>
                 <% if current_user.is_admin? %>
+                  <%= link_to "機体マスタ", mobile_suits_path, class: "inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-900 border-b-2 #{current_page?(mobile_suits_path) ? 'border-indigo-500' : 'border-transparent hover:border-gray-300'}" %>
                   <%= link_to "ユーザー管理", users_path, class: "inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-900 border-b-2 #{current_page?(users_path) ? 'border-indigo-500' : 'border-transparent hover:border-gray-300'}" %>
                 <% end %>
               </div>
             <% end %>
           </div>
-          <div class="flex items-center space-x-4">
+
+          <!-- 右側：ユーザー情報とハンバーガーボタン -->
+          <div class="flex items-center">
             <% if user_signed_in? %>
-              <!-- 管理者用: ユーザー視点切り替え -->
+              <!-- デスクトップ用ユーザー情報（768px以上で表示） -->
+              <div class="desktop-menu items-center space-x-4">
+                <!-- 管理者用: ユーザー視点切り替え -->
+                <% if current_user.is_admin? %>
+                  <div class="flex items-center space-x-2">
+                    <select onchange="if(this.value) switchUserView(this.value);" class="text-sm border border-gray-300 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 <%= viewing_as_someone_else? ? 'bg-orange-50 border-orange-300' : '' %>">
+                      <% if viewing_as_someone_else? %>
+                        <option value=""><%= viewing_as_user.nickname %>の視点 ▼</option>
+                        <option value="clear">--- 管理者視点に戻す ---</option>
+                      <% else %>
+                        <option value="">視点切り替え...</option>
+                      <% end %>
+                      <% User.where(is_admin: false).order(:nickname).each do |user| %>
+                        <% unless viewing_as_someone_else? && user.id == viewing_as_user.id %>
+                          <option value="<%= user.id %>"><%= user.nickname %></option>
+                        <% end %>
+                      <% end %>
+                    </select>
+                  </div>
+                <% end %>
+
+                <span class="text-sm text-gray-700"><%= current_user.nickname %></span>
+                <% unless current_user.username == 'guest' %>
+                  <%= link_to "設定", edit_profile_path, class: "text-sm text-gray-700 hover:text-gray-900" %>
+                <% end %>
+                <%= button_to "ログアウト", destroy_user_session_path, method: :delete, class: "text-sm text-gray-700 hover:text-gray-900" %>
+              </div>
+
+              <!-- モバイル用ハンバーガーボタン（768px未満で表示） -->
+              <div class="mobile-menu-btn items-center">
+                <button type="button" onclick="toggleMobileMenu()" class="inline-flex items-center justify-center p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-controls="mobile-menu" aria-expanded="false">
+                  <span class="sr-only">メニューを開く</span>
+                  <!-- ハンバーガーアイコン（テキストベース） -->
+                  <span id="menu-icon-open" class="text-2xl font-bold leading-none">☰</span>
+                  <!-- 閉じるアイコン -->
+                  <span id="menu-icon-close" class="hidden text-2xl font-bold leading-none">✕</span>
+                </button>
+              </div>
+            <% else %>
+              <%= link_to "ログイン", new_user_session_path, class: "text-sm text-gray-700 hover:text-gray-900" %>
+            <% end %>
+          </div>
+        </div>
+      </div>
+
+      <style>
+        /* モバイル（768px未満）*/
+        .desktop-menu { display: none !important; }
+        .mobile-menu-btn { display: flex !important; }
+        /* デスクトップ（768px以上）*/
+        @media (min-width: 768px) {
+          .desktop-menu { display: flex !important; }
+          .mobile-menu-btn { display: none !important; }
+        }
+      </style>
+
+      <!-- モバイルメニュー（デフォルトは非表示） -->
+      <% if user_signed_in? %>
+        <div class="hidden" id="mobile-menu">
+          <div class="pt-2 pb-3 space-y-1 bg-gray-50 border-t border-gray-200 px-4">
+            <%= link_to "ダッシュボード", dashboard_path, class: "block px-4 py-3 text-base font-medium rounded-md #{current_page?(dashboard_path) || current_page?(root_path) ? 'bg-indigo-50 text-indigo-700' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-800'}" %>
+            <%= link_to "イベント", events_path, class: "block px-4 py-3 text-base font-medium rounded-md #{current_page?(events_path) ? 'bg-indigo-50 text-indigo-700' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-800'}" %>
+            <%= link_to "ローテーション", rotations_path, class: "block px-4 py-3 text-base font-medium rounded-md #{current_page?(rotations_path) ? 'bg-indigo-50 text-indigo-700' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-800'}" %>
+            <%= link_to "対戦履歴", matches_path, class: "block px-4 py-3 text-base font-medium rounded-md #{current_page?(matches_path) ? 'bg-indigo-50 text-indigo-700' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-800'}" %>
+            <%= link_to "統計", statistics_path, class: "block px-4 py-3 text-base font-medium rounded-md #{current_page?(statistics_path) ? 'bg-indigo-50 text-indigo-700' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-800'}" %>
+            <% if current_user.is_admin? %>
+              <div class="border-t border-gray-200 mt-3 pt-3">
+                <div class="px-4 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">管理者メニュー</div>
+                <%= link_to "機体マスタ", mobile_suits_path, class: "block px-4 py-3 text-base font-medium rounded-md #{current_page?(mobile_suits_path) ? 'bg-indigo-50 text-indigo-700' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-800'}" %>
+                <%= link_to "ユーザー管理", users_path, class: "block px-4 py-3 text-base font-medium rounded-md #{current_page?(users_path) ? 'bg-indigo-50 text-indigo-700' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-800'}" %>
+              </div>
+            <% end %>
+          </div>
+          <!-- ユーザー情報セクション -->
+          <div class="pt-4 pb-3 border-t border-gray-200 bg-white px-4">
+            <div class="flex items-center px-4">
+              <div class="flex-shrink-0">
+                <div class="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center">
+                  <span class="text-indigo-600 font-medium text-sm"><%= current_user.nickname[0] %></span>
+                </div>
+              </div>
+              <div class="ml-3">
+                <div class="text-base font-medium text-gray-800"><%= current_user.nickname %></div>
+                <div class="text-sm text-gray-500"><%= current_user.username %></div>
+              </div>
+            </div>
+            <div class="mt-3 space-y-1">
               <% if current_user.is_admin? %>
-                <div class="flex items-center space-x-2">
-                  <select onchange="if(this.value) switchUserView(this.value);" class="text-sm border border-gray-300 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 <%= viewing_as_someone_else? ? 'bg-orange-50 border-orange-300' : '' %>">
+                <!-- 視点切り替え -->
+                <div class="px-4 py-2">
+                  <select onchange="if(this.value) switchUserView(this.value);" class="w-full text-sm border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 <%= viewing_as_someone_else? ? 'bg-orange-50 border-orange-300' : '' %>">
                     <% if viewing_as_someone_else? %>
                       <option value=""><%= viewing_as_user.nickname %>の視点 ▼</option>
-                      <option value="clear">--- 自分の視点に戻す ---</option>
+                      <option value="clear">--- 管理者視点に戻す ---</option>
                     <% else %>
                       <option value="">視点切り替え...</option>
                     <% end %>
@@ -73,40 +164,55 @@
                       <% end %>
                     <% end %>
                   </select>
-
-                  <script>
-                    function switchUserView(userId) {
-                      const form = document.createElement('form');
-                      form.method = 'POST';
-
-                      if (userId === 'clear') {
-                        form.action = '/users/clear_view';
-                      } else {
-                        form.action = '/users/' + userId + '/switch_view';
-                      }
-
-                      const token = document.querySelector('meta[name="csrf-token"]').content;
-                      const csrfInput = document.createElement('input');
-                      csrfInput.type = 'hidden';
-                      csrfInput.name = 'authenticity_token';
-                      csrfInput.value = token;
-
-                      form.appendChild(csrfInput);
-                      document.body.appendChild(form);
-                      form.submit();
-                    }
-                  </script>
                 </div>
               <% end %>
-
-              <span class="text-sm text-gray-700"><%= current_user.nickname %></span>
-              <%= button_to "ログアウト", destroy_user_session_path, method: :delete, class: "text-sm text-gray-700 hover:text-gray-900" %>
-            <% else %>
-              <%= link_to "ログイン", new_user_session_path, class: "text-sm text-gray-700 hover:text-gray-900" %>
-            <% end %>
+              <% unless current_user.username == 'guest' %>
+                <%= link_to "設定", edit_profile_path, class: "block px-4 py-3 text-base font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-md" %>
+              <% end %>
+              <%= button_to "ログアウト", destroy_user_session_path, method: :delete, class: "block w-full text-left px-4 py-3 text-base font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-md" %>
+            </div>
           </div>
         </div>
-      </div>
+      <% end %>
+
+      <script>
+        function toggleMobileMenu() {
+          const menu = document.getElementById('mobile-menu');
+          const iconOpen = document.getElementById('menu-icon-open');
+          const iconClose = document.getElementById('menu-icon-close');
+
+          if (menu.classList.contains('hidden')) {
+            menu.classList.remove('hidden');
+            iconOpen.classList.add('hidden');
+            iconClose.classList.remove('hidden');
+          } else {
+            menu.classList.add('hidden');
+            iconOpen.classList.remove('hidden');
+            iconClose.classList.add('hidden');
+          }
+        }
+
+        function switchUserView(userId) {
+          const form = document.createElement('form');
+          form.method = 'POST';
+
+          if (userId === 'clear') {
+            form.action = '/users/clear_view';
+          } else {
+            form.action = '/users/' + userId + '/switch_view';
+          }
+
+          const token = document.querySelector('meta[name="csrf-token"]').content;
+          const csrfInput = document.createElement('input');
+          csrfInput.type = 'hidden';
+          csrfInput.name = 'authenticity_token';
+          csrfInput.value = token;
+
+          form.appendChild(csrfInput);
+          document.body.appendChild(form);
+          form.submit();
+        }
+      </script>
     </nav>
 
     <!-- フラッシュメッセージ -->
