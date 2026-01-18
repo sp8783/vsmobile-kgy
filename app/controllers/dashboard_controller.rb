@@ -238,12 +238,18 @@ class DashboardController < ApplicationController
     end
 
     # 連勝/連敗状況（最新の試合から順番にカウント）
+    # 全試合データを使用して正確にカウント
     @current_streak = 0
     @streak_type = nil
+    streak_seen_match_ids = Set.new
 
-    # 直近5試合の結果を使って連勝/連敗をカウント
-    @recent_5_results.each_with_index do |is_win, index|
-      if index == 0
+    @all_user_matches.each do |mp|
+      next if streak_seen_match_ids.include?(mp.match_id)
+      streak_seen_match_ids.add(mp.match_id)
+
+      is_win = mp.match.winning_team == mp.team_number
+
+      if @streak_type.nil?
         # 最新の試合で連勝/連敗のタイプを決定
         @streak_type = is_win ? 'win' : 'lose'
         @current_streak = 1

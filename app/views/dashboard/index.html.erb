@@ -1,6 +1,6 @@
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
   <div class="mb-8">
-    <h1 class="text-3xl font-bold text-gray-900">ダッシュボード</h1>
+    <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">ダッシュボード</h1>
     <p class="mt-2 text-sm text-gray-600">ようこそ、<%= current_user.nickname %>さん</p>
     <% if current_user.is_guest %>
       <div class="mt-4 bg-amber-50 border-l-4 border-amber-400 p-4">
@@ -191,6 +191,12 @@
               <p class="text-sm text-gray-500">管理者がローテーションを作成するまでお待ちください</p>
             <% end %>
           </div>
+        </div>
+      <% else %>
+        <!-- 今日のイベントがない場合 -->
+        <div class="bg-white shadow rounded-lg p-6">
+          <h2 class="text-xl font-bold text-purple-900 mb-2">📅 本日のイベント</h2>
+          <p class="text-sm text-purple-700">本日はイベントが設定されていません</p>
         </div>
       <% end %>
 
