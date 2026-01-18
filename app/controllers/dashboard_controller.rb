@@ -19,7 +19,7 @@ class DashboardController < ApplicationController
     @total_users = User.count
 
     # 今日のイベント
-    @today_event = Event.where(held_on: Date.today).first
+    @today_event = Event.where(held_on: Time.zone.today).first
     if @today_event
       @active_rotation = @today_event.rotations.includes(
         rotation_matches: [:team1_player1, :team1_player2, :team2_player1, :team2_player2, :match]
@@ -43,7 +43,7 @@ class DashboardController < ApplicationController
     @recent_matches = Match.order(played_at: :desc).limit(10).includes(:event, :match_players => [:user, :mobile_suit])
 
     # 今後のイベント
-    @upcoming_events = Event.where('held_on >= ?', Date.today).order(held_on: :asc).limit(5)
+    @upcoming_events = Event.where('held_on >= ?', Time.zone.today).order(held_on: :asc).limit(5)
 
     # 人気機体TOP5
     @popular_mobile_suits = MobileSuit.joins(:match_players)
@@ -124,7 +124,7 @@ class DashboardController < ApplicationController
                                           .take(3)
                                           .map { |suit, count| suit.tap { |s| s.define_singleton_method(:usage_count) { count } } }
 
-    @upcoming_events = Event.where('held_on >= ?', Date.today).order(held_on: :asc).limit(3)
+    @upcoming_events = Event.where('held_on >= ?', Time.zone.today).order(held_on: :asc).limit(3)
     @latest_event = Event.order(held_on: :desc).first
 
     render 'index'
@@ -155,7 +155,7 @@ class DashboardController < ApplicationController
 
   def calculate_realtime_status
     # 今日のイベントを取得
-    @today_event = Event.where(held_on: Date.today).first
+    @today_event = Event.where(held_on: Time.zone.today).first
     return unless @today_event
 
     # 今日のイベントのアクティブなローテーション表を取得（rotation_matchesを事前ロード）
@@ -306,7 +306,7 @@ class DashboardController < ApplicationController
 
   def calculate_event_mobile_suit_trend
     # 対象イベントを決定（今日のイベントがあればそれ、なければ直近のイベント）
-    target_event = Event.where(held_on: Date.today).first || Event.order(held_on: :desc).first
+    target_event = Event.where(held_on: Time.zone.today).first || Event.order(held_on: :desc).first
 
     return unless target_event
 
@@ -340,7 +340,7 @@ class DashboardController < ApplicationController
     end.sort_by { |s| -s[:usage] }
 
     @trend_event = target_event
-    @is_today_event = (target_event.held_on == Date.today)
+    @is_today_event = (target_event.held_on == Time.zone.today)
   end
 
   def calculate_event_comparison
@@ -360,7 +360,7 @@ class DashboardController < ApplicationController
         wins: wins,
         losses: total - wins,
         win_rate: total > 0 ? (wins.to_f / total * 100).round(1) : 0,
-        is_today: event.held_on == Date.today
+        is_today: event.held_on == Time.zone.today
       }
     end
   end

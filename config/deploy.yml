@@ -39,6 +39,9 @@ env:
     RAILS_LOG_TO_STDOUT: true
     RAILS_SERVE_STATIC_FILES: true
 
+    # Timezone configuration (critical for date/time operations)
+    TZ: Asia/Tokyo
+
 # SSH configuration
 ssh:
   user: ubuntu

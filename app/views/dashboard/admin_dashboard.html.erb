@@ -251,7 +251,7 @@
                     <div class="text-sm font-medium text-gray-900"><%= event.name %></div>
                     <div class="text-xs text-gray-500 mt-1"><%= event.held_on.strftime('%Y年%m月%d日') %></div>
                   </div>
-                  <% if event.held_on == Date.today %>
+                  <% if event.held_on == Time.zone.today %>
                     <span class="ml-2 px-2 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded">本日</span>
                   <% end %>
                 </div>

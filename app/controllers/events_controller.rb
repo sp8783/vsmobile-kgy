@@ -13,7 +13,7 @@ class EventsController < ApplicationController
   end
 
   def new
-    @event = Event.new(held_on: Date.today)
+    @event = Event.new(held_on: Time.zone.today)
   end
 
   def create
