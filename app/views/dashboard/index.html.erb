@@ -135,7 +135,26 @@
               <% if @is_streaming %>
                 <div class="bg-red-50 border-2 border-red-200 rounded-lg p-2 mb-3">
                   <div class="text-center">
-                    <div class="text-sm font-bold text-red-600">📹 あなたが配信台担当です（左側の席）</div>
+                    <div class="text-sm font-bold text-red-600">📹 あなたが配信台担当です</div>
+                  </div>
+                </div>
+              <% else %>
+                <%
+                  streaming_player = @user_next_rotation_match.team1_player1
+                  is_partner_streaming = @user_partner&.id == streaming_player.id
+                  is_opponent_streaming = @opponent_players&.any? { |p| p.id == streaming_player.id }
+                %>
+                <div class="bg-gray-100 border border-gray-300 rounded-lg p-2 mb-3">
+                  <div class="text-center">
+                    <div class="text-sm text-gray-700">
+                      📹 配信台担当:
+                      <span class="font-bold text-red-600"><%= streaming_player.nickname %></span>
+                      <% if is_partner_streaming %>
+                        <span class="text-xs text-gray-500">（パートナー）</span>
+                      <% elsif is_opponent_streaming %>
+                        <span class="text-xs text-gray-500">（対戦相手）</span>
+                      <% end %>
+                    </div>
                   </div>
                 </div>
               <% end %>
@@ -145,17 +164,26 @@
                 <div class="space-y-2 text-sm">
                   <div class="flex items-center justify-between">
                     <span class="text-gray-600">🤝 パートナー</span>
-                    <span class="font-bold text-gray-900 <%= @is_streaming && @user_partner.id == @user_next_rotation_match.team1_player1_id ? 'text-red-600' : '' %>">
+                    <span class="font-bold text-gray-900 <%= @user_partner&.id == @user_next_rotation_match.team1_player1_id ? 'text-red-600' : '' %>">
                       <%= @user_partner.nickname %>
-                      <% if @is_streaming && @user_partner.id == @user_next_rotation_match.team1_player1_id %>
-                        <span class="ml-1 px-2 py-0.5 bg-red-500 text-white rounded text-xs">配信台</span>
+                      <% if @user_partner&.id == @user_next_rotation_match.team1_player1_id %>
+                        <span class="ml-1 px-2 py-0.5 bg-red-100 text-red-700 rounded text-xs font-semibold">配信台</span>
                       <% end %>
                     </span>
                   </div>
                   <div class="border-t border-gray-200 pt-2"></div>
                   <div class="flex items-center justify-between">
                     <span class="text-gray-600">⚔️ 対戦相手</span>
-                    <span class="font-medium text-gray-900"><%= @opponent_players.map(&:nickname).join(' & ') %></span>
+                    <span class="font-medium text-gray-900">
+                      <% @opponent_players.each_with_index do |player, index| %>
+                        <% if player.id == @user_next_rotation_match.team1_player1_id %>
+                          <span class="text-red-600 font-bold"><%= player.nickname %></span><span class="ml-1 px-2 py-0.5 bg-red-100 text-red-700 rounded text-xs font-semibold">配信台</span>
+                        <% else %>
+                          <%= player.nickname %>
+                        <% end %>
+                        <%= ' & ' if index == 0 %>
+                      <% end %>
+                    </span>
                   </div>
                 </div>
               </div>
