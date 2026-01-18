@@ -99,20 +99,15 @@
           <% if @user_next_rotation_match %>
             <!-- あなたの次の出番 -->
             <%
-              # 緊急度による色とアニメーションの設定
               if @matches_until_user_turn == 0
-                border_color = "border-red-500"
                 badge_color = "bg-red-50 text-red-600 border-red-200"
                 urgency_message = "🔔 今です！席についてください！"
                 animate_class = "animate-pulse"
               elsif @matches_until_user_turn == 1
-                border_color = "border-indigo-500"
                 badge_color = "bg-indigo-100 text-indigo-600 border-indigo-300"
                 urgency_message = "⚠️ 次の試合です！準備してください！"
                 animate_class = ""
               else
-                # 2試合後以降は全て同じ薄いインディゴで統一
-                border_color = "border-indigo-400"
                 badge_color = "bg-indigo-50 text-indigo-600 border-indigo-200"
                 if @matches_until_user_turn == 2
                   urgency_message = "⏳ あと2試合後です"
@@ -122,7 +117,7 @@
                 animate_class = ""
               end
             %>
-            <div class="bg-white text-gray-900 rounded-lg border-t-4 <%= border_color %> shadow-sm p-4 mb-4 <%= animate_class %>">
+            <div class="bg-white text-gray-900 rounded-lg p-4 mb-4 shadow-sm <%= animate_class %>">
               <div class="text-sm font-semibold mb-3 text-gray-700">⏰ あなたの次の出番</div>
 
               <div class="mb-4">
