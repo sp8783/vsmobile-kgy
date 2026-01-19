@@ -799,7 +799,7 @@
       if ('Notification' in window && Notification.permission === 'granted') {
         new Notification('【<%= event_name %>】出番が近づいています！', {
           body: '第<%= match_number %>試合（あと<%= @matches_until_user_turn %>試合後）\nパートナー: <%= partner_name %>\n対戦相手: <%= opponent_names %>\n[<%= current_time %>]',
-          icon: '/icon.png',
+          icon: '/icon-192.png',
           tag: 'upcoming-match-<%= match_number %>'
         });
       }
@@ -807,7 +807,7 @@
       if ('Notification' in window && Notification.permission === 'granted') {
         new Notification('【<%= event_name %>】今です！第<%= match_number %>試合', {
           body: 'あなたの出番です！\nパートナー: <%= partner_name %>\n対戦相手: <%= opponent_names %>\n[<%= current_time %>]',
-          icon: '/icon.png',
+          icon: '/icon-192.png',
           tag: 'current-match-<%= match_number %>'
         });
       }

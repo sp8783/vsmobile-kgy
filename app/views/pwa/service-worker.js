@@ -1,8 +1,13 @@
-const CACHE_NAME = 'vsmobile-kgy-v1';
+const CACHE_NAME = 'vsmobile-kgy-v3';
 const ASSETS_TO_CACHE = [
   '/',
-  '/icon.png',
-  '/icon.svg'
+  '/logo-login.png',
+  '/logo-header.png',
+  '/favicon-32.png',
+  '/apple-touch-icon.png',
+  '/icon-192.png',
+  '/icon-512.png',
+  '/icon-512-maskable.png'
 ];
 
 // Install event - cache assets

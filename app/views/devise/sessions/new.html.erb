@@ -1,12 +1,7 @@
 <div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
   <div class="max-w-md w-full space-y-8">
-    <div>
-      <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
-        VS.モバイル for KGY
-      </h2>
-      <p class="mt-2 text-center text-sm text-gray-600">
-        ログイン
-      </p>
+    <div class="text-center">
+      <img src="/logo-login.png" alt="VS.モバイル for KGY" class="mx-auto h-96 sm:h-[480px]">
     </div>
 
     <%= form_for(resource, as: resource_name, url: session_path(resource_name), html: { class: "mt-8 space-y-6" }) do |f| %>
