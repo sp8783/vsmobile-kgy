@@ -35,16 +35,16 @@
   <body class="bg-gray-50">
     <!-- サイドバーナビゲーション（PC/iPad Landscape用：1024px以上で表示） -->
     <% if user_signed_in? %>
-      <aside class="sidebar-nav fixed inset-y-0 left-0 w-64 bg-white shadow-lg z-40 flex flex-col">
-        <!-- 上部セクション -->
-        <div class="flex flex-col flex-1 overflow-y-auto">
-          <!-- ロゴ -->
-          <div class="flex-shrink-0 px-4 py-4 border-b border-gray-200">
-            <%= link_to root_path do %>
-              <img src="/logo-header.png" srcset="/logo-header.png 2x" alt="VS.モバイル for KGY" class="h-12">
-            <% end %>
-          </div>
+      <aside class="sidebar-nav fixed inset-y-0 left-0 w-64 shadow-lg z-40 flex flex-col">
+        <!-- ロゴ部分（白背景） -->
+        <div class="flex-shrink-0 px-4 py-4 bg-white border-b border-gray-200">
+          <%= link_to root_path do %>
+            <img src="/logo-header.png" srcset="/logo-header.png 2x" alt="VS.モバイル for KGY" class="h-12">
+          <% end %>
+        </div>
 
+        <!-- メイン部分（インディゴ背景） -->
+        <div class="flex flex-col flex-1 overflow-y-auto bg-[#4F39F6]">
           <!-- メインナビゲーション -->
           <nav class="flex-1 px-3 py-4 space-y-1">
             <%= link_to "ダッシュボード", dashboard_path, class: "sidebar-nav-item #{current_page?(dashboard_path) || current_page?(root_path) ? 'active' : ''}" %>
@@ -55,8 +55,8 @@
 
             <% if current_user.is_admin? %>
               <!-- 管理者メニューセパレーター -->
-              <div class="pt-4 mt-4 border-t border-gray-200">
-                <div class="px-3 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+              <div class="pt-4 mt-4 border-t border-indigo-400">
+                <div class="px-3 py-2 text-xs font-semibold text-indigo-200 uppercase tracking-wider">
                   管理者メニュー
                 </div>
               </div>
@@ -67,25 +67,25 @@
           </nav>
         </div>
 
-        <!-- 下部セクション（固定） -->
-        <div class="flex-shrink-0 border-t border-gray-200 p-4">
+        <!-- 下部セクション（固定・インディゴ背景） -->
+        <div class="flex-shrink-0 border-t border-indigo-400 p-4 bg-[#4F39F6]">
           <!-- ユーザー情報 -->
           <div class="flex items-center mb-3">
             <div class="flex-shrink-0">
-              <div class="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center">
-                <span class="text-indigo-600 font-medium text-sm"><%= current_user.nickname[0] %></span>
+              <div class="h-10 w-10 rounded-full bg-white/20 flex items-center justify-center">
+                <span class="text-white font-medium text-sm"><%= current_user.nickname[0] %></span>
               </div>
             </div>
             <div class="ml-3">
-              <div class="text-sm font-medium text-gray-800"><%= current_user.nickname %></div>
-              <div class="text-xs text-gray-500"><%= current_user.username %></div>
+              <div class="text-sm font-medium text-white"><%= current_user.nickname %></div>
+              <div class="text-xs text-indigo-200"><%= current_user.username %></div>
             </div>
           </div>
 
           <!-- 管理者用: 視点切り替え -->
           <% if current_user.is_admin? %>
             <div class="mb-3">
-              <select onchange="if(this.value) switchUserView(this.value);" class="w-full text-sm border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 <%= viewing_as_someone_else? ? 'bg-orange-50 border-orange-300' : '' %>">
+              <select onchange="if(this.value) switchUserView(this.value);" class="w-full text-sm border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-white <%= viewing_as_someone_else? ? 'bg-orange-50 border-orange-300 text-gray-800' : 'bg-white/90 border-indigo-300 text-gray-800' %>">
                 <% if viewing_as_someone_else? %>
                   <option value=""><%= viewing_as_user.nickname %>の視点 ▼</option>
                   <option value="clear">--- 管理者視点に戻す ---</option>
@@ -211,7 +211,7 @@
           .mobile-menu-btn { display: none !important; }
         }
 
-        /* === サイドバーナビアイテムのスタイル === */
+        /* === サイドバーナビアイテムのスタイル（インディゴ背景用） === */
         .sidebar-nav-item {
           display: flex;
           align-items: center;
@@ -219,17 +219,18 @@
           border-radius: 0.5rem;
           font-size: 0.875rem;
           font-weight: 500;
-          color: #374151; /* text-gray-700 */
+          color: rgba(255, 255, 255, 0.9); /* 白（少し透過） */
           transition: background-color 0.15s ease-in-out;
         }
 
         .sidebar-nav-item:hover {
-          background-color: #f3f4f6; /* bg-gray-100 */
+          background-color: rgba(255, 255, 255, 0.1); /* 白の10%透過 */
+          color: #ffffff;
         }
 
         .sidebar-nav-item.active {
-          background-color: #eef2ff; /* bg-indigo-50 */
-          color: #4338ca; /* text-indigo-700 */
+          background-color: rgba(255, 255, 255, 0.2); /* 白の20%透過 */
+          color: #ffffff;
           font-weight: 600;
         }
 
@@ -239,13 +240,13 @@
           padding: 0.5rem 0.75rem;
           border-radius: 0.375rem;
           font-size: 0.875rem;
-          color: #6b7280; /* text-gray-500 */
+          color: rgba(255, 255, 255, 0.8); /* 白（少し透過） */
           transition: background-color 0.15s ease-in-out;
         }
 
         .sidebar-nav-item-small:hover {
-          background-color: #f3f4f6; /* bg-gray-100 */
-          color: #374151; /* text-gray-700 */
+          background-color: rgba(255, 255, 255, 0.1); /* 白の10%透過 */
+          color: #ffffff;
         }
       </style>
 
