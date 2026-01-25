@@ -35,7 +35,7 @@
   <body class="bg-gray-50">
     <!-- サイドバーナビゲーション（PC/iPad Landscape用：1024px以上で表示） -->
     <% if user_signed_in? %>
-      <aside class="sidebar-nav fixed left-0 top-0 h-full w-64 bg-white shadow-lg z-40 flex flex-col">
+      <aside class="sidebar-nav fixed left-0 top-0 h-screen w-64 bg-white shadow-lg z-40 flex flex-col">
         <!-- 上部セクション -->
         <div class="flex flex-col flex-1 overflow-y-auto">
           <!-- ロゴ -->
@@ -47,30 +47,11 @@
 
           <!-- メインナビゲーション -->
           <nav class="flex-1 px-3 py-4 space-y-1">
-            <%= link_to dashboard_path, class: "sidebar-nav-item #{current_page?(dashboard_path) || current_page?(root_path) ? 'active' : ''}" do %>
-              <span class="sidebar-nav-icon">📊</span>
-              <span>ダッシュボード</span>
-            <% end %>
-
-            <%= link_to events_path, class: "sidebar-nav-item #{current_page?(events_path) ? 'active' : ''}" do %>
-              <span class="sidebar-nav-icon">🎮</span>
-              <span>イベント</span>
-            <% end %>
-
-            <%= link_to rotations_path, class: "sidebar-nav-item #{current_page?(rotations_path) ? 'active' : ''}" do %>
-              <span class="sidebar-nav-icon">🔄</span>
-              <span>ローテーション</span>
-            <% end %>
-
-            <%= link_to matches_path, class: "sidebar-nav-item #{current_page?(matches_path) ? 'active' : ''}" do %>
-              <span class="sidebar-nav-icon">⚔️</span>
-              <span>対戦履歴</span>
-            <% end %>
-
-            <%= link_to statistics_path, class: "sidebar-nav-item #{current_page?(statistics_path) ? 'active' : ''}" do %>
-              <span class="sidebar-nav-icon">📈</span>
-              <span>統計</span>
-            <% end %>
+            <%= link_to "ダッシュボード", dashboard_path, class: "sidebar-nav-item #{current_page?(dashboard_path) || current_page?(root_path) ? 'active' : ''}" %>
+            <%= link_to "イベント", events_path, class: "sidebar-nav-item #{current_page?(events_path) ? 'active' : ''}" %>
+            <%= link_to "ローテーション", rotations_path, class: "sidebar-nav-item #{current_page?(rotations_path) ? 'active' : ''}" %>
+            <%= link_to "対戦履歴", matches_path, class: "sidebar-nav-item #{current_page?(matches_path) ? 'active' : ''}" %>
+            <%= link_to "統計", statistics_path, class: "sidebar-nav-item #{current_page?(statistics_path) ? 'active' : ''}" %>
 
             <% if current_user.is_admin? %>
               <!-- 管理者メニューセパレーター -->
@@ -80,15 +61,8 @@
                 </div>
               </div>
 
-              <%= link_to mobile_suits_path, class: "sidebar-nav-item #{current_page?(mobile_suits_path) ? 'active' : ''}" do %>
-                <span class="sidebar-nav-icon">🤖</span>
-                <span>機体マスタ</span>
-              <% end %>
-
-              <%= link_to users_path, class: "sidebar-nav-item #{current_page?(users_path) ? 'active' : ''}" do %>
-                <span class="sidebar-nav-icon">👥</span>
-                <span>ユーザー管理</span>
-              <% end %>
+              <%= link_to "機体マスタ", mobile_suits_path, class: "sidebar-nav-item #{current_page?(mobile_suits_path) ? 'active' : ''}" %>
+              <%= link_to "ユーザー管理", users_path, class: "sidebar-nav-item #{current_page?(users_path) ? 'active' : ''}" %>
             <% end %>
           </nav>
         </div>
@@ -130,15 +104,9 @@
           <!-- 設定・ログアウト -->
           <div class="space-y-1">
             <% unless current_user.username == 'guest' %>
-              <%= link_to edit_profile_path, class: "sidebar-nav-item-small" do %>
-                <span>⚙️</span>
-                <span>設定</span>
-              <% end %>
+              <%= link_to "設定", edit_profile_path, class: "sidebar-nav-item-small" %>
             <% end %>
-            <%= button_to destroy_user_session_path, method: :delete, class: "sidebar-nav-item-small w-full text-left" do %>
-              <span>🚪</span>
-              <span>ログアウト</span>
-            <% end %>
+            <%= button_to "ログアウト", destroy_user_session_path, method: :delete, class: "sidebar-nav-item-small w-full text-left" %>
           </div>
         </div>
       </aside>
@@ -265,11 +233,6 @@
           font-weight: 600;
         }
 
-        .sidebar-nav-icon {
-          margin-right: 0.75rem;
-          font-size: 1.125rem;
-        }
-
         .sidebar-nav-item-small {
           display: flex;
           align-items: center;
@@ -283,10 +246,6 @@
         .sidebar-nav-item-small:hover {
           background-color: #f3f4f6; /* bg-gray-100 */
           color: #374151; /* text-gray-700 */
-        }
-
-        .sidebar-nav-item-small span:first-child {
-          margin-right: 0.5rem;
         }
       </style>
 
@@ -390,7 +349,7 @@
 
     <!-- フラッシュメッセージ -->
     <% if flash.any? %>
-      <div class="main-content-with-sidebar max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
+      <div class="<%= 'main-content-with-sidebar' if user_signed_in? %> max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
         <% flash.each do |type, message| %>
           <%
             alert_class = case type.to_s
@@ -432,7 +391,7 @@
       </div>
     <% end %>
 
-    <main class="main-content-with-sidebar">
+    <main class="<%= 'main-content-with-sidebar' if user_signed_in? %>">
       <%= yield %>
     </main>
   </body>
