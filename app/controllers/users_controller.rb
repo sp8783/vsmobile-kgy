@@ -91,6 +91,6 @@ class UsersController < ApplicationController
   end
 
   def user_params
-    params.require(:user).permit(:username, :nickname, :is_admin, :notification_enabled)
+    params.require(:user).permit(:username, :nickname, :is_admin)
   end
 end

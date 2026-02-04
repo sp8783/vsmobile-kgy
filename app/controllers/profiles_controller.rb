@@ -36,10 +36,10 @@ class ProfilesController < ApplicationController
   end
 
   def profile_params
-    params.require(:user).permit(:nickname, :notification_enabled)
+    params.require(:user).permit(:nickname)
   end
 
   def profile_params_with_password
-    params.require(:user).permit(:nickname, :notification_enabled, :password, :password_confirmation)
+    params.require(:user).permit(:nickname, :password, :password_confirmation)
   end
 end

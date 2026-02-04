@@ -6,6 +6,7 @@ class User < ApplicationRecord
 
   # Associations
   has_many :match_players, dependent: :destroy
+  has_many :push_subscriptions, dependent: :destroy
 
   # Validations
   validates :username, presence: true, uniqueness: { case_sensitive: false },
@@ -36,6 +37,11 @@ class User < ApplicationRecord
 
   def will_save_change_to_email?
     false
+  end
+
+  # Check if user can receive push notifications
+  def push_notifications_enabled?
+    push_subscriptions.exists?
   end
 
   # Use username for authentication instead of email

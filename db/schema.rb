@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_16_140556) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_04_081403) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -64,6 +64,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_16_140556) do
     t.index ["name"], name: "index_mobile_suits_on_name"
   end
 
+  create_table "push_subscriptions", force: :cascade do |t|
+    t.string "auth_key", null: false
+    t.datetime "created_at", null: false
+    t.string "endpoint", null: false
+    t.datetime "last_used_at"
+    t.string "p256dh_key", null: false
+    t.datetime "updated_at", null: false
+    t.string "user_agent"
+    t.bigint "user_id", null: false
+    t.index ["endpoint"], name: "index_push_subscriptions_on_endpoint", unique: true
+    t.index ["last_used_at"], name: "index_push_subscriptions_on_last_used_at"
+    t.index ["user_id"], name: "index_push_subscriptions_on_user_id"
+  end
+
   create_table "rotation_matches", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.bigint "match_id"
@@ -111,6 +125,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_16_140556) do
   add_foreign_key "match_players", "users"
   add_foreign_key "matches", "events"
   add_foreign_key "matches", "rotation_matches"
+  add_foreign_key "push_subscriptions", "users"
   add_foreign_key "rotation_matches", "matches"
   add_foreign_key "rotation_matches", "rotations"
   add_foreign_key "rotation_matches", "users", column: "team1_player1_id"

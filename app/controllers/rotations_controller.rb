@@ -77,6 +77,10 @@ class RotationsController < ApplicationController
 
     # Activate this rotation
     @rotation.update(is_active: true)
+
+    # Send push notifications to all players
+    PushNotificationService.notify_rotation_activated(rotation: @rotation)
+
     redirect_to @rotation, notice: 'ローテーションをアクティブにしました。'
   end
 
@@ -96,6 +100,9 @@ class RotationsController < ApplicationController
         type: 'rotation_updated',
         current_match_index: @rotation.current_match_index
       })
+
+      # Send push notifications to upcoming players
+      notify_upcoming_players(@rotation)
 
       redirect_to @rotation, notice: '次の試合に進みました。'
     else
@@ -174,6 +181,9 @@ class RotationsController < ApplicationController
 
         # Check if all matches are completed
         all_completed = @rotation.rotation_matches.all? { |rm| rm.match.present? }
+
+        # Send push notifications to upcoming players
+        notify_upcoming_players(@rotation) unless all_completed
 
         Rails.logger.info "Match recorded successfully: #{match.id}"
 
@@ -313,6 +323,77 @@ class RotationsController < ApplicationController
 
     # All matches are recorded, stay at the last match
     return rotation.rotation_matches.count - 1
+  end
+
+  def notify_upcoming_players(rotation)
+    current_index = rotation.current_match_index
+    rotation_matches = rotation.rotation_matches
+                               .includes(:team1_player1, :team1_player2, :team2_player1, :team2_player2)
+                               .order(:match_index)
+
+    # 全プレイヤーのIDを収集
+    all_player_ids = rotation_matches.flat_map do |rm|
+      [ rm.team1_player1_id, rm.team1_player2_id, rm.team2_player1_id, rm.team2_player2_id ]
+    end.compact.uniq
+
+    # 各プレイヤーの「次の試合」を特定して通知
+    all_player_ids.each do |player_id|
+      # このプレイヤーの次の試合を探す（current_index以降でまだ記録されていない試合）
+      next_match = rotation_matches.find do |rm|
+        rm.match_index >= current_index &&
+        rm.match_id.nil? &&
+        (rm.team1_player1_id == player_id ||
+         rm.team1_player2_id == player_id ||
+         rm.team2_player1_id == player_id ||
+         rm.team2_player2_id == player_id)
+      end
+
+      next unless next_match
+
+      matches_until = next_match.match_index - current_index
+
+      # 3試合以上先は通知しない
+      next if matches_until > 2
+
+      # 座席情報とパートナーを特定
+      seat_info = determine_seat_info(next_match, player_id)
+      user = User.find_by(id: player_id)
+      next unless user
+
+      if matches_until == 0
+        PushNotificationService.notify_match_now(
+          user: user,
+          rotation: rotation,
+          match_number: next_match.match_index + 1,
+          seat_position: seat_info[:seat],
+          partner_name: seat_info[:partner]&.nickname
+        )
+      else
+        PushNotificationService.notify_match_upcoming(
+          user: user,
+          matches_until_turn: matches_until,
+          rotation: rotation,
+          current_match_number: current_index + 1,
+          seat_position: seat_info[:seat],
+          partner_name: seat_info[:partner]&.nickname
+        )
+      end
+    end
+  end
+
+  def determine_seat_info(rotation_match, player_id)
+    case player_id
+    when rotation_match.team1_player1_id
+      { seat: :seat_1, partner: rotation_match.team1_player2 }  # 1番席（配信台）
+    when rotation_match.team1_player2_id
+      { seat: :seat_2, partner: rotation_match.team1_player1 }  # 2番席（配信台の隣）
+    when rotation_match.team2_player1_id
+      { seat: :seat_3, partner: rotation_match.team2_player2 }  # 3番席
+    when rotation_match.team2_player2_id
+      { seat: :seat_4, partner: rotation_match.team2_player1 }  # 4番席
+    else
+      { seat: nil, partner: nil }
+    end
   end
 
   def generate_rotation_matches(rotation, player_ids)

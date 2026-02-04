@@ -17,6 +17,14 @@ Rails.application.routes.draw do
   get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
   get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
 
+  # Push notifications
+  get "vapid_public_key", to: "push_subscriptions#vapid_public_key"
+  resources :push_subscriptions, only: [ :create, :destroy ] do
+    collection do
+      delete :unsubscribe_all
+    end
+  end
+
   # Defines the root path route ("/")
   root "dashboard#index"
 
