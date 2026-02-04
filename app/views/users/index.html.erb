@@ -33,7 +33,7 @@
               <% end %>
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-              <% if user.notification_enabled? %>
+              <% if user.push_notifications_enabled? %>
                 <span class="text-blue-600">ON</span>
               <% else %>
                 <span class="text-gray-400">OFF</span>

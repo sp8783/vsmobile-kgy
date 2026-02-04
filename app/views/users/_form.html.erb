@@ -39,11 +39,6 @@
     <%= form.label :is_admin, "管理者権限を付与", class: "ml-2 block text-sm text-gray-900" %>
   </div>
 
-  <div class="flex items-center">
-    <%= form.check_box :notification_enabled, class: "h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" %>
-    <%= form.label :notification_enabled, "通知を有効化", class: "ml-2 block text-sm text-gray-900" %>
-  </div>
-
   <div class="flex justify-end space-x-3 pt-4">
     <%= link_to "キャンセル", users_path, class: "px-4 py-2 bg-gray-600 text-white font-semibold rounded-md hover:bg-gray-700" %>
     <%= form.submit user.new_record? ? "作成" : "更新", class: "px-4 py-2 bg-indigo-600 text-white font-semibold rounded-md hover:bg-indigo-700 cursor-pointer" %>
