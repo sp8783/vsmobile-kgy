@@ -62,7 +62,7 @@
               </div>
 
               <%= link_to "機体マスタ", mobile_suits_path, class: "sidebar-nav-item #{current_page?(mobile_suits_path) ? 'active' : ''}" %>
-              <%= link_to "ユーザー管理", users_path, class: "sidebar-nav-item #{current_page?(users_path) ? 'active' : ''}" %>
+              <%= link_to "ユーザー管理", admin_users_path, class: "sidebar-nav-item #{current_page?(admin_users_path) ? 'active' : ''}" %>
             <% end %>
           </nav>
         </div>
@@ -133,7 +133,7 @@
                 <%= link_to "統計", statistics_path, class: "inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-900 border-b-2 #{current_page?(statistics_path) ? 'border-indigo-500' : 'border-transparent hover:border-gray-300'}" %>
                 <% if current_user.is_admin? %>
                   <%= link_to "機体マスタ", mobile_suits_path, class: "inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-900 border-b-2 #{current_page?(mobile_suits_path) ? 'border-indigo-500' : 'border-transparent hover:border-gray-300'}" %>
-                  <%= link_to "ユーザー管理", users_path, class: "inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-900 border-b-2 #{current_page?(users_path) ? 'border-indigo-500' : 'border-transparent hover:border-gray-300'}" %>
+                  <%= link_to "ユーザー管理", admin_users_path, class: "inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-900 border-b-2 #{current_page?(admin_users_path) ? 'border-indigo-500' : 'border-transparent hover:border-gray-300'}" %>
                 <% end %>
               </div>
             <% end %>
@@ -305,7 +305,7 @@
               <div class="border-t border-indigo-400 mt-3 pt-3">
                 <div class="px-4 py-2 text-xs font-semibold text-indigo-200 uppercase tracking-wider">管理者メニュー</div>
                 <%= link_to "機体マスタ", mobile_suits_path, class: "mobile-menu-item #{current_page?(mobile_suits_path) ? 'active' : ''}" %>
-                <%= link_to "ユーザー管理", users_path, class: "mobile-menu-item #{current_page?(users_path) ? 'active' : ''}" %>
+                <%= link_to "ユーザー管理", admin_users_path, class: "mobile-menu-item #{current_page?(admin_users_path) ? 'active' : ''}" %>
               </div>
             <% end %>
           </div>
@@ -372,9 +372,9 @@
           form.method = 'POST';
 
           if (userId === 'clear') {
-            form.action = '/users/clear_view';
+            form.action = '/admin/users/clear_view';
           } else {
-            form.action = '/users/' + userId + '/switch_view';
+            form.action = '/admin/users/' + userId + '/switch_view';
           }
 
           const token = document.querySelector('meta[name="csrf-token"]').content;

@@ -40,16 +40,6 @@ Rails.application.routes.draw do
   # Mobile Suits
   resources :mobile_suits
 
-  # Users (Admin only)
-  resources :users, except: [:show] do
-    member do
-      post :switch_view
-    end
-    collection do
-      post :clear_view
-    end
-  end
-
   # Events
   resources :events do
     resources :matches, only: [:new, :create]
@@ -79,6 +69,14 @@ Rails.application.routes.draw do
 
   # Admin
   namespace :admin do
+    resources :users, except: [:show] do
+      member do
+        post :switch_view
+      end
+      collection do
+        post :clear_view
+      end
+    end
     resources :imports, only: [:new, :create] do
       collection do
         get 'mobile_suits/new', to: 'imports#new_mobile_suits', as: 'new_mobile_suits'

@@ -1,9 +1,7 @@
 require 'csv'
 
 module Admin
-  class ImportsController < ApplicationController
-    before_action :authenticate_user!
-    before_action :require_admin
+  class ImportsController < BaseController
 
     def new
     end
@@ -141,12 +139,6 @@ module Admin
     end
 
     private
-
-    def require_admin
-      unless current_user.is_admin?
-        redirect_to root_path, alert: '管理者権限が必要です。'
-      end
-    end
 
     def import_match(row, event)
       # CSVの列: 日付, プレイヤー1, 使用機体1, プレイヤー2, 使用機体2, プレイヤー3, 使用機体3, プレイヤー4, 使用機体4, 勝敗1, 勝敗2, 勝敗3, 勝敗4
