@@ -17,7 +17,14 @@
       <% @events.each do |event| %>
         <%= link_to event_path(event), class: "block bg-white shadow rounded-lg p-4 hover:bg-gray-50" do %>
           <div class="flex items-center justify-between mb-2">
-            <div class="text-sm font-medium text-blue-600"><%= event.name %></div>
+            <div class="flex items-center gap-2">
+              <span class="text-sm font-medium text-blue-600"><%= event.name %></span>
+              <% if event.broadcast_url.present? %>
+                <%= link_to event.broadcast_url, target: "_blank", rel: "noopener noreferrer", class: "inline-flex items-center hover:opacity-80 transition-opacity", title: "配信を見る", onclick: "event.stopPropagation()" do %>
+                  <img src="/youtube_social_icon_red.png" alt="YouTube" class="h-4">
+                <% end %>
+              <% end %>
+            </div>
             <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
               <%= event.held_on.strftime('%Y/%m/%d') %>
             </span>
@@ -63,8 +70,13 @@
           <% @events.each do |event| %>
             <tr class="hover:bg-gray-50 cursor-pointer" onclick="window.location='<%= event_path(event) %>'">
               <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm font-medium text-blue-600">
-                  <%= event.name %>
+                <div class="flex items-center gap-2">
+                  <span class="text-sm font-medium text-blue-600"><%= event.name %></span>
+                  <% if event.broadcast_url.present? %>
+                    <%= link_to event.broadcast_url, target: "_blank", rel: "noopener noreferrer", class: "inline-flex items-center hover:opacity-80 transition-opacity", title: "配信を見る", onclick: "event.stopPropagation()" do %>
+                      <img src="/youtube_social_icon_red.png" alt="YouTube" class="h-5">
+                    <% end %>
+                  <% end %>
                 </div>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
