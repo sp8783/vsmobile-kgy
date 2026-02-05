@@ -1,4 +1,4 @@
-<%= form_with(model: user, class: "space-y-6") do |form| %>
+<%= form_with(model: [:admin, user], class: "space-y-6") do |form| %>
   <% if user.errors.any? %>
     <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
       <h2 class="font-bold text-lg mb-2"><%= pluralize(user.errors.count, "個のエラー") %>があります:</h2>
@@ -40,7 +40,7 @@
   </div>
 
   <div class="flex justify-end space-x-3 pt-4">
-    <%= link_to "キャンセル", users_path, class: "px-4 py-2 bg-gray-600 text-white font-semibold rounded-md hover:bg-gray-700" %>
+    <%= link_to "キャンセル", admin_users_path, class: "px-4 py-2 bg-gray-600 text-white font-semibold rounded-md hover:bg-gray-700" %>
     <%= form.submit user.new_record? ? "作成" : "更新", class: "px-4 py-2 bg-indigo-600 text-white font-semibold rounded-md hover:bg-indigo-700 cursor-pointer" %>
   </div>
 <% end %>

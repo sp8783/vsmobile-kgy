@@ -6,7 +6,7 @@
     </div>
     <% if current_user.is_admin? %>
       <div class="flex flex-wrap gap-2">
-        <%= link_to "新規登録", new_mobile_suit_path, class: "bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded" %>
+        <%= link_to "新規登録", new_admin_mobile_suit_path, class: "bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded" %>
         <%= link_to "CSVインポート", new_mobile_suits_admin_imports_path, class: "bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded" %>
       </div>
     <% end %>
@@ -23,8 +23,8 @@
         <div class="text-xs text-gray-500 mb-2"><%= mobile_suit.series %></div>
         <% if current_user.is_admin? %>
           <div class="flex items-center gap-3 pt-2 border-t border-gray-100">
-            <%= link_to "編集", edit_mobile_suit_path(mobile_suit), class: "text-blue-600 hover:text-blue-900 text-sm" %>
-            <%= button_to "削除", mobile_suit_path(mobile_suit), method: :delete, data: { turbo_confirm: "本当に削除しますか？" }, class: "text-red-600 hover:text-red-900 text-sm" %>
+            <%= link_to "編集", edit_admin_mobile_suit_path(mobile_suit), class: "text-blue-600 hover:text-blue-900 text-sm" %>
+            <%= button_to "削除", admin_mobile_suit_path(mobile_suit), method: :delete, data: { turbo_confirm: "本当に削除しますか？" }, class: "text-red-600 hover:text-red-900 text-sm" %>
           </div>
         <% end %>
       </div>
@@ -52,8 +52,8 @@
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><%= cost_badge(mobile_suit.cost) %></td>
             <% if current_user.is_admin? %>
               <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                <%= link_to "編集", edit_mobile_suit_path(mobile_suit), class: "text-blue-600 hover:text-blue-900 mr-3" %>
-                <%= button_to "削除", mobile_suit_path(mobile_suit), method: :delete, data: { turbo_confirm: "本当に削除しますか？" }, class: "text-red-600 hover:text-red-900" %>
+                <%= link_to "編集", edit_admin_mobile_suit_path(mobile_suit), class: "text-blue-600 hover:text-blue-900 mr-3" %>
+                <%= button_to "削除", admin_mobile_suit_path(mobile_suit), method: :delete, data: { turbo_confirm: "本当に削除しますか？" }, class: "text-red-600 hover:text-red-900" %>
               </td>
             <% end %>
           </tr>

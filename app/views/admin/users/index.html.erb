@@ -5,7 +5,7 @@
       <p class="mt-2 text-sm text-gray-600">ユーザーの作成・編集・削除ができます</p>
     </div>
     <div class="flex flex-wrap gap-2">
-      <%= link_to "新規作成", new_user_path, class: "bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded" %>
+      <%= link_to "新規作成", new_admin_user_path, class: "bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded" %>
     </div>
   </div>
 
@@ -40,9 +40,9 @@
               <% end %>
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-              <%= link_to "編集", edit_user_path(user), class: "text-blue-600 hover:text-blue-900 mr-3" %>
+              <%= link_to "編集", edit_admin_user_path(user), class: "text-blue-600 hover:text-blue-900 mr-3" %>
               <% unless user.id == current_user.id %>
-                <%= button_to "削除", user_path(user), method: :delete, data: { turbo_confirm: "本当に削除しますか？" }, class: "text-red-600 hover:text-red-900" %>
+                <%= button_to "削除", admin_user_path(user), method: :delete, data: { turbo_confirm: "本当に削除しますか？" }, class: "text-red-600 hover:text-red-900" %>
               <% end %>
             </td>
           </tr>
