@@ -1,6 +1,6 @@
 <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
   <div class="mb-6">
-    <%= link_to "← 機体マスタに戻る", mobile_suits_path, class: "text-blue-600 hover:text-blue-500" %>
+    <%= link_to "← 機体マスタに戻る", admin_mobile_suits_path, class: "text-blue-600 hover:text-blue-500" %>
   </div>
 
   <h1 class="text-3xl font-bold text-gray-900 mb-6">機体マスタCSVインポート</h1>
@@ -40,7 +40,7 @@
     </div>
 
     <div class="flex justify-end space-x-3">
-      <%= link_to "キャンセル", mobile_suits_path, class: "px-4 py-2 bg-gray-600 text-white font-semibold rounded-md hover:bg-gray-700" %>
+      <%= link_to "キャンセル", admin_mobile_suits_path, class: "px-4 py-2 bg-gray-600 text-white font-semibold rounded-md hover:bg-gray-700" %>
       <%= submit_tag "インポート", class: "px-4 py-2 bg-indigo-600 text-white font-semibold rounded-md hover:bg-indigo-700", data: { turbo_confirm: "CSVファイルをインポートしますか？" } %>
     </div>
   <% end %>
