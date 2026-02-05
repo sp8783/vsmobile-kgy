@@ -132,7 +132,7 @@ module Admin
           flash[:notice] = "#{imported_count}件の機体を追加、#{updated_count}件を更新しました。"
         end
 
-        redirect_to admin_mobile_suits_path
+        redirect_to mobile_suits_path
       rescue => e
         redirect_to new_mobile_suits_admin_imports_path, alert: "CSVファイルの読み込みに失敗しました: #{e.message}"
       end
