@@ -15,12 +15,12 @@
     <!-- モバイル用カードビュー -->
     <div class="mobile-only-view space-y-4">
       <% @events.each do |event| %>
-        <%= link_to event_path(event), class: "block bg-white shadow rounded-lg p-4 hover:bg-gray-50" do %>
+        <div class="bg-white shadow rounded-lg p-4">
           <div class="mb-2">
             <div class="flex items-center gap-2 mb-1">
-              <span class="text-sm font-medium text-blue-600"><%= event.name %></span>
+              <%= link_to event.name, event_path(event), class: "text-sm font-medium text-blue-600 hover:text-blue-800" %>
               <% if event.broadcast_url.present? %>
-                <%= link_to event.broadcast_url, target: "_blank", rel: "noopener noreferrer", class: "inline-flex items-center hover:opacity-80 transition-opacity flex-shrink-0", title: "配信を見る", onclick: "event.stopPropagation()" do %>
+                <%= link_to event.broadcast_url, target: "_blank", rel: "noopener noreferrer", class: "inline-flex items-center hover:opacity-80 transition-opacity flex-shrink-0", title: "配信を見る" do %>
                   <img src="/youtube_social_icon_red.png" alt="YouTube" class="h-4">
                 <% end %>
               <% end %>
@@ -37,10 +37,10 @@
           <% end %>
           <% if current_user.is_admin? %>
             <div class="pt-2 border-t border-gray-100">
-              <%= link_to "編集", edit_event_path(event), class: "text-xs text-blue-600 hover:text-blue-900", onclick: "event.stopPropagation()" %>
+              <%= link_to "編集", edit_event_path(event), class: "text-xs text-blue-600 hover:text-blue-900" %>
             </div>
           <% end %>
-        <% end %>
+        </div>
       <% end %>
     </div>
 
