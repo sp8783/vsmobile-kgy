@@ -16,18 +16,18 @@
     <div class="mobile-only-view space-y-4">
       <% @events.each do |event| %>
         <%= link_to event_path(event), class: "block bg-white shadow rounded-lg p-4 hover:bg-gray-50" do %>
-          <div class="flex items-center justify-between mb-2">
-            <div class="flex items-center gap-2">
-              <span class="text-sm font-medium text-blue-600"><%= event.name %></span>
+          <div class="flex items-start justify-between gap-2 mb-2">
+            <span class="text-sm font-medium text-blue-600 flex-1"><%= event.name %></span>
+            <div class="flex items-center gap-2 flex-shrink-0">
               <% if event.broadcast_url.present? %>
                 <%= link_to event.broadcast_url, target: "_blank", rel: "noopener noreferrer", class: "inline-flex items-center hover:opacity-80 transition-opacity", title: "配信を見る", onclick: "event.stopPropagation()" do %>
                   <img src="/youtube_social_icon_red.png" alt="YouTube" class="h-4">
                 <% end %>
               <% end %>
+              <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 whitespace-nowrap">
+                <%= event.held_on.strftime('%Y/%m/%d') %>
+              </span>
             </div>
-            <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
-              <%= event.held_on.strftime('%Y/%m/%d') %>
-            </span>
           </div>
           <% if event.description.present? %>
             <div class="text-xs text-gray-500 mb-2 line-clamp-2"><%= event.description %></div>
@@ -35,9 +35,7 @@
           <div class="flex items-center justify-between text-xs text-gray-600">
             <span><%= event.matches.count %> 件の試合</span>
             <% if current_user.is_admin? %>
-              <div class="flex items-center gap-2" onclick="event.stopPropagation()">
-                <%= link_to "編集", edit_event_path(event), class: "text-blue-600 hover:text-blue-900", onclick: "event.stopPropagation()" %>
-              </div>
+              <%= link_to "編集", edit_event_path(event), class: "text-blue-600 hover:text-blue-900", onclick: "event.stopPropagation()" %>
             <% end %>
           </div>
         <% end %>
