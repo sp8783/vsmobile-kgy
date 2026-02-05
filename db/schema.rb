@@ -10,11 +10,12 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_04_081403) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_05_001615) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
   create_table "events", force: :cascade do |t|
+    t.string "broadcast_url"
     t.datetime "created_at", null: false
     t.text "description"
     t.date "held_on", null: false
