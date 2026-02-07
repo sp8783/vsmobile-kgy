@@ -1,8 +1,8 @@
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
   <div class="mb-8">
     <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">ダッシュボード</h1>
-    <p class="mt-2 text-sm text-gray-600">ようこそ、<%= current_user.nickname %>さん</p>
-    <% if current_user.is_guest %>
+    <p class="mt-2 text-sm text-gray-600">ようこそ、<%= viewing_as_user.nickname %>さん</p>
+    <% if viewing_as_user.is_guest %>
       <div class="mt-4 bg-amber-50 border-l-4 border-amber-400 p-4">
         <div class="flex">
           <div class="flex-shrink-0">
@@ -223,7 +223,7 @@
         </div>
       <% end %>
 
-      <% if current_user.is_guest %>
+      <% if viewing_as_user.is_guest %>
         <!-- ゲスト用: 個人戦績の代わりに案内を表示 -->
         <div class="bg-white shadow rounded-lg p-6">
           <div class="text-center py-8">
@@ -501,7 +501,7 @@
         <div class="px-6 py-5 border-b border-gray-200">
           <h2 class="text-lg font-bold text-gray-900">🏆 あなたの戦績</h2>
         </div>
-        <% if current_user.is_guest %>
+        <% if viewing_as_user.is_guest %>
           <div class="px-6 py-8 text-center">
             <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
@@ -535,7 +535,7 @@
           <h2 class="text-lg font-bold text-gray-900">🤝 ベストパートナー</h2>
         </div>
         <div class="divide-y divide-gray-200">
-          <% if current_user.is_guest %>
+          <% if viewing_as_user.is_guest %>
             <div class="px-6 py-8 text-center">
               <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
@@ -584,7 +584,7 @@
             <h2 class="text-lg font-bold text-gray-900">📱 機体トレンド</h2>
             <span class="text-xs text-gray-500" title="直近イベントでの使用機体と勝率">ℹ️ イベント別</span>
           </div>
-          <% if !current_user.is_guest && @trend_event %>
+          <% if !viewing_as_user.is_guest && @trend_event %>
             <p class="text-xs text-gray-500 mt-1">
               <%= @trend_event.name %>
               <% if @is_today_event %>
@@ -594,7 +594,7 @@
           <% end %>
         </div>
         <div class="divide-y divide-gray-200">
-          <% if current_user.is_guest %>
+          <% if viewing_as_user.is_guest %>
             <div class="px-6 py-8 text-center">
               <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
@@ -638,7 +638,7 @@
           </div>
         </div>
         <div class="divide-y divide-gray-200">
-          <% if current_user.is_guest %>
+          <% if viewing_as_user.is_guest %>
             <div class="px-6 py-8 text-center">
               <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
@@ -683,7 +683,7 @@
           <h2 class="text-lg font-bold text-gray-900">⭐ お気に入り機体</h2>
         </div>
         <div class="divide-y divide-gray-200">
-          <% if current_user.is_guest %>
+          <% if viewing_as_user.is_guest %>
             <div class="px-6 py-8 text-center">
               <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />

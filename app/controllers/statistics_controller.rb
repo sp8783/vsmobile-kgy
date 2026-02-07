@@ -6,9 +6,9 @@ class StatisticsController < ApplicationController
   def index
     @active_tab = params[:tab] || 'overall'
 
-    # ゲストユーザーは個人統計タブにアクセス不可
+    # ゲストユーザー（または管理者がゲスト視点切り替え中）は個人統計タブにアクセス不可
     personal_tabs = %w[overview events event_progression mobile_suits opponent_suits partners opponents]
-    if current_user.is_guest && personal_tabs.include?(@active_tab)
+    if viewing_as_user.is_guest && personal_tabs.include?(@active_tab)
       redirect_to statistics_path(tab: 'overall'), alert: '個人統計を見るには管理者にアカウント発行を依頼してください'
       return
     end

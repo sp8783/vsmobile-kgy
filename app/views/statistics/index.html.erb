@@ -14,7 +14,7 @@
         <option value="overall" <%= 'selected' if @active_tab == 'overall' %>>全体統計</option>
       </optgroup>
       <optgroup label="個人">
-        <% if current_user.is_guest %>
+        <% if viewing_as_user.is_guest %>
           <option disabled>総合戦績（要アカウント）</option>
           <option disabled>イベント別戦績（要アカウント）</option>
           <option disabled>イベント内期間別戦績（要アカウント）</option>
@@ -66,7 +66,7 @@
 
       <!-- 個人統計カテゴリ -->
       <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider px-2 py-4">個人</span>
-      <% if current_user.is_guest %>
+      <% if viewing_as_user.is_guest %>
         <!-- ゲストユーザー: 個人統計タブを無効化 -->
         <span class="whitespace-nowrap py-4 px-1 border-b-2 border-transparent text-gray-300 font-medium text-sm cursor-not-allowed" title="個人統計を見るには管理者にアカウント発行を依頼してください">総合戦績</span>
         <span class="whitespace-nowrap py-4 px-1 border-b-2 border-transparent text-gray-300 font-medium text-sm ml-4 cursor-not-allowed" title="個人統計を見るには管理者にアカウント発行を依頼してください">イベント別戦績</span>
