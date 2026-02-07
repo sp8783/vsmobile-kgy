@@ -6,7 +6,7 @@ class ReactionsController < ApplicationController
     unless can_react?
       respond_to do |format|
         format.turbo_stream do
-          render turbo_stream: turbo_stream.prepend("flash-messages", partial: "shared/flash_message",
+          render turbo_stream: turbo_stream.update("flash-messages", partial: "shared/flash_message",
             locals: { type: "warning", message: "スタンプは一般ユーザーのみ利用できます。" })
         end
         format.html { redirect_to matches_path, alert: "スタンプは一般ユーザーのみ利用できます。" }
