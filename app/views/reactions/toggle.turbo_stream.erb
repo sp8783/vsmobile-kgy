@@ -1,0 +1,3 @@
+<%= turbo_stream.replace dom_id(@match, "reaction_#{@master_emoji.id}") do %>
+  <%= render "reactions/reaction_button", match: @match, emoji: @master_emoji, compact: params[:compact] == "true" %>
+<% end %>

@@ -150,6 +150,10 @@
                 </div>
               </div>
             <% end %>
+
+            <!-- リアクションバー（リアルタイム更新対応） -->
+            <%= turbo_stream_from "match_#{match.id}_reactions_compact" %>
+            <%= render "reactions/reaction_bar", match: match, compact: true %>
           </div>
         </li>
       <% end %>
