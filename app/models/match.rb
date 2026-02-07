@@ -20,16 +20,28 @@ class Match < ApplicationRecord
   # 特定のユーザーが特定の絵文字でリアクションしているかどうか
   def reacted_by?(user, master_emoji)
     return false unless user
-    reactions.exists?(user: user, master_emoji: master_emoji)
+    if reactions.loaded?
+      reactions.any? { |r| r.user_id == user.id && r.master_emoji_id == master_emoji.id }
+    else
+      reactions.exists?(user: user, master_emoji: master_emoji)
+    end
   end
 
   # 特定の絵文字のリアクション数を取得
   def reaction_count(master_emoji)
-    reactions.where(master_emoji: master_emoji).count
+    if reactions.loaded?
+      reactions.count { |r| r.master_emoji_id == master_emoji.id }
+    else
+      reactions.where(master_emoji: master_emoji).count
+    end
   end
 
   # 特定の絵文字でリアクションしたユーザーのニックネームを取得
   def reaction_user_nicknames(master_emoji)
-    reactions.where(master_emoji: master_emoji).includes(:user).map { |r| r.user.nickname }
+    if reactions.loaded?
+      reactions.select { |r| r.master_emoji_id == master_emoji.id }.map { |r| r.user.nickname }
+    else
+      reactions.where(master_emoji: master_emoji).includes(:user).map { |r| r.user.nickname }
+    end
   end
 end
