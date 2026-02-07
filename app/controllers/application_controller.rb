@@ -9,7 +9,7 @@ class ApplicationController < ActionController::Base
   before_action :set_user_cookie
 
   # ユーザー視点切り替え機能
-  helper_method :viewing_as_user, :viewing_as_someone_else?
+  helper_method :viewing_as_user, :viewing_as_someone_else?, :can_react?
 
   # 現在表示中のユーザー視点を取得
   # 管理者が視点切り替えをしている場合は、そのユーザーを返す
@@ -25,6 +25,11 @@ class ApplicationController < ActionController::Base
   # 視点切り替え中かどうか
   def viewing_as_someone_else?
     current_user&.is_admin && session[:view_as_user_id].present? && session[:view_as_user_id] != current_user.id
+  end
+
+  # スタンプを押せるかどうか（viewing_as_user が一般ユーザーの場合のみ）
+  def can_react?
+    user_signed_in? && viewing_as_user&.regular_user?
   end
 
   private
