@@ -67,12 +67,9 @@ Rails.application.configure do
   # Annotate rendered view with file names.
   config.action_view.annotate_rendered_view_with_filenames = true
 
-  # Allow Action Cable access from localhost and localtunnel
-  config.action_cable.allowed_request_origins = [
-    'http://localhost:3000',
-    'http://127.0.0.1:3000',
-    /https?:\/\/.*\.loca\.lt/
-  ]
+  # Allow Action Cable access from any origin in development
+  # (localhost, localtunnel, cloudflared tunnel, etc.)
+  config.action_cable.disable_request_forgery_protection = true
 
   # Raise error when a before_action's only/except options reference missing actions.
   config.action_controller.raise_on_missing_callback_actions = true
