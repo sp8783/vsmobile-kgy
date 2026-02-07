@@ -1,0 +1,135 @@
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <div class="page-header flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 mb-6">
+    <div>
+      <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">スタンプマスタ</h1>
+      <p class="mt-2 text-sm text-gray-600">リアクションで使用できるスタンプの一覧を管理できます</p>
+    </div>
+    <% if current_user.is_admin? %>
+      <div class="flex flex-wrap gap-2">
+        <%= link_to "新規登録", new_admin_master_emoji_path, class: "bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded" %>
+      </div>
+    <% end %>
+  </div>
+
+  <!-- モバイル用カードビュー -->
+  <div class="mobile-only-view space-y-3">
+    <% @master_emojis.each do |master_emoji| %>
+      <div class="bg-white shadow rounded-lg p-4">
+        <div class="flex items-center justify-between mb-2">
+          <div class="flex items-center space-x-3">
+            <span class="text-2xl">
+              <% if master_emoji.asset_image? %>
+                <%= image_tag "emojis/#{master_emoji.image_key}", class: "w-8 h-8", alt: master_emoji.name %>
+              <% else %>
+                <%= master_emoji.image_key %>
+              <% end %>
+            </span>
+            <span class="text-sm font-medium text-gray-900"><%= master_emoji.name %></span>
+          </div>
+          <% if master_emoji.is_active %>
+            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">有効</span>
+          <% else %>
+            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-500">無効</span>
+          <% end %>
+        </div>
+        <div class="text-xs text-gray-500 mb-2">
+          使用数: <%= master_emoji.reactions.count %>件
+          <% if master_emoji.position.present? %>
+            | 表示順: <%= master_emoji.position %>
+          <% end %>
+        </div>
+        <% if current_user.is_admin? %>
+          <div class="flex items-center gap-3 pt-2 border-t border-gray-100">
+            <%= link_to "編集", edit_admin_master_emoji_path(master_emoji), class: "text-blue-600 hover:text-blue-900 text-sm" %>
+            <%= button_to "削除", admin_master_emoji_path(master_emoji), method: :delete, data: { turbo_confirm: "本当に削除しますか？関連するリアクションもすべて削除されます。" }, class: "text-red-600 hover:text-red-900 text-sm" %>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+
+  <!-- デスクトップ用テーブルビュー -->
+  <div class="desktop-only-view bg-white shadow overflow-hidden sm:rounded-lg">
+    <table class="min-w-full divide-y divide-gray-200">
+      <thead class="bg-gray-50">
+        <tr>
+          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">プレビュー</th>
+          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">名前</th>
+          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">image_key</th>
+          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">表示順</th>
+          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">状態</th>
+          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">使用数</th>
+          <% if current_user.is_admin? %>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
+          <% end %>
+        </tr>
+      </thead>
+      <tbody class="bg-white divide-y divide-gray-200">
+        <% @master_emojis.each do |master_emoji| %>
+          <tr>
+            <td class="px-6 py-4 whitespace-nowrap text-2xl">
+              <% if master_emoji.asset_image? %>
+                <%= image_tag "emojis/#{master_emoji.image_key}", class: "w-8 h-8", alt: master_emoji.name %>
+              <% else %>
+                <%= master_emoji.image_key %>
+              <% end %>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"><%= master_emoji.name %></td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><%= master_emoji.image_key %></td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><%= master_emoji.position || '-' %></td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <% if master_emoji.is_active %>
+                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">有効</span>
+              <% else %>
+                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-500">無効</span>
+              <% end %>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><%= master_emoji.reactions.count %>件</td>
+            <% if current_user.is_admin? %>
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                <%= link_to "編集", edit_admin_master_emoji_path(master_emoji), class: "text-blue-600 hover:text-blue-900 mr-3" %>
+                <%= button_to "削除", admin_master_emoji_path(master_emoji), method: :delete, data: { turbo_confirm: "本当に削除しますか？関連するリアクションもすべて削除されます。" }, class: "text-red-600 hover:text-red-900" %>
+              </td>
+            <% end %>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+
+  <% if @master_emojis.empty? %>
+    <div class="text-center py-12 bg-white rounded-lg shadow">
+      <p class="text-gray-500">スタンプがまだ登録されていません</p>
+      <%= link_to "最初のスタンプを登録する", new_admin_master_emoji_path, class: "mt-4 inline-block text-blue-600 hover:text-blue-500" %>
+    </div>
+  <% else %>
+    <div class="mt-4 text-sm text-gray-500">
+      全 <%= @master_emojis.count %> スタンプ
+    </div>
+  <% end %>
+</div>
+
+<style>
+  /* ページヘッダー */
+  .page-header {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  @media (min-width: 640px) {
+    .page-header {
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+    }
+  }
+
+  /* モバイル（768px未満）*/
+  .mobile-only-view { display: block !important; }
+  .desktop-only-view { display: none !important; }
+  /* デスクトップ（768px以上）*/
+  @media (min-width: 768px) {
+    .mobile-only-view { display: none !important; }
+    .desktop-only-view { display: block !important; }
+  }
+</style>
