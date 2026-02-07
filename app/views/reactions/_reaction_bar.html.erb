@@ -1,5 +1,5 @@
-<%# locals: (match:, compact: false) %>
-<% emojis = MasterEmoji.active.ordered %>
+<%# locals: (match:, compact: false, emojis: nil) %>
+<% emojis ||= MasterEmoji.active.ordered %>
 <% return if emojis.empty? %>
 
 <div id="<%= dom_id(match, :reactions) %>" class="reaction-bar relative flex flex-wrap items-center gap-2 <%= compact ? 'mt-2' : 'mt-4' %>" data-controller="reaction-picker" data-reaction-picker-match-id-value="<%= match.id %>">
