@@ -1,0 +1,61 @@
+<%# locals: (match:, emoji:, compact: false, signed_in_user: nil) %>
+<%# signed_in_user: ブロードキャスト時はnil、通常時はcurrent_userを渡す %>
+<% count = match.reaction_count(emoji) %>
+<% nicknames = match.reaction_user_nicknames(emoji) %>
+<%
+  # ブロードキャスト時は current_user が使えないので、明示的に渡された signed_in_user のみ使用
+  current_signed_in_user = if local_assigns.key?(:signed_in_user)
+    local_assigns[:signed_in_user]
+  else
+    # 通常のリクエスト時のみ current_user を使用（Deviseコンテキストがある場合）
+    begin
+      defined?(current_user) && respond_to?(:current_user) ? current_user : nil
+    rescue
+      nil
+    end
+  end
+%>
+<% is_reacted = current_signed_in_user.present? && match.reacted_by?(current_signed_in_user, emoji) %>
+
+<div id="<%= dom_id(match, "reaction_#{emoji.id}") %>"
+     class="reaction-button-wrapper relative select-none <%= count > 0 ? 'inline-block' : 'hidden' %>"
+     data-match-id="<%= match.id %>"
+     data-emoji-id="<%= emoji.id %>"
+     data-count="<%= count %>"
+     data-my-reaction="<%= is_reacted %>"
+     data-nicknames="<%= nicknames.join(', ') %>"
+     data-controller="reaction-tooltip"
+     data-action="mouseenter->reaction-tooltip#showTooltip mouseleave->reaction-tooltip#hideTooltip touchstart->reaction-tooltip#startLongPress touchend->reaction-tooltip#endLongPress touchmove->reaction-tooltip#cancelLongPress">
+  <% if count > 0 %>
+    <%= button_to toggle_match_reactions_path(match, master_emoji_id: emoji.id, compact: compact),
+          method: :post,
+          class: "reaction-button inline-flex items-center gap-1 #{compact ? 'px-2 py-0.5' : 'px-3 py-1'} rounded-full text-sm transition-colors #{is_reacted ? 'bg-blue-100 border-2 border-blue-400 text-blue-700' : 'bg-gray-100 border border-gray-200 text-gray-700 hover:bg-gray-200'}",
+          data: { turbo_stream: true, action: "click->reaction-picker#trackReaction" } do %>
+      <span class="inline-flex items-center justify-center <%= compact ? 'w-5 h-5' : 'w-6 h-6' %>">
+        <% if emoji.asset_image? %>
+          <%= image_tag "emojis/#{emoji.image_key}", class: "w-full h-full object-contain", alt: emoji.name %>
+        <% else %>
+          <span class="<%= compact ? 'text-lg' : 'text-xl' %> leading-none"><%= emoji.image_key %></span>
+        <% end %>
+      </span>
+      <span class="<%= compact ? 'text-xs' : 'text-sm' %> font-medium"><%= count %></span>
+    <% end %>
+
+    <!-- ツールチップ -->
+    <div class="reaction-tooltip hidden absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-gray-800 text-white text-xs rounded-lg shadow-lg whitespace-nowrap"
+         data-reaction-tooltip-target="tooltip">
+      <div class="flex items-center gap-2">
+        <span class="inline-flex items-center justify-center w-5 h-5">
+          <% if emoji.asset_image? %>
+            <%= image_tag "emojis/#{emoji.image_key}", class: "w-full h-full object-contain", alt: emoji.name %>
+          <% else %>
+            <span class="text-lg leading-none"><%= emoji.image_key %></span>
+          <% end %>
+        </span>
+        <span data-reaction-tooltip-target="names"><%= nicknames.join(', ') %></span>
+      </div>
+      <!-- 矢印 -->
+      <div class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-800"></div>
+    </div>
+  <% end %>
+</div>

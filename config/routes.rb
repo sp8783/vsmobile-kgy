@@ -48,6 +48,11 @@ Rails.application.routes.draw do
     collection do
       delete :bulk_destroy
     end
+    resources :reactions, only: [] do
+      collection do
+        post :toggle
+      end
+    end
   end
 
   # Rotations
@@ -75,6 +80,7 @@ Rails.application.routes.draw do
       end
     end
     resources :mobile_suits, except: [:show]
+    resources :master_emojis, except: [:show]
     resources :imports, only: [:new, :create] do
       collection do
         get 'mobile_suits/new', to: 'imports#new_mobile_suits', as: 'new_mobile_suits'

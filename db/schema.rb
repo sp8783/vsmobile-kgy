@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_05_001615) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_05_122912) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -22,6 +22,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_05_001615) do
     t.string "name", null: false
     t.datetime "updated_at", null: false
     t.index ["held_on"], name: "index_events_on_held_on"
+  end
+
+  create_table "master_emojis", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "image_key", null: false
+    t.boolean "is_active", default: true, null: false
+    t.string "name", null: false
+    t.integer "position"
+    t.datetime "updated_at", null: false
   end
 
   create_table "match_players", force: :cascade do |t|
@@ -79,6 +88,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_05_001615) do
     t.index ["user_id"], name: "index_push_subscriptions_on_user_id"
   end
 
+  create_table "reactions", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "master_emoji_id", null: false
+    t.bigint "match_id", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["master_emoji_id"], name: "index_reactions_on_master_emoji_id"
+    t.index ["match_id"], name: "index_reactions_on_match_id"
+    t.index ["user_id", "match_id", "master_emoji_id"], name: "index_reactions_unique", unique: true
+    t.index ["user_id"], name: "index_reactions_on_user_id"
+  end
+
   create_table "rotation_matches", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.bigint "match_id"
@@ -127,6 +148,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_05_001615) do
   add_foreign_key "matches", "events"
   add_foreign_key "matches", "rotation_matches"
   add_foreign_key "push_subscriptions", "users"
+  add_foreign_key "reactions", "master_emojis"
+  add_foreign_key "reactions", "matches"
+  add_foreign_key "reactions", "users"
   add_foreign_key "rotation_matches", "matches"
   add_foreign_key "rotation_matches", "rotations"
   add_foreign_key "rotation_matches", "users", column: "team1_player1_id"

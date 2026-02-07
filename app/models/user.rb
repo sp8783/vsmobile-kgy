@@ -7,6 +7,7 @@ class User < ApplicationRecord
   # Associations
   has_many :match_players, dependent: :destroy
   has_many :push_subscriptions, dependent: :destroy
+  has_many :reactions, dependent: :destroy
 
   # Validations
   validates :username, presence: true, uniqueness: { case_sensitive: false },

@@ -21,12 +21,21 @@ default: &default
 
 
 development:
-  <<: *default
-  database: vsmobile_kgy_development
-  username: postgres
-  password: postgres
-  host: localhost
-  port: 5433
+  primary:
+    <<: *default
+    database: vsmobile_kgy_development
+    username: postgres
+    password: postgres
+    host: localhost
+    port: 5433
+  cable:
+    <<: *default
+    database: vsmobile_kgy_development_cable
+    username: postgres
+    password: postgres
+    host: localhost
+    port: 5433
+    migrations_paths: db/cable_migrate
 
   # Schema search path. The server defaults to $user,public
   #schema_search_path: myapp,sharedapp,public

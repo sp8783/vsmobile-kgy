@@ -1,0 +1,39 @@
+<%# locals: (match:, compact: false) %>
+<% emojis = MasterEmoji.active.ordered %>
+<% return if emojis.empty? %>
+
+<div id="<%= dom_id(match, :reactions) %>" class="reaction-bar relative flex flex-wrap items-center gap-2 <%= compact ? 'mt-2' : 'mt-4' %>" data-controller="reaction-picker" data-reaction-picker-match-id-value="<%= match.id %>">
+  <% emojis.each do |emoji| %>
+    <%= render "reactions/reaction_button", match: match, emoji: emoji, compact: compact %>
+  <% end %>
+
+  <% if user_signed_in? %>
+    <button type="button"
+            class="reaction-add-btn <%= compact ? 'w-7 h-7 text-sm' : 'w-8 h-8 text-lg' %> rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 transition-colors"
+            data-action="click->reaction-picker#togglePicker"
+            title="リアクションを追加">
+      +
+    </button>
+
+    <div class="reaction-picker hidden absolute z-20 right-0 bg-white shadow-lg rounded-lg p-2 border border-gray-200"
+         data-reaction-picker-target="picker">
+      <div class="flex flex-wrap gap-1 max-w-sm">
+        <% emojis.each do |emoji| %>
+          <%= button_to toggle_match_reactions_path(match, master_emoji_id: emoji.id, compact: compact),
+                method: :post,
+                class: "reaction-picker-item w-9 h-9 flex items-center justify-center rounded hover:bg-gray-100 transition-colors text-xl",
+                title: emoji.name,
+                data: { turbo_stream: true, action: "click->reaction-picker#trackReaction click->reaction-picker#closePicker", emoji_id: emoji.id } do %>
+            <span class="inline-flex items-center justify-center w-7 h-7">
+              <% if emoji.asset_image? %>
+                <%= image_tag "emojis/#{emoji.image_key}", class: "w-full h-full object-contain", alt: emoji.name %>
+              <% else %>
+                <span class="text-2xl leading-none"><%= emoji.image_key %></span>
+              <% end %>
+            </span>
+          <% end %>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+</div>
