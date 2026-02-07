@@ -18,6 +18,11 @@ class User < ApplicationRecord
   scope :regular_users, -> { where(is_admin: false, is_guest: false) }
   scope :non_guest, -> { where(is_guest: false) }
 
+  # 一般ユーザー（管理者でもゲストでもない）かどうか
+  def regular_user?
+    !is_admin && !is_guest
+  end
+
   # Virtual email attribute (maps to username for Devise compatibility)
   def email
     username

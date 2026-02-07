@@ -48,7 +48,7 @@ class MatchesController < ApplicationController
   def new
     @match = @event.matches.build(played_at: Time.current)
     4.times { |i| @match.match_players.build(position: i + 1) }
-    @users = User.non_guest.order(:nickname)
+    @users = User.regular_users.order(:nickname)
     @mobile_suits = MobileSuit.all.order(Arel.sql('position IS NULL, position ASC, cost DESC, name ASC'))
   end
 
@@ -59,14 +59,14 @@ class MatchesController < ApplicationController
     if @match.save
       redirect_to @event, notice: "対戦記録を登録しました。"
     else
-      @users = User.non_guest.order(:nickname)
+      @users = User.regular_users.order(:nickname)
       @mobile_suits = MobileSuit.all.order(Arel.sql('position IS NULL, position ASC, cost DESC, name ASC'))
       render :new, status: :unprocessable_entity
     end
   end
 
   def edit
-    @users = User.non_guest.order(:nickname)
+    @users = User.regular_users.order(:nickname)
     @mobile_suits = MobileSuit.all.order(Arel.sql('position IS NULL, position ASC, cost DESC, name ASC'))
   end
 
@@ -74,7 +74,7 @@ class MatchesController < ApplicationController
     if @match.update(match_params)
       redirect_to @match, notice: "対戦記録を更新しました。"
     else
-      @users = User.non_guest.order(:nickname)
+      @users = User.regular_users.order(:nickname)
       @mobile_suits = MobileSuit.all.order(Arel.sql('position IS NULL, position ASC, cost DESC, name ASC'))
       render :edit, status: :unprocessable_entity
     end

@@ -3,14 +3,26 @@ class ReactionsController < ApplicationController
   before_action :set_match
 
   def toggle
+    unless can_react?
+      respond_to do |format|
+        format.turbo_stream do
+          render turbo_stream: turbo_stream.update("flash-messages", partial: "shared/flash_message",
+            locals: { type: "warning", message: "スタンプは一般ユーザーのみ利用できます。" })
+        end
+        format.html { redirect_to matches_path, alert: "スタンプは一般ユーザーのみ利用できます。" }
+      end
+      return
+    end
+
+    @reaction_user = viewing_as_user
     @master_emoji = MasterEmoji.find(params[:master_emoji_id])
-    @reaction = @match.reactions.find_by(user: current_user, master_emoji: @master_emoji)
+    @reaction = @match.reactions.find_by(user: @reaction_user, master_emoji: @master_emoji)
 
     if @reaction
       @reaction.destroy
       @action = :removed
     else
-      @match.reactions.create!(user: current_user, master_emoji: @master_emoji)
+      @match.reactions.create!(user: @reaction_user, master_emoji: @master_emoji)
       @action = :added
     end
 

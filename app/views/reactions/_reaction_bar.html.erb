@@ -7,7 +7,7 @@
     <%= render "reactions/reaction_button", match: match, emoji: emoji, compact: compact %>
   <% end %>
 
-  <% if user_signed_in? %>
+  <% if can_react? %>
     <button type="button"
             class="reaction-add-btn <%= compact ? 'w-7 h-7 text-sm' : 'w-8 h-8 text-lg' %> rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 transition-colors"
             data-action="click->reaction-picker#togglePicker"

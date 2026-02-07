@@ -3,7 +3,7 @@ module Admin
     before_action :set_user, only: [:edit, :update, :destroy]
 
     def index
-      @users = User.all.order(is_admin: :desc, nickname: :asc)
+      @users = User.where(is_guest: false).order(is_admin: :desc, nickname: :asc)
     end
 
     def new
