@@ -16,7 +16,7 @@ class DashboardController < ApplicationController
     # 基本統計
     @total_matches = Match.count
     @total_events = Event.count
-    @total_users = User.count
+    @total_users = User.regular_users.count
 
     # 今日のイベント
     @today_event = Event.where(held_on: Time.zone.today).first
@@ -66,7 +66,7 @@ class DashboardController < ApplicationController
     # 基本統計
     @total_matches = Match.count
     @total_events = Event.count
-    @total_users = User.count
+    @total_users = User.regular_users.count
 
     # 全試合データを一度だけ読み込み（Eager Loading）
     load_all_user_matches
