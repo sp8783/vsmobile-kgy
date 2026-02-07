@@ -4,7 +4,7 @@ class ReactionsController < ApplicationController
 
   def toggle
     unless can_react?
-      redirect_to match_path(@match), alert: "スタンプは一般ユーザーのみ利用できます。"
+      head :forbidden
       return
     end
 
