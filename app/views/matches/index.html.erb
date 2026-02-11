@@ -81,7 +81,7 @@
     <% end %>
   <% end %>
 
-  <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+  <div class="bg-white shadow sm:rounded-lg">
     <ul class="divide-y divide-gray-200">
       <% @matches.each do |match| %>
         <li class="<%= current_user.is_admin? ? 'pl-10' : '' %> relative">
