@@ -9,7 +9,7 @@
   else
     # 通常のリクエスト時のみ current_user を使用（Deviseコンテキストがある場合）
     begin
-      defined?(current_user) && respond_to?(:current_user) ? current_user : nil
+      defined?(viewing_as_user) && respond_to?(:viewing_as_user) ? viewing_as_user : nil
     rescue
       nil
     end

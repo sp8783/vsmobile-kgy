@@ -98,18 +98,44 @@ export default class extends Controller {
     if (this.hasPickerTarget) {
       this.pickerTarget.classList.toggle('hidden')
 
-      // Position the picker within viewport
+      // ボタンの位置に合わせてピッカーを表示
       if (!this.pickerTarget.classList.contains('hidden')) {
+        const button = event.currentTarget
         const barRect = this.element.getBoundingClientRect()
-        const pickerRect = this.pickerTarget.getBoundingClientRect()
+        const gap = 4 // ボタンとの隙間(px)
 
-        // Default: right-aligned. If it overflows left, switch to left-aligned.
-        if (barRect.right - pickerRect.width < 0) {
-          this.pickerTarget.style.right = 'auto'
+        // 横位置: モバイルではバー全幅、デスクトップではボタン位置に揃える
+        if (window.innerWidth < 640) {
           this.pickerTarget.style.left = '0'
-        } else {
           this.pickerTarget.style.right = '0'
-          this.pickerTarget.style.left = 'auto'
+        } else {
+          this.pickerTarget.style.left = button.offsetLeft + 'px'
+          this.pickerTarget.style.right = 'auto'
+        }
+
+        // 縦位置: スペースが広い方に表示
+        const pickerHeight = this.pickerTarget.offsetHeight
+        const spaceBelow = window.innerHeight - barRect.bottom
+        const spaceAbove = barRect.top
+        if (spaceBelow >= pickerHeight + gap) {
+          this.pickerTarget.style.top = '100%'
+          this.pickerTarget.style.bottom = 'auto'
+          this.pickerTarget.style.marginTop = gap + 'px'
+          this.pickerTarget.style.marginBottom = '0'
+        } else {
+          this.pickerTarget.style.top = 'auto'
+          this.pickerTarget.style.bottom = '100%'
+          this.pickerTarget.style.marginTop = '0'
+          this.pickerTarget.style.marginBottom = gap + 'px'
+        }
+
+        // デスクトップ: 右にはみ出す場合はバー右端に揃える
+        if (window.innerWidth >= 640) {
+          const pickerRect = this.pickerTarget.getBoundingClientRect()
+          if (pickerRect.right > window.innerWidth) {
+            this.pickerTarget.style.left = 'auto'
+            this.pickerTarget.style.right = '0'
+          }
         }
       }
     }

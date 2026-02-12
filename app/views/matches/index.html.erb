@@ -57,8 +57,8 @@
       </div>
 
       <div class="flex space-x-3">
-        <%= form.submit "フィルター適用", class: "bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded" %>
-        <%= link_to "フィルターをクリア", matches_path, class: "bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded" %>
+        <%= form.submit "適用", class: "bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded" %>
+        <%= link_to "クリア", matches_path, class: "bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded" %>
       </div>
     <% end %>
   </div>
@@ -81,7 +81,7 @@
     <% end %>
   <% end %>
 
-  <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+  <div class="bg-white shadow sm:rounded-lg">
     <ul class="divide-y divide-gray-200">
       <% @matches.each do |match| %>
         <li class="<%= current_user.is_admin? ? 'pl-10' : '' %> relative">
