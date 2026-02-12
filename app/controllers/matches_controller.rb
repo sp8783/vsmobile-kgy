@@ -5,7 +5,7 @@ class MatchesController < ApplicationController
   before_action :set_match, only: [:show, :edit, :update, :destroy]
 
   def index
-    @matches = Match.includes(:event, { match_players: [:user, :mobile_suit] }, { reactions: :user }).order(played_at: :desc)
+    @matches = Match.includes(:event, { match_players: [:user, :mobile_suit] }, { reactions: :user }).order(played_at: :desc, id: :desc)
 
     # フィルター: イベント（複数選択対応）
     if params[:events].present?
