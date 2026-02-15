@@ -80,6 +80,12 @@
     </div>
 
     <div class="bg-white shadow sm:rounded-lg p-6">
+      <h2 class="text-lg font-medium text-gray-900 mb-4">アーカイブタイムスタンプ</h2>
+      <%= form.text_field :video_timestamp_text, placeholder: "0:03:20", class: "w-full sm:w-48 px-3 py-2 font-mono border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" %>
+      <p class="mt-1 text-sm text-gray-500">配信開始からの経過時間（例: 0:03:20）。空欄で解除。</p>
+    </div>
+
+    <div class="bg-white shadow sm:rounded-lg p-6">
       <h2 class="text-lg font-medium text-gray-900 mb-4">勝利チーム</h2>
       <div class="flex space-x-4">
         <label class="flex items-center">
