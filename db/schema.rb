@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_15_124012) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_15_232735) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -122,7 +122,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_15_124012) do
     t.integer "current_match_index", default: 0, null: false
     t.bigint "event_id", null: false
     t.boolean "is_active", default: false, null: false
-    t.string "name", null: false
     t.integer "round_number", default: 1, null: false
     t.datetime "updated_at", null: false
     t.index ["base_rotation_id"], name: "index_rotations_on_base_rotation_id"
