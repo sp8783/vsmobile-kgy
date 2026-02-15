@@ -8,8 +8,9 @@
       <div class="flex items-center gap-3 mb-1">
         <h1 class="text-2xl font-bold text-gray-900"><%= @event.name %></h1>
         <% if @event.broadcast_url.present? %>
-          <%= link_to @event.broadcast_url, target: "_blank", rel: "noopener noreferrer", class: "inline-flex items-center hover:opacity-80 transition-opacity flex-shrink-0", title: "配信を見る" do %>
-            <img src="/youtube_social_icon_red.png" alt="YouTube" class="h-6 sm:h-7">
+          <%= link_to @event.broadcast_url, target: "_blank", rel: "noopener noreferrer", class: "inline-flex items-center gap-1 px-3 py-1 rounded-full bg-red-50 text-red-700 text-sm font-semibold hover:bg-red-100 transition-colors flex-shrink-0" do %>
+            <img src="/youtube_social_icon_red.png" alt="YouTube" class="h-4">
+            配信を見る
           <% end %>
         <% end %>
       </div>
@@ -47,6 +48,14 @@
             <% @matches.first(10).each do |match| %>
               <%= link_to match_path(match), class: "block hover:bg-gray-50" do %>
                 <li class="px-4 py-3">
+                  <% if match.video_url %>
+                    <div class="mb-2" onclick="event.stopPropagation()">
+                      <%= link_to match.video_url, target: "_blank", rel: "noopener noreferrer", class: "inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-red-50 text-red-700 text-xs font-semibold hover:bg-red-100 transition-colors" do %>
+                        <img src="/youtube_social_icon_red.png" alt="YouTube" class="h-3.5">
+                        配信を見る
+                      <% end %>
+                    </div>
+                  <% end %>
                   <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
                     <% team1_players = match.match_players.where(team_number: 1).order(:position) %>
                     <% team2_players = match.match_players.where(team_number: 2).order(:position) %>
