@@ -268,7 +268,6 @@ class RotationsController < ApplicationController
     @rotation = Rotation.find(params[:id])
 
     new_rotation = @rotation.event.rotations.create!(
-      name: @rotation.name,
       round_number: @rotation.round_number + 1,
       base_rotation_id: @rotation.id
     )
@@ -308,7 +307,7 @@ class RotationsController < ApplicationController
   end
 
   def rotation_params
-    params.require(:rotation).permit(:name, :round_number)
+    params.require(:rotation).permit(:round_number)
   end
 
   # Find the next unrecorded match starting from current position
