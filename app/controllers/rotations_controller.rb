@@ -147,7 +147,8 @@ class RotationsController < ApplicationController
     # Create match record
     match = @rotation.event.matches.build(
       played_at: Time.current,
-      winning_team: params[:winning_team].to_i
+      winning_team: params[:winning_team].to_i,
+      rotation_match: rotation_match
     )
 
     # Build match players before saving

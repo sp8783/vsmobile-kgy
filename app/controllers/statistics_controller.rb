@@ -50,7 +50,7 @@ class StatisticsController < ApplicationController
     # ログインユーザーの試合を基準に開始
     @filtered_matches = MatchPlayer.where(user_id: viewing_as_user.id)
                                    .joins(:match)
-                                   .includes(:match, :mobile_suit, :user)
+                                   .includes(:match, :mobile_suit, :user, match: { rotation_match: :rotation })
 
     # イベントフィルター
     if @filter_events.any?
@@ -458,9 +458,9 @@ class StatisticsController < ApplicationController
       if match.rotation_match && match.rotation_match.rotation
         event_progression_data[event_id][:has_rotation] = true
         rotation_id = match.rotation_match.rotation_id
-        rotation_name = match.rotation_match.rotation.name
+        round_number = match.rotation_match.rotation.round_number
 
-        event_progression_data[event_id][:rotations][rotation_id][:rotation_name] = rotation_name
+        event_progression_data[event_id][:rotations][rotation_id][:rotation_name] = "#{round_number}周目"
         event_progression_data[event_id][:rotations][rotation_id][:total] += 1
         event_progression_data[event_id][:rotations][rotation_id][:wins] += 1 if match.winning_team == my_team
         event_progression_data[event_id][:rotations][rotation_id][:matches] << my_mp
