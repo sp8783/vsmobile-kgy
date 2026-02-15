@@ -78,6 +78,9 @@ class RotationsController < ApplicationController
     # Activate this rotation
     @rotation.update(is_active: true)
 
+    # Record started_at for the current match
+    mark_current_match_started(@rotation)
+
     # Send push notifications to all players
     PushNotificationService.notify_rotation_activated(rotation: @rotation)
 
@@ -97,6 +100,9 @@ class RotationsController < ApplicationController
   def next_match
     if @rotation.current_match_index < @rotation.rotation_matches.count - 1
       @rotation.increment!(:current_match_index)
+
+      # Record started_at for the current match
+      mark_current_match_started(@rotation)
 
       # Broadcast update via Action Cable
       RotationChannel.broadcast_to(@rotation, {
@@ -119,6 +125,9 @@ class RotationsController < ApplicationController
 
     if match_index >= 0 && match_index < @rotation.rotation_matches.count
       @rotation.update!(current_match_index: match_index)
+
+      # Record started_at for the current match
+      mark_current_match_started(@rotation)
 
       # Broadcast update via Action Cable
       RotationChannel.broadcast_to(@rotation, {
@@ -175,6 +184,7 @@ class RotationsController < ApplicationController
         next_unrecorded_index = find_next_unrecorded_match_index(@rotation)
         if next_unrecorded_index
           @rotation.update!(current_match_index: next_unrecorded_index)
+          mark_current_match_started(@rotation)
         end
 
         # Broadcast update via Action Cable
@@ -289,6 +299,9 @@ class RotationsController < ApplicationController
     # Activate the new rotation
     new_rotation.update!(is_active: true)
 
+    # Record started_at for the first match
+    mark_current_match_started(new_rotation)
+
     # Send push notifications for new round
     PushNotificationService.notify_rotation_activated(rotation: new_rotation)
     notify_upcoming_players(new_rotation)
@@ -401,6 +414,11 @@ class RotationsController < ApplicationController
     else
       { seat: nil, partner: nil }
     end
+  end
+
+  def mark_current_match_started(rotation)
+    rm = rotation.rotation_matches.find_by(match_index: rotation.current_match_index)
+    rm&.update!(started_at: Time.current) if rm && rm.started_at.nil?
   end
 
   def generate_rotation_matches(rotation, player_ids)
