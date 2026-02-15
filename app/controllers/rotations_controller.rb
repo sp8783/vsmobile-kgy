@@ -81,6 +81,9 @@ class RotationsController < ApplicationController
     # Send push notifications to all players
     PushNotificationService.notify_rotation_activated(rotation: @rotation)
 
+    # Send upcoming match notifications (1試合目の出番通知含む)
+    notify_upcoming_players(@rotation)
+
     redirect_to @rotation, notice: 'ローテーションをアクティブにしました。'
   end
 
@@ -285,6 +288,10 @@ class RotationsController < ApplicationController
 
     # Activate the new rotation
     new_rotation.update!(is_active: true)
+
+    # Send push notifications for new round
+    PushNotificationService.notify_rotation_activated(rotation: new_rotation)
+    notify_upcoming_players(new_rotation)
 
     redirect_to new_rotation, notice: "#{new_rotation.round_number}周目のローテーションを作成しました。"
   end
