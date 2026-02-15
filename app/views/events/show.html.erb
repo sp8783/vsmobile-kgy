@@ -20,6 +20,9 @@
         <div class="flex flex-wrap gap-2 mt-4">
           <%= link_to "試合を登録", new_event_match_path(@event), class: "bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded text-sm" %>
           <%= link_to "ローテーション作成", new_event_rotation_path(@event), class: "bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded text-sm" %>
+          <% if @event.broadcast_url.present? %>
+            <%= link_to "タイムスタンプ一括設定", edit_timestamps_event_path(@event), class: "bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded text-sm" %>
+          <% end %>
           <%= link_to "編集", edit_event_path(@event), class: "bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded text-sm" %>
           <%= button_to "削除", event_path(@event), method: :delete, data: { turbo_confirm: "イベント「#{@event.name}」を削除してもよろしいですか？関連する試合やローテーションもすべて削除されます。" }, class: "bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded text-sm" %>
         </div>
