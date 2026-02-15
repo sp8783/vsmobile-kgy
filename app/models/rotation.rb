@@ -6,9 +6,12 @@ class Rotation < ApplicationRecord
   has_many :rotation_matches, dependent: :destroy
 
   # Validations
-  validates :name, presence: true
   validates :round_number, presence: true, numericality: { greater_than: 0 }
   validates :current_match_index, presence: true, numericality: { greater_than_or_equal_to: 0 }
+
+  def display_name
+    "#{round_number}周目"
+  end
 
   # Get all unique players in this rotation
   def players

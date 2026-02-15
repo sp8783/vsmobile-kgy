@@ -10,7 +10,7 @@
         </div>
         <h3 class="text-lg font-bold text-gray-900 text-center mb-2">全試合完了しました！</h3>
         <p class="text-sm text-gray-600 text-center mb-6">
-          <%= @rotation.name %>の全試合が記録されました。<br>
+          <%= @rotation.display_name %>の全試合が記録されました。<br>
           同じローテーション設定で<%= @rotation.round_number + 1 %>周目を作成しますか？
         </p>
         <div class="flex flex-col space-y-3">
@@ -63,7 +63,7 @@
   <div class="mb-6">
     <div class="flex justify-between items-start">
       <div>
-        <h1 class="text-3xl font-bold text-gray-900"><%= @rotation.name %></h1>
+        <h1 class="text-3xl font-bold text-gray-900"><%= @rotation.display_name %></h1>
         <p class="mt-2 text-sm text-gray-600">
           イベント: <%= link_to @rotation.event.name, @rotation.event, class: "text-blue-600 hover:text-blue-800" %>
           (<%= @rotation.event.held_on.strftime('%Y/%m/%d') %>)
@@ -104,7 +104,7 @@
                   </svg>
                   周回をコピー
                 <% end %>
-                <%= button_to rotation_path(@rotation), method: :delete, data: { turbo_confirm: "ローテーション「#{@rotation.name}」を削除してもよろしいですか？関連する試合データは削除されません。" }, class: "w-full text-left px-4 py-2 text-sm text-red-700 hover:bg-gray-100 flex items-center" do %>
+                <%= button_to rotation_path(@rotation), method: :delete, data: { turbo_confirm: "ローテーション「#{@rotation.display_name}」を削除してもよろしいですか？関連する試合データは削除されません。" }, class: "w-full text-left px-4 py-2 text-sm text-red-700 hover:bg-gray-100 flex items-center" do %>
                   <svg class="mr-3 h-5 w-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                   </svg>
