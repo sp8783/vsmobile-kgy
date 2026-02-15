@@ -159,7 +159,7 @@ class MatchesController < ApplicationController
   end
 
   def match_params
-    params.require(:match).permit(:winning_team, :played_at, match_players_attributes: [:id, :user_id, :mobile_suit_id, :team_number, :position])
+    params.require(:match).permit(:winning_team, :played_at, :video_timestamp_text, match_players_attributes: [:id, :user_id, :mobile_suit_id, :team_number, :position])
   end
 
   # Find the next unrecorded match starting from current position

@@ -96,6 +96,11 @@
                 <%= link_to match_path(match), class: "text-sm text-gray-500 hover:text-blue-600" do %>
                   <%= match.played_at.strftime('%Y年%m月%d日') %>
                 <% end %>
+                <% if match.video_url %>
+                  <%= link_to match.video_url, target: "_blank", rel: "noopener noreferrer", class: "inline-flex items-center hover:opacity-80 transition-opacity", title: "アーカイブを見る" do %>
+                    <img src="/youtube_social_icon_red.png" alt="YouTube" class="h-5">
+                  <% end %>
+                <% end %>
                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
                   <%= match.event.name %>
                 </span>
