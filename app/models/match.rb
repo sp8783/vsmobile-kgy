@@ -36,6 +36,35 @@ class Match < ApplicationRecord
     end
   end
 
+  # H:MM:SS形式でのタイムスタンプ入出力用
+  def video_timestamp_text
+    return '' if video_timestamp.nil?
+    h, remainder = video_timestamp.divmod(3600)
+    m, s = remainder.divmod(60)
+    "#{h}:#{format('%02d', m)}:#{format('%02d', s)}"
+  end
+
+  def video_timestamp_text=(text)
+    if text.blank?
+      self.video_timestamp = nil
+      return
+    end
+    parts = text.strip.split(':').map(&:to_i)
+    self.video_timestamp = case parts.size
+    when 3 then parts[0] * 3600 + parts[1] * 60 + parts[2]
+    when 2 then parts[0] * 60 + parts[1]
+    end
+  end
+
+  # アーカイブ動画の再生URLを生成
+  def video_url
+    return nil unless video_timestamp.present? && event.broadcast_url.present?
+
+    base_url = event.broadcast_url
+    separator = base_url.include?('?') ? '&' : '?'
+    "#{base_url}#{separator}t=#{video_timestamp}s"
+  end
+
   # 特定の絵文字でリアクションしたユーザーのニックネームを取得
   def reaction_user_nicknames(master_emoji)
     if reactions.loaded?
