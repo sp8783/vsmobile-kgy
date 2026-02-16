@@ -39,6 +39,10 @@ Rails.application.routes.draw do
 
   # Events
   resources :events do
+    member do
+      get :edit_timestamps
+      patch :update_timestamps
+    end
     resources :matches, only: [:new, :create]
     resources :rotations, only: [:new, :create]
   end

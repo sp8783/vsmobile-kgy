@@ -99,6 +99,12 @@
                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
                   <%= match.event.name %>
                 </span>
+                <% if match.video_url %>
+                  <%= link_to match.video_url, target: "_blank", rel: "noopener noreferrer", class: "inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-red-50 text-red-700 text-xs font-semibold hover:bg-red-100 transition-colors" do %>
+                    <img src="/youtube_social_icon_red.png" alt="YouTube" class="h-3.5">
+                    配信を見る
+                  <% end %>
+                <% end %>
               </div>
             </div>
 

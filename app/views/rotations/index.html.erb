@@ -12,7 +12,7 @@
         <% progress = rotation.rotation_matches.count > 0 ? (completed_count.to_f / rotation.rotation_matches.count * 100) : 0 %>
         <%= link_to rotation_path(rotation), class: "block bg-white shadow rounded-lg p-4 hover:bg-gray-50" do %>
           <div class="flex items-center justify-between mb-2">
-            <div class="text-sm font-medium text-blue-600"><%= rotation.name %></div>
+            <div class="text-sm font-medium text-blue-600"><%= rotation.display_name %></div>
             <% if rotation.is_active %>
               <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-purple-100 text-purple-800">アクティブ</span>
             <% else %>
@@ -38,9 +38,6 @@
         <thead class="bg-gray-50">
           <tr>
             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              ローテーション名
-            </th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               イベント
             </th>
             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -63,11 +60,6 @@
         <tbody class="bg-white divide-y divide-gray-200">
           <% @rotations.each do |rotation| %>
             <tr class="hover:bg-gray-50 cursor-pointer" onclick="window.location='<%= rotation_path(rotation) %>'">
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm font-medium text-blue-600">
-                  <%= rotation.name %>
-                </div>
-              </td>
               <td class="px-6 py-4 whitespace-nowrap">
                 <div class="text-sm text-gray-900">
                   <%= rotation.event.name %>

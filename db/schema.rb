@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_08_030138) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_15_234121) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -56,6 +56,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_08_030138) do
     t.datetime "played_at", null: false
     t.bigint "rotation_match_id"
     t.datetime "updated_at", null: false
+    t.integer "video_timestamp"
     t.integer "winning_team", null: false
     t.index ["event_id", "played_at"], name: "index_matches_on_event_id_and_played_at"
     t.index ["event_id"], name: "index_matches_on_event_id"
@@ -105,6 +106,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_08_030138) do
     t.bigint "match_id"
     t.integer "match_index", null: false
     t.bigint "rotation_id", null: false
+    t.datetime "started_at"
     t.bigint "team1_player1_id", null: false
     t.bigint "team1_player2_id", null: false
     t.bigint "team2_player1_id", null: false
@@ -121,7 +123,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_08_030138) do
     t.integer "current_match_index", default: 0, null: false
     t.bigint "event_id", null: false
     t.boolean "is_active", default: false, null: false
-    t.string "name", null: false
     t.integer "round_number", default: 1, null: false
     t.datetime "updated_at", null: false
     t.index ["base_rotation_id"], name: "index_rotations_on_base_rotation_id"

@@ -39,7 +39,7 @@ class PushNotificationService
         SendPushNotificationJob.perform_later(
           user_id: user.id,
           title: "ローテーションが開始されました",
-          body: "#{rotation.name}が開始されました",
+          body: "#{rotation.display_name}が開始されました",
           path: "/dashboard"
         )
       end

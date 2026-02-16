@@ -1,0 +1,62 @@
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <div class="mb-6">
+    <%= link_to "← イベントに戻る", event_path(@event), class: "text-blue-600 hover:text-blue-500" %>
+  </div>
+
+  <h1 class="text-2xl font-bold text-gray-900 mb-2"><%= @event.name %></h1>
+  <h2 class="text-lg font-medium text-gray-700 mb-6">タイムスタンプ一括設定</h2>
+
+  <% if flash[:alert] %>
+    <div class="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+      <p class="text-sm text-red-700"><%= flash[:alert] %></p>
+    </div>
+  <% end %>
+
+  <%= form_with url: update_timestamps_event_path(@event), method: :patch, local: true do |f| %>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <!-- 左カラム: テキストエリア -->
+      <div class="bg-white shadow sm:rounded-lg p-6">
+        <label for="timestamps" class="block text-sm font-medium text-gray-700 mb-2">
+          タイムスタンプ（1行1試合）
+        </label>
+        <textarea
+          name="timestamps"
+          id="timestamps"
+          class="w-full h-[60vh] font-mono text-sm pl-3 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 resize-none"
+          placeholder="0:03:20&#10;0:07:45&#10;0:12:10"
+        ><%= @timestamps_text %></textarea>
+        <p class="mt-2 text-sm text-gray-500">
+          配信開始からの経過時間を1行1試合で入力してください（例: 0:03:20）
+        </p>
+      </div>
+
+      <!-- 右カラム: 試合一覧 -->
+      <div class="bg-white shadow sm:rounded-lg p-6">
+        <h3 class="text-sm font-medium text-gray-700 mb-3">試合一覧（<%= @matches.size %>試合）</h3>
+        <div class="space-y-2 text-sm h-[60vh] overflow-y-auto">
+          <% @matches.each_with_index do |match, i| %>
+            <div class="flex items-start gap-2 py-1 <%= i.even? ? 'bg-gray-50' : '' %> px-2 rounded">
+              <span class="text-gray-400 font-mono w-6 flex-shrink-0 text-right"><%= i + 1 %>.</span>
+              <div class="flex-1 min-w-0">
+                <% team1 = match.match_players.select { |p| p.team_number == 1 }.sort_by(&:position) %>
+                <% team2 = match.match_players.select { |p| p.team_number == 2 }.sort_by(&:position) %>
+                <span class="<%= match.winning_team == 1 ? 'font-bold' : '' %>">
+                  <%= team1.map { |p| p.user.nickname }.join(' & ') %>
+                </span>
+                <span class="text-gray-400 mx-1">vs</span>
+                <span class="<%= match.winning_team == 2 ? 'font-bold' : '' %>">
+                  <%= team2.map { |p| p.user.nickname }.join(' & ') %>
+                </span>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-6 flex gap-3">
+      <%= f.submit "保存", class: "bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-6 rounded cursor-pointer" %>
+      <%= link_to "キャンセル", event_path(@event), class: "bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-6 rounded" %>
+    </div>
+  <% end %>
+</div>

@@ -78,8 +78,14 @@ class RotationsController < ApplicationController
     # Activate this rotation
     @rotation.update(is_active: true)
 
+    # Record started_at for the current match
+    mark_current_match_started(@rotation)
+
     # Send push notifications to all players
     PushNotificationService.notify_rotation_activated(rotation: @rotation)
+
+    # Send upcoming match notifications (1試合目の出番通知含む)
+    notify_upcoming_players(@rotation)
 
     redirect_to @rotation, notice: 'ローテーションをアクティブにしました。'
   end
@@ -94,6 +100,9 @@ class RotationsController < ApplicationController
   def next_match
     if @rotation.current_match_index < @rotation.rotation_matches.count - 1
       @rotation.increment!(:current_match_index)
+
+      # Record started_at for the current match
+      mark_current_match_started(@rotation)
 
       # Broadcast update via Action Cable
       RotationChannel.broadcast_to(@rotation, {
@@ -116,6 +125,9 @@ class RotationsController < ApplicationController
 
     if match_index >= 0 && match_index < @rotation.rotation_matches.count
       @rotation.update!(current_match_index: match_index)
+
+      # Record started_at for the current match
+      mark_current_match_started(@rotation)
 
       # Broadcast update via Action Cable
       RotationChannel.broadcast_to(@rotation, {
@@ -144,7 +156,8 @@ class RotationsController < ApplicationController
     # Create match record
     match = @rotation.event.matches.build(
       played_at: Time.current,
-      winning_team: params[:winning_team].to_i
+      winning_team: params[:winning_team].to_i,
+      rotation_match: rotation_match
     )
 
     # Build match players before saving
@@ -171,6 +184,7 @@ class RotationsController < ApplicationController
         next_unrecorded_index = find_next_unrecorded_match_index(@rotation)
         if next_unrecorded_index
           @rotation.update!(current_match_index: next_unrecorded_index)
+          mark_current_match_started(@rotation)
         end
 
         # Broadcast update via Action Cable
@@ -264,7 +278,6 @@ class RotationsController < ApplicationController
     @rotation = Rotation.find(params[:id])
 
     new_rotation = @rotation.event.rotations.create!(
-      name: @rotation.name,
       round_number: @rotation.round_number + 1,
       base_rotation_id: @rotation.id
     )
@@ -286,6 +299,13 @@ class RotationsController < ApplicationController
     # Activate the new rotation
     new_rotation.update!(is_active: true)
 
+    # Record started_at for the first match
+    mark_current_match_started(new_rotation)
+
+    # Send push notifications for new round
+    PushNotificationService.notify_rotation_activated(rotation: new_rotation)
+    notify_upcoming_players(new_rotation)
+
     redirect_to new_rotation, notice: "#{new_rotation.round_number}周目のローテーションを作成しました。"
   end
 
@@ -300,7 +320,7 @@ class RotationsController < ApplicationController
   end
 
   def rotation_params
-    params.require(:rotation).permit(:name, :round_number)
+    params.require(:rotation).permit(:round_number)
   end
 
   # Find the next unrecorded match starting from current position
@@ -394,6 +414,11 @@ class RotationsController < ApplicationController
     else
       { seat: nil, partner: nil }
     end
+  end
+
+  def mark_current_match_started(rotation)
+    rm = rotation.rotation_matches.find_by(match_index: rotation.current_match_index)
+    rm&.update!(started_at: Time.current) if rm && rm.started_at.nil?
   end
 
   def generate_rotation_matches(rotation, player_ids)

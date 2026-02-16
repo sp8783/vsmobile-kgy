@@ -8,8 +8,9 @@
       <div class="flex items-center gap-3 mb-1">
         <h1 class="text-2xl font-bold text-gray-900"><%= @event.name %></h1>
         <% if @event.broadcast_url.present? %>
-          <%= link_to @event.broadcast_url, target: "_blank", rel: "noopener noreferrer", class: "inline-flex items-center hover:opacity-80 transition-opacity flex-shrink-0", title: "配信を見る" do %>
-            <img src="/youtube_social_icon_red.png" alt="YouTube" class="h-6 sm:h-7">
+          <%= link_to @event.broadcast_url, target: "_blank", rel: "noopener noreferrer", class: "inline-flex items-center gap-1 px-3 py-1 rounded-full bg-red-50 text-red-700 text-sm font-semibold hover:bg-red-100 transition-colors flex-shrink-0" do %>
+            <img src="/youtube_social_icon_red.png" alt="YouTube" class="h-4">
+            配信を見る
           <% end %>
         <% end %>
       </div>
@@ -20,6 +21,9 @@
         <div class="flex flex-wrap gap-2 mt-4">
           <%= link_to "試合を登録", new_event_match_path(@event), class: "bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded text-sm" %>
           <%= link_to "ローテーション作成", new_event_rotation_path(@event), class: "bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded text-sm" %>
+          <% if @event.broadcast_url.present? %>
+            <%= link_to "タイムスタンプ一括設定", edit_timestamps_event_path(@event), class: "bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded text-sm" %>
+          <% end %>
           <%= link_to "編集", edit_event_path(@event), class: "bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded text-sm" %>
           <%= button_to "削除", event_path(@event), method: :delete, data: { turbo_confirm: "イベント「#{@event.name}」を削除してもよろしいですか？関連する試合やローテーションもすべて削除されます。" }, class: "bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded text-sm" %>
         </div>
@@ -32,7 +36,57 @@
     <% end %>
   </div>
 
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+  <div class="space-y-6">
+    <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+      <div class="px-4 py-5 sm:px-6">
+        <h2 class="text-lg font-medium text-gray-900">ローテーション</h2>
+        <p class="mt-1 text-sm text-gray-500">全 <%= @rotations.count %> 個</p>
+      </div>
+      <div class="border-t border-gray-200">
+        <% if @rotations.any? %>
+          <ul class="divide-y divide-gray-200">
+            <% @rotations.each do |rotation| %>
+              <%= link_to rotation_path(rotation), class: "block hover:bg-gray-50" do %>
+                <li class="px-4 py-3">
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <p class="text-sm font-medium text-gray-900"><%= rotation.display_name %></p>
+                      <div class="mt-1 flex items-center space-x-2">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
+                          <%= rotation.round_number %>周目
+                        </span>
+                        <% if rotation.is_active %>
+                          <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
+                            アクティブ
+                          </span>
+                        <% end %>
+                      </div>
+                    </div>
+                    <div class="text-right">
+                      <p class="text-xs text-gray-500">
+                        <%= rotation.current_match_index + 1 %> / <%= rotation.rotation_matches.count %> 試合
+                      </p>
+                      <div class="w-24 bg-gray-200 rounded-full h-1.5 mt-1">
+                        <% progress = rotation.rotation_matches.count > 0 ? ((rotation.current_match_index + 1).to_f / rotation.rotation_matches.count * 100) : 0 %>
+                        <div class="bg-blue-600 h-1.5 rounded-full" style="width: <%= progress %>%"></div>
+                      </div>
+                    </div>
+                  </div>
+                </li>
+              <% end %>
+            <% end %>
+          </ul>
+        <% else %>
+          <div class="px-4 py-3 text-center">
+            <p class="text-sm text-gray-500">まだローテーションがありません</p>
+            <% if current_user.is_admin? %>
+              <%= link_to "ローテーションを作成", new_event_rotation_path(@event), class: "mt-2 inline-block text-sm text-blue-600 hover:text-blue-500" %>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
     <div class="bg-white shadow overflow-hidden sm:rounded-lg">
       <div class="px-4 py-5 sm:px-6">
         <h2 class="text-lg font-medium text-gray-900">対戦記録</h2>
@@ -41,9 +95,25 @@
       <div class="border-t border-gray-200">
         <% if @matches.any? %>
           <ul class="divide-y divide-gray-200">
-            <% @matches.first(10).each do |match| %>
+            <% @matches.each_with_index do |match, index| %>
               <%= link_to match_path(match), class: "block hover:bg-gray-50" do %>
                 <li class="px-4 py-3">
+                  <div class="flex items-center gap-2 mb-2">
+                    <span class="text-sm font-semibold text-gray-900">第<%= index + 1 %>試合</span>
+                    <% if match.rotation_match&.started_at %>
+                      <span class="text-xs text-gray-500"><%= match.rotation_match.started_at.strftime('%H:%M') %> 開始</span>
+                    <% elsif match.played_at %>
+                      <span class="text-xs text-gray-500"><%= match.played_at.strftime('%H:%M') %> 終了</span>
+                    <% end %>
+                  </div>
+                  <% if match.video_url %>
+                    <div class="mb-2" onclick="event.stopPropagation()">
+                      <%= link_to match.video_url, target: "_blank", rel: "noopener noreferrer", class: "inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-red-50 text-red-700 text-xs font-semibold hover:bg-red-100 transition-colors" do %>
+                        <img src="/youtube_social_icon_red.png" alt="YouTube" class="h-3.5">
+                        配信を見る
+                      <% end %>
+                    </div>
+                  <% end %>
                   <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
                     <% team1_players = match.match_players.where(team_number: 1).order(:position) %>
                     <% team2_players = match.match_players.where(team_number: 2).order(:position) %>
@@ -94,64 +164,9 @@
               <% end %>
             <% end %>
           </ul>
-          <% if @matches.count > 10 %>
-            <div class="px-4 py-3 bg-gray-50 text-center">
-              <%= link_to "全 #{@matches.count} 試合を表示", matches_path(event_id: @event.id), class: "text-sm text-blue-600 hover:text-blue-500" %>
-            </div>
-          <% end %>
         <% else %>
           <div class="px-4 py-3 text-center">
             <p class="text-sm text-gray-500">まだ対戦記録がありません</p>
-          </div>
-        <% end %>
-      </div>
-    </div>
-
-    <div class="bg-white shadow overflow-hidden sm:rounded-lg">
-      <div class="px-4 py-5 sm:px-6">
-        <h2 class="text-lg font-medium text-gray-900">ローテーション</h2>
-        <p class="mt-1 text-sm text-gray-500">全 <%= @rotations.count %> 個</p>
-      </div>
-      <div class="border-t border-gray-200">
-        <% if @rotations.any? %>
-          <ul class="divide-y divide-gray-200">
-            <% @rotations.each do |rotation| %>
-              <%= link_to rotation_path(rotation), class: "block hover:bg-gray-50" do %>
-                <li class="px-4 py-3">
-                  <div class="flex items-center justify-between">
-                    <div>
-                      <p class="text-sm font-medium text-gray-900"><%= rotation.name %></p>
-                      <div class="mt-1 flex items-center space-x-2">
-                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
-                          <%= rotation.round_number %>周目
-                        </span>
-                        <% if rotation.is_active %>
-                          <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
-                            アクティブ
-                          </span>
-                        <% end %>
-                      </div>
-                    </div>
-                    <div class="text-right">
-                      <p class="text-xs text-gray-500">
-                        <%= rotation.current_match_index + 1 %> / <%= rotation.rotation_matches.count %> 試合
-                      </p>
-                      <div class="w-24 bg-gray-200 rounded-full h-1.5 mt-1">
-                        <% progress = rotation.rotation_matches.count > 0 ? ((rotation.current_match_index + 1).to_f / rotation.rotation_matches.count * 100) : 0 %>
-                        <div class="bg-blue-600 h-1.5 rounded-full" style="width: <%= progress %>%"></div>
-                      </div>
-                    </div>
-                  </div>
-                </li>
-              <% end %>
-            <% end %>
-          </ul>
-        <% else %>
-          <div class="px-4 py-3 text-center">
-            <p class="text-sm text-gray-500">まだローテーションがありません</p>
-            <% if current_user.is_admin? %>
-              <%= link_to "ローテーションを作成", new_event_rotation_path(@event), class: "mt-2 inline-block text-sm text-blue-600 hover:text-blue-500" %>
-            <% end %>
           </div>
         <% end %>
       </div>
