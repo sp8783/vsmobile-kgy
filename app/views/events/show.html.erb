@@ -117,8 +117,8 @@
                     </div>
                   <% end %>
                   <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
-                    <% team1_players = match.match_players.where(team_number: 1).order(:position) %>
-                    <% team2_players = match.match_players.where(team_number: 2).order(:position) %>
+                    <% team1_players = match.match_players.to_a.select { |p| p.team_number == 1 }.sort_by(&:position) %>
+                    <% team2_players = match.match_players.to_a.select { |p| p.team_number == 2 }.sort_by(&:position) %>
 
                     <!-- Team 1 -->
                     <div class="<%= match.winning_team == 1 ? 'bg-blue-50 border-2 border-blue-400 rounded p-2' : 'bg-red-50 border-2 border-red-400 rounded p-2' %>">
