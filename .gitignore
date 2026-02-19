@@ -40,3 +40,6 @@
 # Ignore Claude Code files
 /claude_conversations.md
 /CLAUDE.md
+
+# Ignore Kamal secrets (contains credentials)
+/.kamal/secrets
