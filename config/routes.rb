@@ -37,11 +37,21 @@ Rails.application.routes.draw do
   # Statistics
   get "statistics", to: "statistics#index", as: :statistics
 
+  # API
+  namespace :api do
+    resources :events, only: [] do
+      member do
+        post :timestamps
+      end
+    end
+  end
+
   # Events
   resources :events do
     member do
       get :edit_timestamps
       patch :update_timestamps
+      post :trigger_analysis
     end
     resources :matches, only: [:new, :create]
     resources :rotations, only: [:new, :create]
