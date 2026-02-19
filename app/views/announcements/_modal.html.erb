@@ -1,0 +1,28 @@
+<div id="announcement-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+  <%# オーバーレイ（背景） %>
+  <div class="absolute inset-0 bg-black/50"></div>
+
+  <%# モーダル本体 %>
+  <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-auto overflow-hidden">
+    <%# ヘッダー %>
+    <div class="bg-indigo-600 px-6 py-4">
+      <div class="flex items-center gap-2">
+        <span class="text-white text-lg">📢</span>
+        <h2 class="text-white font-bold text-lg leading-tight"><%= announcement.title %></h2>
+      </div>
+    </div>
+
+    <%# 本文 %>
+    <div class="px-6 py-5">
+      <div class="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed"><%= announcement.body %></div>
+    </div>
+
+    <%# フッター %>
+    <div class="px-6 pb-6 flex justify-end">
+      <%= button_to "閉じる",
+            mark_as_read_announcement_path(announcement),
+            method: :post,
+            class: "bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-6 rounded-lg text-sm transition" %>
+    </div>
+  </div>
+</div>
