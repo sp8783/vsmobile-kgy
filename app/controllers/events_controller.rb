@@ -15,7 +15,7 @@ class EventsController < ApplicationController
     @sort = sort
     @per_page = [10, 20, 50].include?(params[:per].to_i) ? params[:per].to_i : 20
 
-    base_scope = sort == "reactions" ? @event.matches.by_reactions : @event.matches.by_oldest
+    base_scope = sort == "reactions" ? @event.matches.by_reactions_oldest : @event.matches.by_oldest
     @matches = base_scope
                  .includes(:event, :rotation_match, match_players: [:user, :mobile_suit], reactions: :user)
                  .page(params[:page]).per(@per_page)
