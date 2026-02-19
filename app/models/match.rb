@@ -7,6 +7,11 @@ class Match < ApplicationRecord
 
   accepts_nested_attributes_for :match_players
 
+  # Scopes
+  scope :by_latest,    -> { order(played_at: :desc, id: :desc) }
+  scope :by_reactions, -> { order(reactions_count: :desc, played_at: :desc, id: :desc) }
+  scope :by_oldest,    -> { order(played_at: :asc, id: :asc) }
+
   # Validations
   validates :played_at, presence: true
   validates :winning_team, presence: true, inclusion: { in: [1, 2] }
