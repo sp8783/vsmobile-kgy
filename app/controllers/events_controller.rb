@@ -11,7 +11,10 @@ class EventsController < ApplicationController
   end
 
   def show
-    @matches = @event.matches.includes(:event, :rotation_match, match_players: [:user, :mobile_suit], reactions: :user).order(played_at: :asc, id: :asc)
+    @per_page = 20
+    @matches = @event.matches.includes(:event, :rotation_match, match_players: [:user, :mobile_suit], reactions: :user)
+                     .order(played_at: :asc, id: :asc)
+                     .page(params[:page]).per(@per_page)
     @rotations = @event.rotations.order(created_at: :asc)
     @emojis = MasterEmoji.active.ordered
   end

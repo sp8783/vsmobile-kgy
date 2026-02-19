@@ -91,17 +91,18 @@
     <div class="bg-white shadow overflow-hidden sm:rounded-lg">
       <div class="px-4 py-5 sm:px-6">
         <h2 class="text-lg font-medium text-gray-900">対戦記録</h2>
-        <p class="mt-1 text-sm text-gray-500">全 <%= @matches.count %> 試合</p>
+        <p class="mt-1 text-sm text-gray-500">全 <%= @matches.total_count %> 試合</p>
       </div>
       <div class="border-t border-gray-200">
         <% if @matches.any? %>
           <ul class="divide-y divide-gray-200">
+            <% match_offset = (@matches.current_page - 1) * @matches.limit_value %>
             <% @matches.each_with_index do |match, index| %>
               <%= turbo_stream_from "match_#{match.id}_reactions_compact" %>
               <%= link_to match_path(match), class: "block hover:bg-gray-50" do %>
                 <li class="px-4 py-3">
                   <div class="flex items-center gap-2 mb-2">
-                    <span class="text-sm font-semibold text-gray-900">第<%= index + 1 %>試合</span>
+                    <span class="text-sm font-semibold text-gray-900">第<%= match_offset + index + 1 %>試合</span>
                     <% if match.rotation_match&.started_at %>
                       <span class="text-xs text-gray-500"><%= match.rotation_match.started_at.strftime('%H:%M') %> 開始</span>
                     <% elsif match.played_at %>
@@ -169,6 +170,11 @@
               <% end %>
             <% end %>
           </ul>
+          <% if @matches.total_pages > 1 %>
+            <div class="px-4 py-4 flex justify-center border-t border-gray-200">
+              <%= paginate @matches %>
+            </div>
+          <% end %>
         <% else %>
           <div class="px-4 py-3 text-center">
             <p class="text-sm text-gray-500">まだ対戦記録がありません</p>
