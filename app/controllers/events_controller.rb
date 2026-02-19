@@ -13,6 +13,7 @@ class EventsController < ApplicationController
   def show
     @matches = @event.matches.includes(:event, :rotation_match, match_players: [:user, :mobile_suit]).order(played_at: :asc, id: :asc)
     @rotations = @event.rotations.order(created_at: :asc)
+    @emojis = MasterEmoji.active.ordered
   end
 
   def new
