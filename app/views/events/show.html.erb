@@ -23,7 +23,6 @@
           <%= link_to "ローテーション作成", new_event_rotation_path(@event), class: "bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded text-sm" %>
           <% if @event.broadcast_url.present? %>
             <%= link_to "タイムスタンプ一括設定", edit_timestamps_event_path(@event), class: "bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded text-sm" %>
-            <%= button_to "解析開始", trigger_analysis_event_path(@event), method: :post, data: { turbo_confirm: "GitHub Actions で動画解析を開始しますか？完了後にタイムスタンプが自動登録されます。" }, class: "bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded text-sm" %>
           <% end %>
           <%= link_to "編集", edit_event_path(@event), class: "bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded text-sm" %>
           <%= button_to "削除", event_path(@event), method: :delete, data: { turbo_confirm: "イベント「#{@event.name}」を削除してもよろしいですか？関連する試合やローテーションもすべて削除されます。" }, class: "bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded text-sm" %>

@@ -37,9 +37,5 @@
 /app/assets/builds/*
 !/app/assets/builds/.keep
 
-# Ignore Claude Code files
+# Ignore Claude conversation logs
 /claude_conversations.md
-/CLAUDE.md
-
-# Ignore Kamal secrets (contains credentials)
-/.kamal/secrets

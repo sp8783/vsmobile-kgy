@@ -1,10 +1,7 @@
-require "net/http"
-
 class EventsController < ApplicationController
-  include TimestampParseable
   before_action :authenticate_user!
-  before_action :require_admin, only: [:new, :create, :edit, :update, :destroy, :edit_timestamps, :update_timestamps, :trigger_analysis]
-  before_action :set_event, only: [:show, :edit, :update, :destroy, :edit_timestamps, :update_timestamps, :trigger_analysis]
+  before_action :require_admin, only: [:new, :create, :edit, :update, :destroy, :edit_timestamps, :update_timestamps]
+  before_action :set_event, only: [:show, :edit, :update, :destroy, :edit_timestamps, :update_timestamps]
 
   def index
     @events = Event.includes(:matches).order(held_on: :desc)
@@ -87,44 +84,6 @@ class EventsController < ApplicationController
     redirect_to event_path(@event), notice: "タイムスタンプを保存しました。"
   end
 
-  def trigger_analysis
-    repo = ENV["GITHUB_REPO"].presence
-    workflow_id = ENV["GITHUB_WORKFLOW_ID"].presence
-    token = ENV["GITHUB_TOKEN"].presence
-
-    if repo.blank? || workflow_id.blank? || token.blank?
-      return redirect_to event_path(@event), alert: "GitHub Actions の設定が不完全です（GITHUB_REPO / GITHUB_WORKFLOW_ID / GITHUB_TOKEN を確認してください）。"
-    end
-
-    uri = URI("https://api.github.com/repos/#{repo}/actions/workflows/#{workflow_id}/dispatches")
-    http = Net::HTTP.new(uri.host, uri.port)
-    http.use_ssl = true
-
-    req = Net::HTTP::Post.new(uri.path, {
-      "Authorization" => "Bearer #{token}",
-      "Accept" => "application/vnd.github+json",
-      "Content-Type" => "application/json",
-      "X-GitHub-Api-Version" => "2022-11-28"
-    })
-    req.body = {
-      ref: "main",
-      inputs: {
-        event_id: @event.id.to_s,
-        broadcast_url: @event.broadcast_url
-      }
-    }.to_json
-
-    res = http.request(req)
-
-    if res.is_a?(Net::HTTPNoContent)
-      redirect_to event_path(@event), notice: "解析を開始しました。完了後にタイムスタンプが自動登録されます。"
-    else
-      redirect_to event_path(@event), alert: "GitHub Actions のトリガーに失敗しました（HTTP #{res.code}）。"
-    end
-  rescue => e
-    redirect_to event_path(@event), alert: "解析開始でエラーが発生しました: #{e.message}"
-  end
-
   def destroy
     name = @event.name
 
@@ -152,4 +111,20 @@ class EventsController < ApplicationController
     params.require(:event).permit(:name, :held_on, :description, :broadcast_url)
   end
 
+  def parse_timestamp(str)
+    return nil if str.blank?
+    parts = str.strip.split(':').map(&:to_i)
+    case parts.size
+    when 3 then parts[0] * 3600 + parts[1] * 60 + parts[2]
+    when 2 then parts[0] * 60 + parts[1]
+    else nil
+    end
+  end
+
+  def format_timestamp(seconds)
+    return '' if seconds.nil?
+    h, remainder = seconds.divmod(3600)
+    m, s = remainder.divmod(60)
+    "#{h}:#{format('%02d', m)}:#{format('%02d', s)}"
+  end
 end
