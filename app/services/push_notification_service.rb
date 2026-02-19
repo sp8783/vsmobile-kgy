@@ -29,6 +29,32 @@ class PushNotificationService
       )
     end
 
+    def notify_timestamps_registered(event:, count:)
+      User.where(is_admin: true).find_each do |user|
+        next unless user.push_notifications_enabled?
+
+        SendPushNotificationJob.perform_later(
+          user_id: user.id,
+          title: "タイムスタンプ登録完了",
+          body: "#{event.name} の #{count} 試合分が登録されました",
+          path: "/events/#{event.id}"
+        )
+      end
+    end
+
+    def notify_timestamps_failed(event:, error:)
+      User.where(is_admin: true).find_each do |user|
+        next unless user.push_notifications_enabled?
+
+        SendPushNotificationJob.perform_later(
+          user_id: user.id,
+          title: "タイムスタンプ登録失敗",
+          body: "#{event.name}: #{error}",
+          path: "/events/#{event.id}"
+        )
+      end
+    end
+
     def notify_rotation_activated(rotation:)
       player_ids = collect_player_ids(rotation)
       return if player_ids.empty?
