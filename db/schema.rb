@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_15_234121) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_19_232110) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -54,6 +54,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_15_234121) do
     t.datetime "created_at", null: false
     t.bigint "event_id", null: false
     t.datetime "played_at", null: false
+    t.integer "reactions_count", default: 0, null: false
     t.bigint "rotation_match_id"
     t.datetime "updated_at", null: false
     t.integer "video_timestamp"

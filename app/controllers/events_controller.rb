@@ -11,10 +11,14 @@ class EventsController < ApplicationController
   end
 
   def show
+    sort = params[:sort].presence_in(%w[oldest reactions]) || "oldest"
+    @sort = sort
     @per_page = [10, 20, 50].include?(params[:per].to_i) ? params[:per].to_i : 20
-    @matches = @event.matches.includes(:event, :rotation_match, match_players: [:user, :mobile_suit], reactions: :user)
-                     .order(played_at: :asc, id: :asc)
-                     .page(params[:page]).per(@per_page)
+
+    base_scope = sort == "reactions" ? @event.matches.by_reactions_oldest : @event.matches.by_oldest
+    @matches = base_scope
+                 .includes(:event, :rotation_match, match_players: [:user, :mobile_suit], reactions: :user)
+                 .page(params[:page]).per(@per_page)
     @rotations = @event.rotations.order(created_at: :asc)
     @emojis = MasterEmoji.active.ordered
   end

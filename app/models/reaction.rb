@@ -1,7 +1,7 @@
 class Reaction < ApplicationRecord
   # Associations
   belongs_to :user
-  belongs_to :match
+  belongs_to :match, counter_cache: true
   belongs_to :master_emoji
 
   # Validations
