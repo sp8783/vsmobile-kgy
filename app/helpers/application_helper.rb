@@ -1,4 +1,23 @@
 module ApplicationHelper
+  MARKDOWN_RENDERER = Redcarpet::Markdown.new(
+    Redcarpet::Render::HTML.new(hard_wrap: true, safe_links_only: true),
+    autolink: true,
+    tables: true,
+    fenced_code_blocks: true,
+    strikethrough: true,
+    no_intra_emphasis: true
+  )
+
+  def render_markdown(text)
+    return "" if text.blank?
+    sanitize(
+      MARKDOWN_RENDERER.render(text),
+      tags: %w[p br strong em a ul ol li h1 h2 h3 h4 h5 blockquote code pre s del table thead tbody tr th td hr],
+      attributes: %w[href]
+    )
+  end
+
+
   def cost_badge(cost)
     style = case cost.to_i
     when 3000

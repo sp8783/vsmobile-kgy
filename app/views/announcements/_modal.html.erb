@@ -1,0 +1,49 @@
+<div id="announcement-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+  <%# オーバーレイ（背景） %>
+  <div class="absolute inset-0 bg-black/50"></div>
+
+  <%# モーダル本体 %>
+  <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-auto overflow-hidden">
+    <%# ヘッダー %>
+    <div class="bg-indigo-600 px-6 py-4">
+      <div class="flex items-center gap-2">
+        <span class="text-white text-lg">📢</span>
+        <h2 class="text-white font-bold text-lg leading-tight"><%= announcement.title %></h2>
+      </div>
+    </div>
+
+    <%# 本文 %>
+    <div class="px-6 py-5 max-h-96 overflow-y-auto">
+      <div class="announcement-body text-sm text-gray-700 leading-relaxed"><%= render_markdown(announcement.body) %></div>
+    </div>
+
+    <style>
+      .announcement-body p { margin-bottom: 0.75em; }
+      .announcement-body p:last-child { margin-bottom: 0; }
+      .announcement-body h1, .announcement-body h2, .announcement-body h3 { font-weight: 700; margin-bottom: 0.5em; margin-top: 1em; }
+      .announcement-body h1 { font-size: 1.25em; }
+      .announcement-body h2 { font-size: 1.1em; }
+      .announcement-body h3 { font-size: 1em; }
+      .announcement-body strong { font-weight: 700; }
+      .announcement-body em { font-style: italic; }
+      .announcement-body ul { list-style-type: disc; padding-left: 1.5em; margin-bottom: 0.75em; }
+      .announcement-body ol { list-style-type: decimal; padding-left: 1.5em; margin-bottom: 0.75em; }
+      .announcement-body li { margin-bottom: 0.25em; }
+      .announcement-body a { color: #4F46E5; text-decoration: underline; }
+      .announcement-body code { background: #F3F4F6; padding: 0.1em 0.3em; border-radius: 0.25em; font-family: monospace; font-size: 0.9em; }
+      .announcement-body pre { background: #F3F4F6; padding: 0.75em; border-radius: 0.5em; overflow-x: auto; margin-bottom: 0.75em; }
+      .announcement-body pre code { background: none; padding: 0; }
+      .announcement-body blockquote { border-left: 3px solid #E5E7EB; padding-left: 1em; color: #6B7280; margin-bottom: 0.75em; }
+      .announcement-body hr { border: none; border-top: 1px solid #E5E7EB; margin: 1em 0; }
+      .announcement-body del, .announcement-body s { text-decoration: line-through; }
+    </style>
+
+    <%# フッター %>
+    <div class="px-6 pb-6 flex justify-end">
+      <%= button_to "閉じる",
+            mark_as_read_announcement_path(announcement),
+            method: :post,
+            class: "bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-6 rounded-lg text-sm transition" %>
+    </div>
+  </div>
+</div>

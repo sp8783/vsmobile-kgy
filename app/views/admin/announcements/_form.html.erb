@@ -1,0 +1,44 @@
+<%= form_with model: [:admin, announcement], class: "space-y-6" do |form| %>
+  <% if announcement.errors.any? %>
+    <div class="bg-red-50 border border-red-200 rounded-md p-4">
+      <ul class="list-disc list-inside text-sm text-red-600">
+        <% announcement.errors.full_messages.each do |msg| %>
+          <li><%= msg %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div>
+    <%= form.label :title, "タイトル", class: "block text-sm font-medium text-gray-700 mb-1" %>
+    <%= form.text_field :title, class: "w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500", placeholder: "例: v1.3.0 アップデートのお知らせ" %>
+  </div>
+
+  <div>
+    <%= form.label :body, "本文", class: "block text-sm font-medium text-gray-700 mb-1" %>
+    <%= form.text_area :body, rows: 8, class: "w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono", placeholder: "お知らせの内容を入力してください。Markdown が使えます。" %>
+    <p class="mt-1 text-xs text-gray-500">Markdown 対応: **太字** / *斜体* / # 見出し / - リスト / `コード` / [リンク](URL) など</p>
+  </div>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <div>
+      <%= form.label :published_at, "公開開始日時", class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <%= form.datetime_local_field :published_at, class: "w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500", value: announcement.published_at&.strftime("%Y-%m-%dT%H:%M") %>
+    </div>
+    <div>
+      <%= form.label :expires_at, "公開終了日時（任意）", class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <%= form.datetime_local_field :expires_at, class: "w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500", value: announcement.expires_at&.strftime("%Y-%m-%dT%H:%M") %>
+      <p class="mt-1 text-xs text-gray-500">空白の場合は期限なし</p>
+    </div>
+  </div>
+
+  <div class="flex items-center gap-3">
+    <%= form.check_box :is_active, class: "rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 h-4 w-4" %>
+    <%= form.label :is_active, "有効にする（チェックで表示ON）", class: "text-sm font-medium text-gray-700" %>
+  </div>
+
+  <div class="flex gap-3">
+    <%= form.submit announcement.new_record? ? "作成" : "更新", class: "bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded text-sm" %>
+    <%= link_to "キャンセル", admin_announcements_path, class: "bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded text-sm" %>
+  </div>
+<% end %>

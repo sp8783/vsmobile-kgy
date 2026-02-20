@@ -1,0 +1,9 @@
+<div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <div class="mb-6">
+    <%= link_to "← お知らせ一覧に戻る", admin_announcements_path, class: "text-blue-600 hover:text-blue-500 text-sm" %>
+  </div>
+  <h1 class="text-2xl font-bold text-gray-900 mb-6">お知らせを編集</h1>
+  <div class="bg-white shadow rounded-lg p-6">
+    <%= render "form", announcement: @announcement %>
+  </div>
+</div>

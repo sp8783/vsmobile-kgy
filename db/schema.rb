@@ -10,9 +10,19 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_15_234121) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_19_235250) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "announcements", force: :cascade do |t|
+    t.text "body", null: false
+    t.datetime "created_at", null: false
+    t.datetime "expires_at"
+    t.boolean "is_active", default: false, null: false
+    t.datetime "published_at", null: false
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+  end
 
   create_table "events", force: :cascade do |t|
     t.string "broadcast_url"
@@ -54,6 +64,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_15_234121) do
     t.datetime "created_at", null: false
     t.bigint "event_id", null: false
     t.datetime "played_at", null: false
+    t.integer "reactions_count", default: 0, null: false
     t.bigint "rotation_match_id"
     t.datetime "updated_at", null: false
     t.integer "video_timestamp"
@@ -130,6 +141,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_15_234121) do
     t.index ["event_id"], name: "index_rotations_on_event_id"
   end
 
+  create_table "user_announcement_reads", force: :cascade do |t|
+    t.bigint "announcement_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["announcement_id"], name: "index_user_announcement_reads_on_announcement_id"
+    t.index ["user_id", "announcement_id"], name: "index_user_announcement_reads_on_user_id_and_announcement_id", unique: true
+    t.index ["user_id"], name: "index_user_announcement_reads_on_user_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "encrypted_password", default: "", null: false
@@ -160,4 +181,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_15_234121) do
   add_foreign_key "rotation_matches", "users", column: "team2_player2_id"
   add_foreign_key "rotations", "events"
   add_foreign_key "rotations", "rotations", column: "base_rotation_id"
+  add_foreign_key "user_announcement_reads", "announcements"
+  add_foreign_key "user_announcement_reads", "users"
 end
