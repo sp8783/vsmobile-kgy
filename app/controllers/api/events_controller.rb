@@ -37,5 +37,14 @@ module Api
       PushNotificationService.notify_timestamps_registered(event: event, count: matches.size)
       render json: { message: "OK", updated: matches.size }
     end
+
+    def notify_failure
+      event = Event.find_by(id: params[:id])
+      return render json: { error: "Event not found" }, status: :not_found unless event
+
+      error_msg = params[:error].presence || "不明なエラー"
+      PushNotificationService.notify_timestamps_failed(event: event, error: error_msg)
+      render json: { message: "OK" }
+    end
   end
 end

@@ -42,6 +42,7 @@ Rails.application.routes.draw do
     resources :events, only: [] do
       member do
         post :timestamps
+        post :notify_failure
       end
     end
   end
