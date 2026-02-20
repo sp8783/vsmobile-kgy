@@ -1,11 +1,11 @@
 Rails.application.routes.draw do
   devise_for :users, controllers: {
-    sessions: 'users/sessions'
+    sessions: "users/sessions"
   }
 
   # Guest login
   devise_scope :user do
-    post 'users/guest', to: 'users/sessions#guest', as: :guest_login
+    post "users/guest", to: "users/sessions#guest", as: :guest_login
   end
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
@@ -32,7 +32,7 @@ Rails.application.routes.draw do
   get "dashboard", to: "dashboard#index", as: :dashboard
 
   # Profile (User settings)
-  resource :profile, only: [:edit, :update]
+  resource :profile, only: [ :edit, :update ]
 
   # Statistics
   get "statistics", to: "statistics#index", as: :statistics
@@ -42,6 +42,7 @@ Rails.application.routes.draw do
     resources :events, only: [] do
       member do
         post :timestamps
+        post :notify_failure
       end
     end
   end
@@ -53,12 +54,12 @@ Rails.application.routes.draw do
       patch :update_timestamps
       post :trigger_analysis
     end
-    resources :matches, only: [:new, :create]
-    resources :rotations, only: [:new, :create]
+    resources :matches, only: [ :new, :create ]
+    resources :rotations, only: [ :new, :create ]
   end
 
   # Matches
-  resources :matches, only: [:index, :show, :edit, :update, :destroy] do
+  resources :matches, only: [ :index, :show, :edit, :update, :destroy ] do
     collection do
       delete :bulk_destroy
     end
@@ -92,8 +93,8 @@ Rails.application.routes.draw do
 
   # Admin
   namespace :admin do
-    resources :announcements, except: [:show]
-    resources :users, except: [:show] do
+    resources :announcements, except: [ :show ]
+    resources :users, except: [ :show ] do
       member do
         post :switch_view
       end
@@ -101,12 +102,12 @@ Rails.application.routes.draw do
         post :clear_view
       end
     end
-    resources :mobile_suits, except: [:show]
-    resources :master_emojis, except: [:show]
-    resources :imports, only: [:new, :create] do
+    resources :mobile_suits, except: [ :show ]
+    resources :master_emojis, except: [ :show ]
+    resources :imports, only: [ :new, :create ] do
       collection do
-        get 'mobile_suits/new', to: 'imports#new_mobile_suits', as: 'new_mobile_suits'
-        post 'mobile_suits', to: 'imports#import_mobile_suits', as: 'import_mobile_suits'
+        get "mobile_suits/new", to: "imports#new_mobile_suits", as: "new_mobile_suits"
+        post "mobile_suits", to: "imports#import_mobile_suits", as: "import_mobile_suits"
       end
     end
   end

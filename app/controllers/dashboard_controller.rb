@@ -22,7 +22,7 @@ class DashboardController < ApplicationController
     @today_event = Event.where(held_on: Time.zone.today).first
     if @today_event
       @active_rotation = @today_event.rotations.includes(
-        rotation_matches: [:team1_player1, :team1_player2, :team2_player1, :team2_player2, :match]
+        rotation_matches: [ :team1_player1, :team1_player2, :team2_player1, :team2_player2, :match ]
       ).find_by(is_active: true)
     end
 
@@ -37,29 +37,29 @@ class DashboardController < ApplicationController
     @recent_events = Event.order(held_on: :desc).limit(5)
 
     # アクティブなローテーション
-    @active_rotations = Rotation.where(is_active: true).includes(:event).joins(:event).order('events.held_on DESC')
+    @active_rotations = Rotation.where(is_active: true).includes(:event).joins(:event).order("events.held_on DESC")
 
     # 最近の試合
-    @recent_matches = Match.order(played_at: :desc).limit(10).includes(:event, :match_players => [:user, :mobile_suit])
+    @recent_matches = Match.order(played_at: :desc).limit(10).includes(:event, match_players: [ :user, :mobile_suit ])
 
     # 今後のイベント
-    @upcoming_events = Event.where('held_on >= ?', Time.zone.today).order(held_on: :asc).limit(5)
+    @upcoming_events = Event.where("held_on >= ?", Time.zone.today).order(held_on: :asc).limit(5)
 
     # 人気機体TOP5
     @popular_mobile_suits = MobileSuit.joins(:match_players)
-                                      .select('mobile_suits.*, COUNT(match_players.id) as usage_count')
-                                      .group('mobile_suits.id')
-                                      .order('usage_count DESC')
+                                      .select("mobile_suits.*, COUNT(match_players.id) as usage_count")
+                                      .group("mobile_suits.id")
+                                      .order("usage_count DESC")
                                       .limit(5)
 
     # イベントごとの試合数
     @event_match_counts = Event.left_joins(:matches)
-                               .select('events.*, COUNT(matches.id) as match_count')
-                               .group('events.id')
+                               .select("events.*, COUNT(matches.id) as match_count")
+                               .group("events.id")
                                .order(held_on: :desc)
                                .limit(10)
 
-    render 'admin_dashboard'
+    render "admin_dashboard"
   end
 
   def render_player_dashboard
@@ -112,9 +112,9 @@ class DashboardController < ApplicationController
 
     # 人気機体TOP5（データベースで集計）
     @popular_mobile_suits = MobileSuit.joins(:match_players)
-                                      .select('mobile_suits.*, COUNT(match_players.id) as usage_count')
-                                      .group('mobile_suits.id')
-                                      .order('usage_count DESC')
+                                      .select("mobile_suits.*, COUNT(match_players.id) as usage_count")
+                                      .group("mobile_suits.id")
+                                      .order("usage_count DESC")
                                       .limit(5)
 
     # ユーザーのお気に入り機体（キャッシュ済みデータから集計）
@@ -124,10 +124,10 @@ class DashboardController < ApplicationController
                                           .take(3)
                                           .map { |suit, count| suit.tap { |s| s.define_singleton_method(:usage_count) { count } } }
 
-    @upcoming_events = Event.where('held_on >= ?', Time.zone.today).order(held_on: :asc).limit(3)
+    @upcoming_events = Event.where("held_on >= ?", Time.zone.today).order(held_on: :asc).limit(3)
     @latest_event = Event.order(held_on: :desc).first
 
-    render 'index'
+    render "index"
   end
 
   # 全ユーザー試合データを一度だけロード（N+1クエリを防ぐ）
@@ -137,11 +137,11 @@ class DashboardController < ApplicationController
                                          :mobile_suit,
                                          match: [
                                            :event,
-                                           match_players: [:user, :mobile_suit]
+                                           match_players: [ :user, :mobile_suit ]
                                          ]
                                        )
                                        .joins(:match)
-                                       .order('matches.played_at DESC, matches.id DESC')
+                                       .order("matches.played_at DESC, matches.id DESC")
                                        .to_a # 配列にキャッシュ
   end
 
@@ -160,7 +160,7 @@ class DashboardController < ApplicationController
 
     # 今日のイベントのアクティブなローテーション表を取得（rotation_matchesを事前ロード）
     @active_rotation = @today_event.rotations.includes(
-      rotation_matches: [:team1_player1, :team1_player2, :team2_player1, :team2_player2]
+      rotation_matches: [ :team1_player1, :team1_player2, :team2_player1, :team2_player2 ]
     ).find_by(is_active: true)
     return unless @active_rotation
 
@@ -196,8 +196,8 @@ class DashboardController < ApplicationController
     # 出番が近い通知
     if @user_next_match && @matches_until_user_turn && @matches_until_user_turn <= 2
       @notifications << {
-        type: 'warning',
-        icon: '⚠️',
+        type: "warning",
+        icon: "⚠️",
         message: "もうすぐあなたの出番です！あと#{@matches_until_user_turn}試合"
       }
     end
@@ -251,9 +251,9 @@ class DashboardController < ApplicationController
 
       if @streak_type.nil?
         # 最新の試合で連勝/連敗のタイプを決定
-        @streak_type = is_win ? 'win' : 'lose'
+        @streak_type = is_win ? "win" : "lose"
         @current_streak = 1
-      elsif (@streak_type == 'win' && is_win) || (@streak_type == 'lose' && !is_win)
+      elsif (@streak_type == "win" && is_win) || (@streak_type == "lose" && !is_win)
         # 連勝/連敗が続いている
         @current_streak += 1
       else
@@ -388,7 +388,7 @@ class DashboardController < ApplicationController
       partner_cost = partner_mp.mobile_suit.cost
 
       # コスト組み合わせのキー（小さい方を先に）
-      costs = [my_cost, partner_cost].sort.reverse
+      costs = [ my_cost, partner_cost ].sort.reverse
       cost_key = "#{costs[0]}+#{costs[1]}"
 
       cost_stats[cost_key][:total] += 1
@@ -408,7 +408,7 @@ class DashboardController < ApplicationController
                           total: stats[:total],
                           losses: stats[:total] - stats[:wins],
                           win_rate: win_rate,
-                          judgment: win_rate >= 60 ? '得意' : (win_rate >= 40 ? '普通' : '苦手')
+                          judgment: win_rate >= 60 ? "得意" : (win_rate >= 40 ? "普通" : "苦手")
                         }
                       end
                       .sort_by { |c| -c[:win_rate] }
@@ -462,7 +462,7 @@ class DashboardController < ApplicationController
                       total: stats[:total],
                       losses: stats[:total] - stats[:wins],
                       win_rate: win_rate,
-                      compatibility: win_rate >= 60 ? '得意' : (win_rate >= 40 ? '普通' : '苦手')
+                      compatibility: win_rate >= 60 ? "得意" : (win_rate >= 40 ? "普通" : "苦手")
                     }
                   end
                   .sort_by { |m| -m[:win_rate] }

@@ -1,6 +1,6 @@
 module Admin
   class UsersController < BaseController
-    before_action :set_user, only: [:edit, :update, :destroy]
+    before_action :set_user, only: [ :edit, :update, :destroy ]
 
     def index
       @users = User.where(is_guest: false).order(is_admin: :desc, nickname: :asc)
@@ -51,7 +51,7 @@ module Admin
 
     def destroy
       if @user.id == current_user.id
-        redirect_to admin_users_path, alert: '自分自身を削除することはできません。'
+        redirect_to admin_users_path, alert: "自分自身を削除することはできません。"
         return
       end
 

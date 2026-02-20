@@ -1,8 +1,8 @@
 class RotationsController < ApplicationController
   before_action :authenticate_user!
-  before_action :require_admin, except: [:index, :show]
-  before_action :set_rotation, only: [:show, :edit, :update, :destroy, :activate, :deactivate, :next_match, :record_match, :go_to_match, :update_match_record]
-  before_action :set_event, only: [:new, :create]
+  before_action :require_admin, except: [ :index, :show ]
+  before_action :set_rotation, only: [ :show, :edit, :update, :destroy, :activate, :deactivate, :next_match, :record_match, :go_to_match, :update_match_record ]
+  before_action :set_event, only: [ :new, :create ]
 
   def index
     @rotations = Rotation.includes(:event, :rotation_matches).order(created_at: :desc)
@@ -46,7 +46,7 @@ class RotationsController < ApplicationController
     if @rotation.save
       # Generate rotation matches
       generate_rotation_matches(@rotation, player_ids)
-      redirect_to @rotation, notice: 'ローテーションを作成しました。'
+      redirect_to @rotation, notice: "ローテーションを作成しました。"
     else
       render :new, status: :unprocessable_entity
     end
@@ -58,7 +58,7 @@ class RotationsController < ApplicationController
 
   def update
     if @rotation.update(rotation_params)
-      redirect_to @rotation, notice: 'ローテーションを更新しました。'
+      redirect_to @rotation, notice: "ローテーションを更新しました。"
     else
       @players = User.regular_users.order(:nickname)
       render :edit, status: :unprocessable_entity
@@ -67,7 +67,7 @@ class RotationsController < ApplicationController
 
   def destroy
     @rotation.destroy
-    redirect_to rotations_path, notice: 'ローテーションを削除しました。'
+    redirect_to rotations_path, notice: "ローテーションを削除しました。"
   end
 
   # Activate this rotation
@@ -87,13 +87,13 @@ class RotationsController < ApplicationController
     # Send upcoming match notifications (1試合目の出番通知含む)
     notify_upcoming_players(@rotation)
 
-    redirect_to @rotation, notice: 'ローテーションをアクティブにしました。'
+    redirect_to @rotation, notice: "ローテーションをアクティブにしました。"
   end
 
   # Deactivate this rotation
   def deactivate
     @rotation.update(is_active: false)
-    redirect_to @rotation, notice: 'ローテーションを非アクティブにしました。'
+    redirect_to @rotation, notice: "ローテーションを非アクティブにしました。"
   end
 
   # Move to next match
@@ -106,16 +106,16 @@ class RotationsController < ApplicationController
 
       # Broadcast update via Action Cable
       RotationChannel.broadcast_to(@rotation, {
-        type: 'rotation_updated',
+        type: "rotation_updated",
         current_match_index: @rotation.current_match_index
       })
 
       # Send push notifications to upcoming players
       notify_upcoming_players(@rotation)
 
-      redirect_to @rotation, notice: '次の試合に進みました。'
+      redirect_to @rotation, notice: "次の試合に進みました。"
     else
-      redirect_to @rotation, alert: 'これが最後の試合です。'
+      redirect_to @rotation, alert: "これが最後の試合です。"
     end
   end
 
@@ -131,13 +131,13 @@ class RotationsController < ApplicationController
 
       # Broadcast update via Action Cable
       RotationChannel.broadcast_to(@rotation, {
-        type: 'rotation_updated',
+        type: "rotation_updated",
         current_match_index: @rotation.current_match_index
       })
 
       redirect_to @rotation, notice: "第#{match_index + 1}試合に戻りました。"
     else
-      redirect_to @rotation, alert: '無効な試合番号です。'
+      redirect_to @rotation, alert: "無効な試合番号です。"
     end
   end
 
@@ -150,7 +150,7 @@ class RotationsController < ApplicationController
 
     unless rotation_match
       Rails.logger.error "Rotation match not found for index: #{@rotation.current_match_index}"
-      redirect_to @rotation, alert: '試合が見つかりません。' and return
+      redirect_to @rotation, alert: "試合が見つかりません。" and return
     end
 
     # Create match record
@@ -189,7 +189,7 @@ class RotationsController < ApplicationController
 
         # Broadcast update via Action Cable
         RotationChannel.broadcast_to(@rotation, {
-          type: 'rotation_updated',
+          type: "rotation_updated",
           current_match_index: @rotation.current_match_index
         })
 
@@ -205,9 +205,9 @@ class RotationsController < ApplicationController
           # All matches completed - deactivate this rotation and show modal to create next round
           @rotation.update!(is_active: false)
           session[:show_completion_modal] = @rotation.id
-          redirect_to @rotation, notice: '試合を記録しました。'
+          redirect_to @rotation, notice: "試合を記録しました。"
         else
-          redirect_to @rotation, notice: '試合を記録しました。'
+          redirect_to @rotation, notice: "試合を記録しました。"
         end
       else
         Rails.logger.error "Match save failed: #{match.errors.full_messages}"
@@ -240,7 +240,7 @@ class RotationsController < ApplicationController
     rotation_match = @rotation.rotation_matches.find_by(match_index: params[:match_index].to_i)
 
     unless rotation_match && rotation_match.match
-      redirect_to @rotation, alert: '試合が見つかりません。' and return
+      redirect_to @rotation, alert: "試合が見つかりません。" and return
     end
 
     match = rotation_match.match
@@ -265,7 +265,7 @@ class RotationsController < ApplicationController
     end
 
     if match.save
-      redirect_to @rotation, notice: '試合記録を更新しました。'
+      redirect_to @rotation, notice: "試合記録を更新しました。"
     else
       redirect_to @rotation, alert: "試合記録の更新に失敗しました: #{match.errors.full_messages.join(', ')}"
     end
@@ -342,7 +342,7 @@ class RotationsController < ApplicationController
     end
 
     # All matches are recorded, stay at the last match
-    return rotation.rotation_matches.count - 1
+    rotation.rotation_matches.count - 1
   end
 
   def notify_upcoming_players(rotation)

@@ -1,6 +1,6 @@
 module Admin
   class MasterEmojisController < BaseController
-    before_action :set_master_emoji, only: [:edit, :update, :destroy]
+    before_action :set_master_emoji, only: [ :edit, :update, :destroy ]
 
     def index
       @master_emojis = MasterEmoji.ordered.includes(:reactions)

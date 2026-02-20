@@ -3,8 +3,8 @@ require "net/http"
 class EventsController < ApplicationController
   include TimestampParseable
   before_action :authenticate_user!
-  before_action :require_admin, only: [:new, :create, :edit, :update, :destroy, :edit_timestamps, :update_timestamps, :trigger_analysis]
-  before_action :set_event, only: [:show, :edit, :update, :destroy, :edit_timestamps, :update_timestamps, :trigger_analysis]
+  before_action :require_admin, only: [ :new, :create, :edit, :update, :destroy, :edit_timestamps, :update_timestamps, :trigger_analysis ]
+  before_action :set_event, only: [ :show, :edit, :update, :destroy, :edit_timestamps, :update_timestamps, :trigger_analysis ]
 
   def index
     @events = Event.includes(:matches).order(held_on: :desc)
@@ -13,14 +13,17 @@ class EventsController < ApplicationController
   def show
     sort = params[:sort].presence_in(%w[oldest reactions]) || "oldest"
     @sort = sort
-    @per_page = [10, 20, 50].include?(params[:per].to_i) ? params[:per].to_i : 20
+    @per_page = [ 10, 20, 50 ].include?(params[:per].to_i) ? params[:per].to_i : 20
 
     base_scope = sort == "reactions" ? @event.matches.by_reactions_oldest : @event.matches.by_oldest
     @matches = base_scope
-                 .includes(:event, :rotation_match, match_players: [:user, :mobile_suit], reactions: :user)
+                 .includes(:event, :rotation_match, match_players: [ :user, :mobile_suit ], reactions: :user)
                  .page(params[:page]).per(@per_page)
     @rotations = @event.rotations.order(created_at: :asc)
     @emojis = MasterEmoji.active.ordered
+
+    ordered_ids = @event.matches.order(:played_at, :id).pluck(:id)
+    @match_numbers = ordered_ids.each_with_index.to_h { |id, i| [ id, i + 1 ] }
   end
 
   def new
@@ -49,13 +52,13 @@ class EventsController < ApplicationController
   end
 
   def edit_timestamps
-    @matches = @event.matches.includes(match_players: [:user, :mobile_suit]).order(:played_at, :id)
+    @matches = @event.matches.includes(match_players: [ :user, :mobile_suit ]).order(:played_at, :id)
     existing = @matches.map { |m| format_timestamp(m.video_timestamp) }
-    @timestamps_text = existing.any?(&:present?) ? existing.join("\n") : ''
+    @timestamps_text = existing.any?(&:present?) ? existing.join("\n") : ""
   end
 
   def update_timestamps
-    @matches = @event.matches.includes(match_players: [:user, :mobile_suit]).order(:played_at, :id)
+    @matches = @event.matches.includes(match_players: [ :user, :mobile_suit ]).order(:played_at, :id)
     raw_text = params[:timestamps].to_s
     lines = raw_text.split("\n").map(&:strip)
 
@@ -159,5 +162,4 @@ class EventsController < ApplicationController
   def event_params
     params.require(:event).permit(:name, :held_on, :description, :broadcast_url)
   end
-
 end

@@ -40,23 +40,23 @@ class RotationGenerator
     # Format: [[team1_p1_idx, team1_p2_idx], [team2_p1_idx, team2_p2_idx]]
     # First player in team1 is always the streaming player
     template = [
-      [[0, 1], [2, 3]],  # A B vs C D
-      [[1, 0], [2, 3]],  # B A vs C D
-      [[2, 3], [0, 1]],  # C D vs A B
-      [[3, 2], [0, 1]],  # D C vs A B
-      [[0, 2], [1, 3]],  # A C vs B D
-      [[2, 0], [1, 3]],  # C A vs B D
-      [[1, 3], [0, 2]],  # B D vs A C
-      [[3, 1], [0, 2]],  # D B vs A C
-      [[0, 3], [1, 2]],  # A D vs B C
-      [[3, 0], [1, 2]],  # D A vs B C
-      [[1, 2], [0, 3]],  # B C vs A D
-      [[2, 1], [0, 3]]   # C B vs A D
+      [ [ 0, 1 ], [ 2, 3 ] ],  # A B vs C D
+      [ [ 1, 0 ], [ 2, 3 ] ],  # B A vs C D
+      [ [ 2, 3 ], [ 0, 1 ] ],  # C D vs A B
+      [ [ 3, 2 ], [ 0, 1 ] ],  # D C vs A B
+      [ [ 0, 2 ], [ 1, 3 ] ],  # A C vs B D
+      [ [ 2, 0 ], [ 1, 3 ] ],  # C A vs B D
+      [ [ 1, 3 ], [ 0, 2 ] ],  # B D vs A C
+      [ [ 3, 1 ], [ 0, 2 ] ],  # D B vs A C
+      [ [ 0, 3 ], [ 1, 2 ] ],  # A D vs B C
+      [ [ 3, 0 ], [ 1, 2 ] ],  # D A vs B C
+      [ [ 1, 2 ], [ 0, 3 ] ],  # B C vs A D
+      [ [ 2, 1 ], [ 0, 3 ] ]   # C B vs A D
     ]
 
     template.each_with_index do |match, idx|
-      team1 = [@players[match[0][0]], @players[match[0][1]]]
-      team2 = [@players[match[1][0]], @players[match[1][1]]]
+      team1 = [ @players[match[0][0]], @players[match[0][1]] ]
+      team2 = [ @players[match[1][0]], @players[match[1][1]] ]
       add_match(idx, team1, team2)
     end
   end
@@ -69,26 +69,26 @@ class RotationGenerator
     # Format: [[team1_p1_idx, team1_p2_idx], [team2_p1_idx, team2_p2_idx]]
     # First player in team1 is always the streaming player
     template = [
-      [[0, 1], [2, 3]],  # A B vs C D
-      [[2, 0], [1, 3]],  # C A vs B D
-      [[3, 0], [1, 2]],  # D A vs B C
-      [[0, 2], [1, 4]],  # A C vs B E
-      [[4, 0], [1, 2]],  # E A vs B C
-      [[1, 0], [4, 2]],  # B A vs E C
-      [[3, 0], [1, 4]],  # D A vs B E
-      [[4, 0], [1, 3]],  # E A vs B D
-      [[1, 0], [4, 3]],  # B A vs E D
-      [[0, 4], [2, 3]],  # A E vs C D
-      [[2, 0], [4, 3]],  # C A vs E D
-      [[3, 0], [4, 2]],  # D A vs E C
-      [[2, 1], [3, 4]],  # C B vs D E
-      [[1, 3], [2, 4]],  # B D vs C E
-      [[4, 1], [2, 3]]   # E B vs C D
+      [ [ 0, 1 ], [ 2, 3 ] ],  # A B vs C D
+      [ [ 2, 0 ], [ 1, 3 ] ],  # C A vs B D
+      [ [ 3, 0 ], [ 1, 2 ] ],  # D A vs B C
+      [ [ 0, 2 ], [ 1, 4 ] ],  # A C vs B E
+      [ [ 4, 0 ], [ 1, 2 ] ],  # E A vs B C
+      [ [ 1, 0 ], [ 4, 2 ] ],  # B A vs E C
+      [ [ 3, 0 ], [ 1, 4 ] ],  # D A vs B E
+      [ [ 4, 0 ], [ 1, 3 ] ],  # E A vs B D
+      [ [ 1, 0 ], [ 4, 3 ] ],  # B A vs E D
+      [ [ 0, 4 ], [ 2, 3 ] ],  # A E vs C D
+      [ [ 2, 0 ], [ 4, 3 ] ],  # C A vs E D
+      [ [ 3, 0 ], [ 4, 2 ] ],  # D A vs E C
+      [ [ 2, 1 ], [ 3, 4 ] ],  # C B vs D E
+      [ [ 1, 3 ], [ 2, 4 ] ],  # B D vs C E
+      [ [ 4, 1 ], [ 2, 3 ] ]   # E B vs C D
     ]
 
     template.each_with_index do |match, idx|
-      team1 = [@players[match[0][0]], @players[match[0][1]]]
-      team2 = [@players[match[1][0]], @players[match[1][1]]]
+      team1 = [ @players[match[0][0]], @players[match[0][1]] ]
+      team2 = [ @players[match[1][0]], @players[match[1][1]] ]
       add_match(idx, team1, team2)
     end
   end
@@ -100,56 +100,56 @@ class RotationGenerator
     # Format: [[team1_p1_idx, team1_p2_idx], [team2_p1_idx, team2_p2_idx]]
     # First player in team1 is always the streaming player
     template = [
-      [[0, 1], [2, 3]],  # A B vs C D
-      [[1, 0], [4, 5]],  # B A vs E F
-      [[3, 2], [4, 5]],  # D C vs E F
-      [[4, 1], [0, 2]],  # E B vs A C
-      [[3, 5], [0, 2]],  # D F vs A C
-      [[5, 3], [1, 4]],  # F D vs B E
-      [[0, 3], [1, 5]],  # A D vs B F
-      [[3, 0], [2, 4]],  # D A vs C E
-      [[1, 5], [2, 4]],  # B F vs C E
-      [[1, 3], [0, 4]],  # B D vs A E
-      [[2, 5], [0, 4]],  # C F vs A E
-      [[5, 2], [1, 3]],  # F C vs B D
-      [[2, 1], [0, 5]],  # C B vs A F
-      [[3, 4], [0, 5]],  # D E vs A F
-      [[4, 3], [1, 2]],  # E D vs B C
-      [[0, 1], [2, 4]],  # A B vs C E
-      [[1, 0], [3, 5]],  # B A vs D F
-      [[4, 2], [3, 5]],  # E C vs D F
-      [[0, 2], [3, 4]],  # A C vs D E
-      [[2, 0], [1, 5]],  # C A vs B F
-      [[3, 4], [1, 5]],  # D E vs B F
-      [[5, 4], [0, 3]],  # F E vs A D
-      [[1, 2], [0, 3]],  # B C vs A D
-      [[2, 1], [4, 5]],  # C B vs E F
-      [[0, 4], [2, 3]],  # A E vs C D
-      [[4, 0], [1, 5]],  # E A vs B F
-      [[3, 2], [1, 5]],  # D C vs B F
-      [[0, 5], [2, 4]],  # A F vs C E
-      [[5, 0], [1, 3]],  # F A vs B D
-      [[2, 4], [1, 3]],  # C E vs B D
-      [[4, 3], [0, 1]],  # E D vs A B
-      [[2, 5], [0, 1]],  # C F vs A B
-      [[5, 2], [3, 4]],  # F C vs D E
-      [[1, 3], [0, 2]],  # B D vs A C
-      [[4, 5], [0, 2]],  # E F vs A C
-      [[5, 4], [1, 3]],  # F E vs B D
-      [[0, 3], [1, 4]],  # A D vs B E
-      [[3, 0], [2, 5]],  # D A vs C F
-      [[4, 1], [2, 5]],  # E B vs C F
-      [[2, 1], [0, 4]],  # C B vs A E
-      [[3, 5], [0, 4]],  # D F vs A E
-      [[5, 3], [1, 2]],  # F D vs B C
-      [[0, 5], [1, 4]],  # A F vs B E
-      [[5, 0], [2, 3]],  # F A vs C D
-      [[1, 4], [2, 3]]   # B E vs C D
+      [ [ 0, 1 ], [ 2, 3 ] ],  # A B vs C D
+      [ [ 1, 0 ], [ 4, 5 ] ],  # B A vs E F
+      [ [ 3, 2 ], [ 4, 5 ] ],  # D C vs E F
+      [ [ 4, 1 ], [ 0, 2 ] ],  # E B vs A C
+      [ [ 3, 5 ], [ 0, 2 ] ],  # D F vs A C
+      [ [ 5, 3 ], [ 1, 4 ] ],  # F D vs B E
+      [ [ 0, 3 ], [ 1, 5 ] ],  # A D vs B F
+      [ [ 3, 0 ], [ 2, 4 ] ],  # D A vs C E
+      [ [ 1, 5 ], [ 2, 4 ] ],  # B F vs C E
+      [ [ 1, 3 ], [ 0, 4 ] ],  # B D vs A E
+      [ [ 2, 5 ], [ 0, 4 ] ],  # C F vs A E
+      [ [ 5, 2 ], [ 1, 3 ] ],  # F C vs B D
+      [ [ 2, 1 ], [ 0, 5 ] ],  # C B vs A F
+      [ [ 3, 4 ], [ 0, 5 ] ],  # D E vs A F
+      [ [ 4, 3 ], [ 1, 2 ] ],  # E D vs B C
+      [ [ 0, 1 ], [ 2, 4 ] ],  # A B vs C E
+      [ [ 1, 0 ], [ 3, 5 ] ],  # B A vs D F
+      [ [ 4, 2 ], [ 3, 5 ] ],  # E C vs D F
+      [ [ 0, 2 ], [ 3, 4 ] ],  # A C vs D E
+      [ [ 2, 0 ], [ 1, 5 ] ],  # C A vs B F
+      [ [ 3, 4 ], [ 1, 5 ] ],  # D E vs B F
+      [ [ 5, 4 ], [ 0, 3 ] ],  # F E vs A D
+      [ [ 1, 2 ], [ 0, 3 ] ],  # B C vs A D
+      [ [ 2, 1 ], [ 4, 5 ] ],  # C B vs E F
+      [ [ 0, 4 ], [ 2, 3 ] ],  # A E vs C D
+      [ [ 4, 0 ], [ 1, 5 ] ],  # E A vs B F
+      [ [ 3, 2 ], [ 1, 5 ] ],  # D C vs B F
+      [ [ 0, 5 ], [ 2, 4 ] ],  # A F vs C E
+      [ [ 5, 0 ], [ 1, 3 ] ],  # F A vs B D
+      [ [ 2, 4 ], [ 1, 3 ] ],  # C E vs B D
+      [ [ 4, 3 ], [ 0, 1 ] ],  # E D vs A B
+      [ [ 2, 5 ], [ 0, 1 ] ],  # C F vs A B
+      [ [ 5, 2 ], [ 3, 4 ] ],  # F C vs D E
+      [ [ 1, 3 ], [ 0, 2 ] ],  # B D vs A C
+      [ [ 4, 5 ], [ 0, 2 ] ],  # E F vs A C
+      [ [ 5, 4 ], [ 1, 3 ] ],  # F E vs B D
+      [ [ 0, 3 ], [ 1, 4 ] ],  # A D vs B E
+      [ [ 3, 0 ], [ 2, 5 ] ],  # D A vs C F
+      [ [ 4, 1 ], [ 2, 5 ] ],  # E B vs C F
+      [ [ 2, 1 ], [ 0, 4 ] ],  # C B vs A E
+      [ [ 3, 5 ], [ 0, 4 ] ],  # D F vs A E
+      [ [ 5, 3 ], [ 1, 2 ] ],  # F D vs B C
+      [ [ 0, 5 ], [ 1, 4 ] ],  # A F vs B E
+      [ [ 5, 0 ], [ 2, 3 ] ],  # F A vs C D
+      [ [ 1, 4 ], [ 2, 3 ] ]   # B E vs C D
     ]
 
     template.each_with_index do |match, idx|
-      team1 = [@players[match[0][0]], @players[match[0][1]]]
-      team2 = [@players[match[1][0]], @players[match[1][1]]]
+      team1 = [ @players[match[0][0]], @players[match[0][1]] ]
+      team2 = [ @players[match[1][0]], @players[match[1][1]] ]
       add_match(idx, team1, team2)
     end
   end
@@ -162,32 +162,32 @@ class RotationGenerator
     # Format: [[team1_p1_idx, team1_p2_idx], [team2_p1_idx, team2_p2_idx]]
     # First player in team1 is always the streaming player
     template = [
-      [[2, 3], [0, 1]],  # C D vs A B
-      [[4, 5], [0, 1]],  # E F vs A B
-      [[5, 4], [2, 3]],  # F E vs C D
-      [[0, 2], [3, 4]],  # A C vs D E
-      [[2, 0], [6, 1]],  # C A vs G B
-      [[3, 4], [6, 1]],  # D E vs G B
-      [[0, 3], [5, 6]],  # A D vs F G
-      [[3, 0], [1, 2]],  # D A vs B C
-      [[6, 5], [1, 2]],  # G F vs B C
-      [[0, 4], [5, 1]],  # A E vs F B
-      [[4, 0], [6, 2]],  # E A vs G C
-      [[1, 5], [6, 2]],  # B F vs G C
-      [[6, 3], [0, 5]],  # G D vs A F
-      [[1, 4], [0, 5]],  # B E vs A F
-      [[4, 1], [6, 3]],  # E B vs G D
-      [[2, 4], [0, 6]],  # C E vs A G
-      [[5, 3], [0, 6]],  # F D vs A G
-      [[3, 5], [2, 4]],  # D F vs C E
-      [[1, 3], [2, 5]],  # B D vs C F
-      [[6, 4], [1, 3]],  # G E vs B D
-      [[5, 2], [6, 4]]   # F C vs G E
+      [ [ 2, 3 ], [ 0, 1 ] ],  # C D vs A B
+      [ [ 4, 5 ], [ 0, 1 ] ],  # E F vs A B
+      [ [ 5, 4 ], [ 2, 3 ] ],  # F E vs C D
+      [ [ 0, 2 ], [ 3, 4 ] ],  # A C vs D E
+      [ [ 2, 0 ], [ 6, 1 ] ],  # C A vs G B
+      [ [ 3, 4 ], [ 6, 1 ] ],  # D E vs G B
+      [ [ 0, 3 ], [ 5, 6 ] ],  # A D vs F G
+      [ [ 3, 0 ], [ 1, 2 ] ],  # D A vs B C
+      [ [ 6, 5 ], [ 1, 2 ] ],  # G F vs B C
+      [ [ 0, 4 ], [ 5, 1 ] ],  # A E vs F B
+      [ [ 4, 0 ], [ 6, 2 ] ],  # E A vs G C
+      [ [ 1, 5 ], [ 6, 2 ] ],  # B F vs G C
+      [ [ 6, 3 ], [ 0, 5 ] ],  # G D vs A F
+      [ [ 1, 4 ], [ 0, 5 ] ],  # B E vs A F
+      [ [ 4, 1 ], [ 6, 3 ] ],  # E B vs G D
+      [ [ 2, 4 ], [ 0, 6 ] ],  # C E vs A G
+      [ [ 5, 3 ], [ 0, 6 ] ],  # F D vs A G
+      [ [ 3, 5 ], [ 2, 4 ] ],  # D F vs C E
+      [ [ 1, 3 ], [ 2, 5 ] ],  # B D vs C F
+      [ [ 6, 4 ], [ 1, 3 ] ],  # G E vs B D
+      [ [ 5, 2 ], [ 6, 4 ] ]   # F C vs G E
     ]
 
     template.each_with_index do |match, idx|
-      team1 = [@players[match[0][0]], @players[match[0][1]]]
-      team2 = [@players[match[1][0]], @players[match[1][1]]]
+      team1 = [ @players[match[0][0]], @players[match[0][1]] ]
+      team2 = [ @players[match[1][0]], @players[match[1][1]] ]
       add_match(idx, team1, team2)
     end
   end
@@ -200,53 +200,53 @@ class RotationGenerator
     # First player in team1 is always the streaming player
     # A=0, B=1, C=2, D=3, E=4, F=5, G=6, H=7
     template = [
-      [[0, 1], [2, 3]],  # A B vs C D
-      [[1, 0], [4, 5]],  # B A vs E F
-      [[6, 7], [0, 1]],  # G H vs A B
-      [[7, 6], [2, 3]],  # H G vs C D
-      [[4, 5], [2, 3]],  # E F vs C D
-      [[5, 4], [6, 7]],  # F E vs G H
-      [[3, 1], [0, 2]],  # D B vs A C
-      [[2, 0], [4, 6]],  # C A vs E G
-      [[0, 2], [5, 7]],  # A C vs F H
-      [[1, 3], [5, 7]],  # B D vs F H
-      [[6, 4], [1, 3]],  # G E vs B D
-      [[7, 5], [4, 6]],  # H F vs E G
-      [[2, 1], [0, 3]],  # C B vs A D
-      [[4, 7], [0, 3]],  # E H vs A D
-      [[3, 0], [6, 5]],  # D A vs G F
-      [[5, 6], [1, 2]],  # F G vs B C
-      [[1, 2], [4, 7]],  # B C vs E H
-      [[6, 5], [4, 7]],  # G F vs E H
-      [[0, 4], [1, 5]],  # A E vs B F
-      [[4, 0], [2, 6]],  # E A vs C G
-      [[7, 3], [0, 4]],  # H D vs A E
-      [[5, 1], [3, 7]],  # F B vs D H
-      [[2, 6], [1, 5]],  # C G vs B F
-      [[3, 7], [2, 6]],  # D H vs C G
-      [[1, 4], [0, 5]],  # B E vs A F
-      [[0, 5], [2, 7]],  # A F vs C H
-      [[5, 0], [3, 6]],  # F A vs D G
-      [[6, 3], [1, 4]],  # G D vs B E
-      [[4, 1], [2, 7]],  # E B vs C H
-      [[3, 6], [2, 7]],  # D G vs C H
-      [[7, 1], [0, 6]],  # H B vs A G
-      [[2, 4], [0, 6]],  # C E vs A G
-      [[0, 6], [3, 5]],  # A G vs D F
-      [[1, 7], [3, 5]],  # B H vs D F
-      [[7, 1], [2, 4]],  # H B vs C E
-      [[2, 4], [3, 5]],  # C E vs D F
-      [[6, 1], [0, 7]],  # G B vs A H
-      [[5, 2], [0, 7]],  # F C vs A H
-      [[4, 3], [0, 7]],  # E D vs A H
-      [[3, 4], [1, 6]],  # D E vs B G
-      [[6, 1], [2, 5]],  # G B vs C F
-      [[5, 2], [3, 4]]   # F C vs D E
+      [ [ 0, 1 ], [ 2, 3 ] ],  # A B vs C D
+      [ [ 1, 0 ], [ 4, 5 ] ],  # B A vs E F
+      [ [ 6, 7 ], [ 0, 1 ] ],  # G H vs A B
+      [ [ 7, 6 ], [ 2, 3 ] ],  # H G vs C D
+      [ [ 4, 5 ], [ 2, 3 ] ],  # E F vs C D
+      [ [ 5, 4 ], [ 6, 7 ] ],  # F E vs G H
+      [ [ 3, 1 ], [ 0, 2 ] ],  # D B vs A C
+      [ [ 2, 0 ], [ 4, 6 ] ],  # C A vs E G
+      [ [ 0, 2 ], [ 5, 7 ] ],  # A C vs F H
+      [ [ 1, 3 ], [ 5, 7 ] ],  # B D vs F H
+      [ [ 6, 4 ], [ 1, 3 ] ],  # G E vs B D
+      [ [ 7, 5 ], [ 4, 6 ] ],  # H F vs E G
+      [ [ 2, 1 ], [ 0, 3 ] ],  # C B vs A D
+      [ [ 4, 7 ], [ 0, 3 ] ],  # E H vs A D
+      [ [ 3, 0 ], [ 6, 5 ] ],  # D A vs G F
+      [ [ 5, 6 ], [ 1, 2 ] ],  # F G vs B C
+      [ [ 1, 2 ], [ 4, 7 ] ],  # B C vs E H
+      [ [ 6, 5 ], [ 4, 7 ] ],  # G F vs E H
+      [ [ 0, 4 ], [ 1, 5 ] ],  # A E vs B F
+      [ [ 4, 0 ], [ 2, 6 ] ],  # E A vs C G
+      [ [ 7, 3 ], [ 0, 4 ] ],  # H D vs A E
+      [ [ 5, 1 ], [ 3, 7 ] ],  # F B vs D H
+      [ [ 2, 6 ], [ 1, 5 ] ],  # C G vs B F
+      [ [ 3, 7 ], [ 2, 6 ] ],  # D H vs C G
+      [ [ 1, 4 ], [ 0, 5 ] ],  # B E vs A F
+      [ [ 0, 5 ], [ 2, 7 ] ],  # A F vs C H
+      [ [ 5, 0 ], [ 3, 6 ] ],  # F A vs D G
+      [ [ 6, 3 ], [ 1, 4 ] ],  # G D vs B E
+      [ [ 4, 1 ], [ 2, 7 ] ],  # E B vs C H
+      [ [ 3, 6 ], [ 2, 7 ] ],  # D G vs C H
+      [ [ 7, 1 ], [ 0, 6 ] ],  # H B vs A G
+      [ [ 2, 4 ], [ 0, 6 ] ],  # C E vs A G
+      [ [ 0, 6 ], [ 3, 5 ] ],  # A G vs D F
+      [ [ 1, 7 ], [ 3, 5 ] ],  # B H vs D F
+      [ [ 7, 1 ], [ 2, 4 ] ],  # H B vs C E
+      [ [ 2, 4 ], [ 3, 5 ] ],  # C E vs D F
+      [ [ 6, 1 ], [ 0, 7 ] ],  # G B vs A H
+      [ [ 5, 2 ], [ 0, 7 ] ],  # F C vs A H
+      [ [ 4, 3 ], [ 0, 7 ] ],  # E D vs A H
+      [ [ 3, 4 ], [ 1, 6 ] ],  # D E vs B G
+      [ [ 6, 1 ], [ 2, 5 ] ],  # G B vs C F
+      [ [ 5, 2 ], [ 3, 4 ] ]   # F C vs D E
     ]
 
     template.each_with_index do |match, idx|
-      team1 = [@players[match[0][0]], @players[match[0][1]]]
-      team2 = [@players[match[1][0]], @players[match[1][1]]]
+      team1 = [ @players[match[0][0]], @players[match[0][1]] ]
+      team2 = [ @players[match[1][0]], @players[match[1][1]] ]
       add_match(idx, team1, team2)
     end
   end
@@ -311,7 +311,7 @@ class RotationGenerator
     team1 = shuffled[0..1]
     team2 = shuffled[2..3]
 
-    [team1, team2]
+    [ team1, team2 ]
   end
 
   def add_match(index, team1, team2)
@@ -346,7 +346,7 @@ class RotationGenerator
   end
 
   def player_pair_key(player1, player2)
-    [player1.id, player2.id].sort
+    [ player1.id, player2.id ].sort
   end
 
   # Get statistics for analysis

@@ -12,7 +12,7 @@ class CreateRotationMatches < ActiveRecord::Migration[8.1]
       t.timestamps
     end
 
-    add_index :rotation_matches, [:rotation_id, :match_index], unique: true
+    add_index :rotation_matches, [ :rotation_id, :match_index ], unique: true
     add_index :rotation_matches, :match_id
     add_foreign_key :rotation_matches, :users, column: :team1_player1_id
     add_foreign_key :rotation_matches, :users, column: :team1_player2_id
