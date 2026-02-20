@@ -1,15 +1,15 @@
 class MatchesController < ApplicationController
   before_action :authenticate_user!
-  before_action :require_admin, except: [:index, :show]
-  before_action :set_event, only: [:new, :create]
-  before_action :set_match, only: [:show, :edit, :update, :destroy]
+  before_action :require_admin, except: [ :index, :show ]
+  before_action :set_event, only: [ :new, :create ]
+  before_action :set_match, only: [ :show, :edit, :update, :destroy ]
 
   def index
     sort = params[:sort].presence_in(%w[latest reactions]) || "latest"
     @sort = sort
 
     base_scope = sort == "reactions" ? Match.by_reactions : Match.by_latest
-    @matches = base_scope.includes(:event, { match_players: [:user, :mobile_suit] }, { reactions: :user })
+    @matches = base_scope.includes(:event, { match_players: [ :user, :mobile_suit ] }, { reactions: :user })
 
     # フィルター: イベント（複数選択対応）
     if params[:events].present?
@@ -31,7 +31,7 @@ class MatchesController < ApplicationController
       ).distinct if streaming_user_ids.any?
     end
 
-    @per_page = [10, 20, 50].include?(params[:per].to_i) ? params[:per].to_i : 20
+    @per_page = [ 10, 20, 50 ].include?(params[:per].to_i) ? params[:per].to_i : 20
     @matches = @matches.page(params[:page]).per(@per_page)
     @emojis = MasterEmoji.active.ordered
     @latest_event = Event.order(held_on: :desc).first
@@ -53,7 +53,7 @@ class MatchesController < ApplicationController
     @match = @event.matches.build(played_at: Time.current)
     4.times { |i| @match.match_players.build(position: i + 1) }
     @users = User.regular_users.order(:nickname)
-    @mobile_suits = MobileSuit.all.order(Arel.sql('position IS NULL, position ASC, cost DESC, name ASC'))
+    @mobile_suits = MobileSuit.all.order(Arel.sql("position IS NULL, position ASC, cost DESC, name ASC"))
   end
 
   def create
@@ -64,14 +64,14 @@ class MatchesController < ApplicationController
       redirect_to @event, notice: "対戦記録を登録しました。"
     else
       @users = User.regular_users.order(:nickname)
-      @mobile_suits = MobileSuit.all.order(Arel.sql('position IS NULL, position ASC, cost DESC, name ASC'))
+      @mobile_suits = MobileSuit.all.order(Arel.sql("position IS NULL, position ASC, cost DESC, name ASC"))
       render :new, status: :unprocessable_entity
     end
   end
 
   def edit
     @users = User.regular_users.order(:nickname)
-    @mobile_suits = MobileSuit.all.order(Arel.sql('position IS NULL, position ASC, cost DESC, name ASC'))
+    @mobile_suits = MobileSuit.all.order(Arel.sql("position IS NULL, position ASC, cost DESC, name ASC"))
   end
 
   def update
@@ -79,7 +79,7 @@ class MatchesController < ApplicationController
       redirect_to @match, notice: "対戦記録を更新しました。"
     else
       @users = User.regular_users.order(:nickname)
-      @mobile_suits = MobileSuit.all.order(Arel.sql('position IS NULL, position ASC, cost DESC, name ASC'))
+      @mobile_suits = MobileSuit.all.order(Arel.sql("position IS NULL, position ASC, cost DESC, name ASC"))
       render :edit, status: :unprocessable_entity
     end
   end
@@ -159,11 +159,11 @@ class MatchesController < ApplicationController
   end
 
   def set_match
-    @match = Match.includes(:event, :match_players => [:user, :mobile_suit]).find(params[:id])
+    @match = Match.includes(:event, match_players: [ :user, :mobile_suit ]).find(params[:id])
   end
 
   def match_params
-    params.require(:match).permit(:winning_team, :played_at, :video_timestamp_text, match_players_attributes: [:id, :user_id, :mobile_suit_id, :team_number, :position])
+    params.require(:match).permit(:winning_team, :played_at, :video_timestamp_text, match_players_attributes: [ :id, :user_id, :mobile_suit_id, :team_number, :position ])
   end
 
   # Find the next unrecorded match starting from current position
@@ -185,6 +185,6 @@ class MatchesController < ApplicationController
     end
 
     # All matches are recorded, stay at the last match
-    return rotation.rotation_matches.count - 1
+    rotation.rotation_matches.count - 1
   end
 end

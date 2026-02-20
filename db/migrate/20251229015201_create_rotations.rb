@@ -12,7 +12,7 @@ class CreateRotations < ActiveRecord::Migration[8.1]
     end
 
     add_index :rotations, :base_rotation_id
-    add_index :rotations, [:event_id, :is_active]
+    add_index :rotations, [ :event_id, :is_active ]
     add_foreign_key :rotations, :rotations, column: :base_rotation_id
   end
 end

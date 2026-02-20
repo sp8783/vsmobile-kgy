@@ -1,6 +1,6 @@
 module Admin
   class AnnouncementsController < BaseController
-    before_action :set_announcement, only: [:edit, :update, :destroy]
+    before_action :set_announcement, only: [ :edit, :update, :destroy ]
 
     def index
       @announcements = Announcement.order(published_at: :desc)

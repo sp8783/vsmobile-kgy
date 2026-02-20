@@ -30,8 +30,8 @@ class ProfilesController < ApplicationController
   private
 
   def reject_guest_user
-    if current_user.username == 'guest'
-      redirect_to root_path, alert: 'ゲストユーザーは設定を変更できません。'
+    if current_user.username == "guest"
+      redirect_to root_path, alert: "ゲストユーザーは設定を変更できません。"
     end
   end
 

@@ -1,9 +1,9 @@
 module Admin
   class MobileSuitsController < BaseController
-    before_action :set_mobile_suit, only: [:edit, :update, :destroy]
+    before_action :set_mobile_suit, only: [ :edit, :update, :destroy ]
 
     def index
-      @mobile_suits = MobileSuit.all.order(Arel.sql('position IS NULL, position ASC, cost DESC, name ASC'))
+      @mobile_suits = MobileSuit.all.order(Arel.sql("position IS NULL, position ASC, cost DESC, name ASC"))
     end
 
     def new

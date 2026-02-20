@@ -15,12 +15,12 @@ class Match < ApplicationRecord
 
   # Validations
   validates :played_at, presence: true
-  validates :winning_team, presence: true, inclusion: { in: [1, 2] }
+  validates :winning_team, presence: true, inclusion: { in: [ 1, 2 ] }
   validates :match_players, length: { is: 4 }
 
   # イベント内での試合番号を取得（古い順に1から採番）
   def match_number
-    event.matches.where('played_at < ?', played_at).count + 1
+    event.matches.where("played_at < ?", played_at).count + 1
   end
 
   # 特定のユーザーが特定の絵文字でリアクションしているかどうか
@@ -44,7 +44,7 @@ class Match < ApplicationRecord
 
   # H:MM:SS形式でのタイムスタンプ入出力用
   def video_timestamp_text
-    return '' if video_timestamp.nil?
+    return "" if video_timestamp.nil?
     h, remainder = video_timestamp.divmod(3600)
     m, s = remainder.divmod(60)
     "#{h}:#{format('%02d', m)}:#{format('%02d', s)}"
@@ -55,7 +55,7 @@ class Match < ApplicationRecord
       self.video_timestamp = nil
       return
     end
-    parts = text.strip.split(':').map(&:to_i)
+    parts = text.strip.split(":").map(&:to_i)
     self.video_timestamp = case parts.size
     when 3 then parts[0] * 3600 + parts[1] * 60 + parts[2]
     when 2 then parts[0] * 60 + parts[1]
@@ -67,7 +67,7 @@ class Match < ApplicationRecord
     return nil unless video_timestamp.present? && event.broadcast_url.present?
 
     base_url = event.broadcast_url
-    separator = base_url.include?('?') ? '&' : '?'
+    separator = base_url.include?("?") ? "&" : "?"
     "#{base_url}#{separator}t=#{video_timestamp}s"
   end
 
