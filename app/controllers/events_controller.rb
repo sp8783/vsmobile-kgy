@@ -21,6 +21,9 @@ class EventsController < ApplicationController
                  .page(params[:page]).per(@per_page)
     @rotations = @event.rotations.order(created_at: :asc)
     @emojis = MasterEmoji.active.ordered
+
+    ordered_ids = @event.matches.order(:played_at, :id).pluck(:id)
+    @match_numbers = ordered_ids.each_with_index.to_h { |id, i| [id, i + 1] }
   end
 
   def new
