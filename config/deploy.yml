@@ -27,11 +27,13 @@ env:
     - POSTGRES_PASSWORD
     - TIMESTAMP_API_TOKEN
     - GITHUB_TOKEN
-    - GITHUB_REPO
-    - GITHUB_WORKFLOW_ID
   clear:
     # Run the Solid Queue Supervisor inside the web server's Puma process to do jobs.
     SOLID_QUEUE_IN_PUMA: true
+
+    # GitHub Actions integration (non-secret config)
+    GITHUB_REPO: sp8783/exvs2ib-replay-parser-kgy
+    GITHUB_WORKFLOW_ID: analyze.yml
 
     # Database configuration
     DB_HOST: vsmobile-kgy-db
