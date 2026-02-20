@@ -2,15 +2,15 @@
   "ignored_warnings": [
     {
       "fingerprint": "0a69f61fc7e2ba08776809a44459895221235e36bc4c1ba19137df9ba61605c0",
-      "note": "broadcast_url is admin-only input; validated to start with http(s):// in Event model"
+      "note": "Simple https?:// regex in format validation; no ReDoS risk"
     },
     {
       "fingerprint": "1f36024b68c580649e98c6afa19a7aabfb225b7c6649bb61328273a4e2728b71",
-      "note": "broadcast_url is admin-only input; validated to start with http(s):// in Event model"
+      "note": "broadcast_url is admin-only input validated to start with http(s)://"
     },
     {
       "fingerprint": "b44cb82aa09e5a06caf26cb2d5969066628ab35501ba4807677f0e7241a34e54",
-      "note": "broadcast_url is admin-only input; validated to start with http(s):// in Event model"
+      "note": "video_url is derived from broadcast_url which is admin-only and validated"
     }
   ]
 }
