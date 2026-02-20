@@ -8,6 +8,8 @@ class User < ApplicationRecord
   has_many :match_players, dependent: :destroy
   has_many :push_subscriptions, dependent: :destroy
   has_many :reactions, dependent: :destroy
+  has_many :user_announcement_reads, dependent: :destroy
+  has_many :read_announcements, through: :user_announcement_reads, source: :announcement
 
   # Validations
   validates :username, presence: true, uniqueness: { case_sensitive: false },

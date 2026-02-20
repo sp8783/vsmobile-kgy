@@ -8,6 +8,9 @@ class ApplicationController < ActionController::Base
   # Set user_id in cookies for Action Cable authentication
   before_action :set_user_cookie
 
+  # お知らせモーダル
+  before_action :set_unread_announcement
+
   # ユーザー視点切り替え機能
   helper_method :viewing_as_user, :viewing_as_someone_else?, :can_react?
 
@@ -46,5 +49,14 @@ class ApplicationController < ActionController::Base
     unless current_user&.is_admin?
       redirect_to root_path, alert: "管理者権限が必要です。"
     end
+  end
+
+  # 未読のお知らせを取得（ログイン中のみ）
+  def set_unread_announcement
+    return unless user_signed_in?
+    read_ids = current_user.user_announcement_reads.pluck(:announcement_id)
+    @unread_announcement = Announcement.active
+                                       .where.not(id: read_ids)
+                                       .first
   end
 end

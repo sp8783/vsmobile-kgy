@@ -83,8 +83,16 @@ Rails.application.routes.draw do
     end
   end
 
+  # Announcements
+  resources :announcements, only: [] do
+    member do
+      post :mark_as_read
+    end
+  end
+
   # Admin
   namespace :admin do
+    resources :announcements, except: [:show]
     resources :users, except: [:show] do
       member do
         post :switch_view
