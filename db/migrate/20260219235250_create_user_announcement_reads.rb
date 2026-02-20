@@ -6,6 +6,6 @@ class CreateUserAnnouncementReads < ActiveRecord::Migration[8.1]
 
       t.timestamps
     end
-    add_index :user_announcement_reads, [:user_id, :announcement_id], unique: true
+    add_index :user_announcement_reads, [ :user_id, :announcement_id ], unique: true
   end
 end

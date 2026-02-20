@@ -8,7 +8,7 @@ class MasterEmoji < ApplicationRecord
 
   # Scopes
   scope :active, -> { where(is_active: true) }
-  scope :ordered, -> { order(Arel.sql('position IS NULL, position ASC, created_at ASC')) }
+  scope :ordered, -> { order(Arel.sql("position IS NULL, position ASC, created_at ASC")) }
 
   # Helper method to check if image_key is an asset file
   def asset_image?

@@ -4,31 +4,31 @@ class StatisticsController < ApplicationController
   before_action :apply_filters
 
   def index
-    @active_tab = params[:tab] || 'overall'
+    @active_tab = params[:tab] || "overall"
 
     # ゲストユーザー（または管理者がゲスト視点切り替え中）は個人統計タブにアクセス不可
     personal_tabs = %w[overview events event_progression mobile_suits opponent_suits partners opponents]
     if viewing_as_user.is_guest && personal_tabs.include?(@active_tab)
-      redirect_to statistics_path(tab: 'overall'), alert: '個人統計を見るには管理者にアカウント発行を依頼してください'
+      redirect_to statistics_path(tab: "overall"), alert: "個人統計を見るには管理者にアカウント発行を依頼してください"
       return
     end
 
     case @active_tab
-    when 'overview'
+    when "overview"
       calculate_overview_stats
-    when 'overall'
+    when "overall"
       calculate_overall_stats
-    when 'partners'
+    when "partners"
       calculate_partner_stats
-    when 'mobile_suits'
+    when "mobile_suits"
       calculate_mobile_suit_stats
-    when 'opponent_suits'
+    when "opponent_suits"
       calculate_mobile_suit_stats
-    when 'events'
+    when "events"
       calculate_event_stats
-    when 'event_progression'
+    when "event_progression"
       calculate_event_progression_stats
-    when 'opponents'
+    when "opponents"
       calculate_opponent_stats
     end
 
@@ -112,7 +112,7 @@ class StatisticsController < ApplicationController
 
   def calculate_max_streak
     # 全試合を時系列順に取得
-    all_matches = @filtered_matches.order('matches.played_at ASC').to_a
+    all_matches = @filtered_matches.order("matches.played_at ASC").to_a
 
     max_streak = 0
     current_streak = 0
@@ -120,7 +120,7 @@ class StatisticsController < ApplicationController
     all_matches.each do |mp|
       if mp.match.winning_team == mp.team_number
         current_streak += 1
-        max_streak = [max_streak, current_streak].max
+        max_streak = [ max_streak, current_streak ].max
       else
         current_streak = 0
       end
@@ -171,7 +171,7 @@ class StatisticsController < ApplicationController
       next unless partner_mp
 
       partner_cost = partner_mp.mobile_suit.cost
-      costs = [my_cost, partner_cost].sort.reverse
+      costs = [ my_cost, partner_cost ].sort.reverse
       cost_key = "#{costs[0]}+#{costs[1]}"
 
       cost_data[cost_key][:total] += 1
@@ -187,7 +187,7 @@ class StatisticsController < ApplicationController
         win_rate: data[:total] > 0 ? (data[:wins].to_f / data[:total] * 100).round(1) : 0,
         total: data[:total]
       }
-    end.sort_by { |d| [-d[:cost1], -d[:cost2]] }
+    end.sort_by { |d| [ -d[:cost1], -d[:cost2] ] }
   end
 
   def calculate_rotation_round_stats

@@ -1,8 +1,7 @@
-require 'csv'
+require "csv"
 
 module Admin
   class ImportsController < BaseController
-
     def new
     end
 
@@ -21,12 +20,12 @@ module Admin
         created_users = Set.new
         row_number = 0
 
-        CSV.foreach(file.path, headers: true, encoding: 'UTF-8') do |row|
+        CSV.foreach(file.path, headers: true, encoding: "UTF-8") do |row|
           begin
             row_number += 1
             # 日付からイベントを取得または作成
             # 試合の順序を保持するため、行番号を秒として加算
-            played_at = parse_date(row['日付']) + row_number.seconds
+            played_at = parse_date(row["日付"]) + row_number.seconds
             event_date = played_at.to_date
 
             event = Event.find_or_create_by(held_on: event_date) do |e|
@@ -40,7 +39,7 @@ module Admin
                 created_users << player_name
               end
             }
-            [row['プレイヤー1'], row['プレイヤー2'], row['プレイヤー3'], row['プレイヤー4']].each(&before_import)
+            [ row["プレイヤー1"], row["プレイヤー2"], row["プレイヤー3"], row["プレイヤー4"] ].each(&before_import)
 
             import_match(row, event)
             imported_count += 1
@@ -55,16 +54,16 @@ module Admin
         message_parts << "#{created_users.size}人のユーザーを作成しました。" if created_users.any?
 
         if errors.any?
-          error_summary = errors.first(5).join(', ')
+          error_summary = errors.first(5).join(", ")
           error_message = "#{errors.size}件のエラーがありました。"
           error_message += " 最初の5件: #{error_summary}" if errors.size > 0
           error_message += " 詳細はログを確認してください。" if errors.size > 5
 
-          flash[:alert] = message_parts.join(' ') + " " + error_message
+          flash[:alert] = message_parts.join(" ") + " " + error_message
           # エラー詳細はログに出力
           Rails.logger.error("CSV Import Errors (#{errors.size} total): #{errors.join(' | ')}")
         else
-          flash[:notice] = message_parts.join(' ')
+          flash[:notice] = message_parts.join(" ")
         end
 
         redirect_to events_path
@@ -90,11 +89,11 @@ module Admin
         errors = []
         position = 0
 
-        CSV.foreach(file.path, headers: true, encoding: 'UTF-8') do |row|
+        CSV.foreach(file.path, headers: true, encoding: "UTF-8") do |row|
           begin
-            mobile_suit_name = row['機体名']
-            cost = row['コスト'].to_i
-            series = row['シリーズ']
+            mobile_suit_name = row["機体名"]
+            cost = row["コスト"].to_i
+            series = row["シリーズ"]
 
             if mobile_suit_name.blank?
               errors << "行#{$.}: 機体名が空です"
@@ -120,7 +119,7 @@ module Admin
         end
 
         if errors.any?
-          error_summary = errors.first(5).join(', ')
+          error_summary = errors.first(5).join(", ")
           error_message = "#{errors.size}件のエラーがありました。"
           error_message += " 最初の5件: #{error_summary}" if errors.size > 0
           error_message += " 詳細はログを確認してください。" if errors.size > 5
@@ -142,18 +141,18 @@ module Admin
 
     def import_match(row, event)
       # CSVの列: 日付, プレイヤー1, 使用機体1, プレイヤー2, 使用機体2, プレイヤー3, 使用機体3, プレイヤー4, 使用機体4, 勝敗1, 勝敗2, 勝敗3, 勝敗4
-      played_at = parse_date(row['日付'])
+      played_at = parse_date(row["日付"])
 
       # プレイヤーと機体の取得
       players_data = [
-        { nickname: row['プレイヤー1'], mobile_suit_name: row['使用機体1'], result: row['勝敗1'], position: 1 },
-        { nickname: row['プレイヤー2'], mobile_suit_name: row['使用機体2'], result: row['勝敗2'], position: 2 },
-        { nickname: row['プレイヤー3'], mobile_suit_name: row['使用機体3'], result: row['勝敗3'], position: 3 },
-        { nickname: row['プレイヤー4'], mobile_suit_name: row['使用機体4'], result: row['勝敗4'], position: 4 }
+        { nickname: row["プレイヤー1"], mobile_suit_name: row["使用機体1"], result: row["勝敗1"], position: 1 },
+        { nickname: row["プレイヤー2"], mobile_suit_name: row["使用機体2"], result: row["勝敗2"], position: 2 },
+        { nickname: row["プレイヤー3"], mobile_suit_name: row["使用機体3"], result: row["勝敗3"], position: 3 },
+        { nickname: row["プレイヤー4"], mobile_suit_name: row["使用機体4"], result: row["勝敗4"], position: 4 }
       ]
 
       # 勝利チームの判定（勝敗1が"1"ならチーム1の勝利、"0"ならチーム2の勝利）
-      winning_team = row['勝敗1'].to_i == 1 ? 1 : 2
+      winning_team = row["勝敗1"].to_i == 1 ? 1 : 2
 
       # チーム分け（1-2 vs 3-4）
       players_data[0][:team_number] = 1
@@ -174,11 +173,11 @@ module Admin
           # 連番でusernameを自動生成（user_1, user_2, ...）
           max_user_number = User.where("username LIKE 'user_%'")
                                  .pluck(:username)
-                                 .map { |name| name.sub('user_', '').to_i }
+                                 .map { |name| name.sub("user_", "").to_i }
                                  .max || 0
           u.username = "user_#{max_user_number + 1}"
-          u.password = 'password'
-          u.password_confirmation = 'password'
+          u.password = "password"
+          u.password_confirmation = "password"
           u.is_admin = false
           u.notification_enabled = false
         end
