@@ -198,8 +198,8 @@ class StatisticsController < ApplicationController
       match = my_mp.match
 
       # rotation_matchがある場合、round_numberを取得
-      if match.rotation_match
-        round_number = match.rotation_match.round_number
+      if match.rotation_match&.rotation
+        round_number = match.rotation_match.rotation.round_number
 
         round_data[round_number][:total] += 1
         round_data[round_number][:wins] += 1 if match.winning_team == my_mp.team_number
