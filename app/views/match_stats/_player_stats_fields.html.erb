@@ -1,0 +1,64 @@
+<%# locals: (player:, label:) %>
+<% pfx = "match_players[#{player.id}]" %>
+
+<div class="border border-gray-200 rounded-lg p-4">
+  <h3 class="text-sm font-semibold text-gray-800 mb-3"><%= label %> — <%= player.user.nickname %> (<%= player.mobile_suit.name %>)</h3>
+
+  <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+    <div>
+      <label class="block text-xs font-medium text-gray-600 mb-1">順位</label>
+      <%= select_tag "#{pfx}[match_rank]",
+          options_for_select([["未設定", ""], ["1位", 1], ["2位", 2], ["3位", 3], ["4位", 4]], player.match_rank),
+          class: "w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" %>
+    </div>
+
+    <div>
+      <label class="block text-xs font-medium text-gray-600 mb-1">スコア</label>
+      <%= number_field_tag "#{pfx}[score]", player.score, min: 0, class: "w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500", placeholder: "例: 12000" %>
+    </div>
+
+    <div>
+      <label class="block text-xs font-medium text-gray-600 mb-1">撃墜</label>
+      <%= number_field_tag "#{pfx}[kills]", player.kills, min: 0, class: "w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" %>
+    </div>
+
+    <div>
+      <label class="block text-xs font-medium text-gray-600 mb-1">被撃墜</label>
+      <%= number_field_tag "#{pfx}[deaths]", player.deaths, min: 0, class: "w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" %>
+    </div>
+
+    <div>
+      <label class="block text-xs font-medium text-gray-600 mb-1">与ダメージ</label>
+      <%= number_field_tag "#{pfx}[damage_dealt]", player.damage_dealt, min: 0, class: "w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" %>
+    </div>
+
+    <div>
+      <label class="block text-xs font-medium text-gray-600 mb-1">被ダメージ</label>
+      <%= number_field_tag "#{pfx}[damage_received]", player.damage_received, min: 0, class: "w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" %>
+    </div>
+
+    <div>
+      <label class="block text-xs font-medium text-gray-600 mb-1">EXバーストダメージ</label>
+      <%= number_field_tag "#{pfx}[exburst_damage]", player.exburst_damage, min: 0, class: "w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" %>
+    </div>
+
+    <div>
+      <label class="block text-xs font-medium text-gray-600 mb-1">EXバースト使用回数 ※</label>
+      <%= number_field_tag "#{pfx}[exburst_count]", player.exburst_count, min: 0, class: "w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" %>
+    </div>
+
+    <div>
+      <label class="block text-xs font-medium text-gray-600 mb-1">バースト中被撃墜 ※</label>
+      <%= number_field_tag "#{pfx}[exburst_deaths]", player.exburst_deaths, min: 0, class: "w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" %>
+    </div>
+
+    <div>
+      <label class="block text-xs font-medium text-gray-600 mb-1">EX覚醒発動 ※</label>
+      <%= select_tag "#{pfx}[ex_overlimit_activated]",
+          options_for_select([["未設定", ""], ["発動", "true"], ["未発動", "false"]], player.ex_overlimit_activated.nil? ? "" : player.ex_overlimit_activated.to_s),
+          class: "w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" %>
+    </div>
+  </div>
+
+  <p class="mt-2 text-xs text-gray-400">※ タイムラインから導出される値</p>
+</div>

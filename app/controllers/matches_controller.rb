@@ -159,7 +159,7 @@ class MatchesController < ApplicationController
   end
 
   def set_match
-    @match = Match.includes(:event, match_players: [ :user, :mobile_suit ]).find(params[:id])
+    @match = Match.includes(:event, :match_timeline, match_players: [ :user, :mobile_suit ]).find(params[:id])
   end
 
   def match_params

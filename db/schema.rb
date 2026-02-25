@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_19_235250) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_25_124646) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -45,9 +45,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_19_235250) do
 
   create_table "match_players", force: :cascade do |t|
     t.datetime "created_at", null: false
+    t.integer "damage_dealt"
+    t.integer "damage_received"
+    t.integer "deaths"
+    t.boolean "ex_overlimit_activated"
+    t.integer "exburst_count"
+    t.integer "exburst_damage"
+    t.integer "exburst_deaths"
+    t.integer "kills"
     t.bigint "match_id", null: false
+    t.integer "match_rank"
     t.bigint "mobile_suit_id", null: false
     t.integer "position", null: false
+    t.integer "score"
     t.integer "team_number", null: false
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
@@ -60,12 +70,24 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_19_235250) do
     t.index ["user_id"], name: "index_match_players_on_user_id"
   end
 
+  create_table "match_timelines", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.integer "game_end_cs"
+    t.string "game_end_str"
+    t.bigint "match_id", null: false
+    t.jsonb "timeline_raw", null: false
+    t.datetime "updated_at", null: false
+    t.index ["match_id"], name: "index_match_timelines_on_match_id", unique: true
+  end
+
   create_table "matches", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.bigint "event_id", null: false
     t.datetime "played_at", null: false
     t.integer "reactions_count", default: 0, null: false
     t.bigint "rotation_match_id"
+    t.boolean "team1_ex_overlimit_before_end"
+    t.boolean "team2_ex_overlimit_before_end"
     t.datetime "updated_at", null: false
     t.integer "video_timestamp"
     t.integer "winning_team", null: false
@@ -167,6 +189,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_19_235250) do
   add_foreign_key "match_players", "matches"
   add_foreign_key "match_players", "mobile_suits"
   add_foreign_key "match_players", "users"
+  add_foreign_key "match_timelines", "matches"
   add_foreign_key "matches", "events"
   add_foreign_key "matches", "rotation_matches"
   add_foreign_key "push_subscriptions", "users"

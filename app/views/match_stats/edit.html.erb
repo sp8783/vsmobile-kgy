@@ -1,0 +1,116 @@
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <div class="mb-6">
+    <%= link_to "← 対戦詳細に戻る", match_path(@match), class: "text-blue-600 hover:text-blue-500" %>
+  </div>
+
+  <h1 class="text-3xl font-bold text-gray-900 mb-2">対戦統計 編集</h1>
+  <p class="text-sm text-gray-600 mb-6">
+    <%= @match.event.name %> ・ <%= @match.played_at.strftime('%Y年%m月%d日') %>
+  </p>
+
+  <%= form_with url: match_stats_path(@match), method: :patch, class: "space-y-6" do |form| %>
+    <% if flash[:alert] %>
+      <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+        <%= flash[:alert] %>
+      </div>
+    <% end %>
+
+    <%# ---- チーム1 ---- %>
+    <div class="bg-white shadow sm:rounded-lg p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-lg font-semibold text-gray-900">チーム1
+          <% if @match.winning_team == 1 %>
+            <span class="ml-2 px-2 py-0.5 bg-blue-600 text-white rounded-full text-xs font-semibold">WIN</span>
+          <% else %>
+            <span class="ml-2 px-2 py-0.5 bg-red-600 text-white rounded-full text-xs font-semibold">LOSE</span>
+          <% end %>
+        </h2>
+      </div>
+
+      <div class="space-y-6">
+        <% @players.select { |p| p.team_number == 1 }.each_with_index do |player, idx| %>
+          <%= render "match_stats/player_stats_fields", player: player, label: "プレイヤー#{idx + 1}#{idx == 0 ? ' (配信台)' : ''}" %>
+        <% end %>
+      </div>
+
+      <div class="mt-6 pt-4 border-t border-gray-200">
+        <label class="flex items-center gap-3 cursor-pointer">
+          <%= select_tag "match[team1_ex_overlimit_before_end]",
+              options_for_select([["未設定", ""], ["はい（OL前に決着）", "true"], ["いいえ（OL後/未到達）", "false"]], @match.team1_ex_overlimit_before_end.nil? ? "" : @match.team1_ex_overlimit_before_end.to_s),
+              class: "px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" %>
+          <span class="text-sm font-medium text-gray-700">EXオーバーリミット発動可能前に決着がついた</span>
+        </label>
+      </div>
+    </div>
+
+    <%# ---- チーム2 ---- %>
+    <div class="bg-white shadow sm:rounded-lg p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-lg font-semibold text-gray-900">チーム2
+          <% if @match.winning_team == 2 %>
+            <span class="ml-2 px-2 py-0.5 bg-blue-600 text-white rounded-full text-xs font-semibold">WIN</span>
+          <% else %>
+            <span class="ml-2 px-2 py-0.5 bg-red-600 text-white rounded-full text-xs font-semibold">LOSE</span>
+          <% end %>
+        </h2>
+      </div>
+
+      <div class="space-y-6">
+        <% @players.select { |p| p.team_number == 2 }.each_with_index do |player, idx| %>
+          <%= render "match_stats/player_stats_fields", player: player, label: "プレイヤー#{idx + 3}" %>
+        <% end %>
+      </div>
+
+      <div class="mt-6 pt-4 border-t border-gray-200">
+        <label class="flex items-center gap-3 cursor-pointer">
+          <%= select_tag "match[team2_ex_overlimit_before_end]",
+              options_for_select([["未設定", ""], ["はい（OL前に決着）", "true"], ["いいえ（OL後/未到達）", "false"]], @match.team2_ex_overlimit_before_end.nil? ? "" : @match.team2_ex_overlimit_before_end.to_s),
+              class: "px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" %>
+          <span class="text-sm font-medium text-gray-700">EXオーバーリミット発動可能前に決着がついた</span>
+        </label>
+      </div>
+    </div>
+
+    <%# ---- タイムライン ---- %>
+    <div class="bg-white shadow sm:rounded-lg p-6"
+         data-controller="match-timeline-editor">
+      <h2 class="text-lg font-semibold text-gray-900 mb-1">タイムライン</h2>
+      <p class="text-sm text-gray-500 mb-4">
+        <code class="bg-gray-100 px-1 rounded">timeline_raw</code> の JSON をそのまま貼り付けてください。空にすると削除されます。
+      </p>
+
+      <%= text_area_tag "match_timeline[timeline_raw_text]",
+          (@match_timeline.persisted? ? JSON.pretty_generate(@match_timeline.timeline_raw) : ""),
+          rows: 12,
+          placeholder: '{"groups": {...}, "events": [...], "game_end_cs": 36000, "game_end_str": "6:00.00"}',
+          class: "w-full px-3 py-2 font-mono text-xs border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500",
+          data: { "match-timeline-editor-target": "input", action: "input->match-timeline-editor#preview" } %>
+
+      <div class="mt-3 text-xs text-red-600 hidden" data-match-timeline-editor-target="error"></div>
+
+      <%# プレビュー %>
+      <div class="mt-4 hidden" data-match-timeline-editor-target="preview">
+        <p class="text-xs font-medium text-gray-500 mb-2">プレビュー</p>
+        <div data-controller="match-timeline"
+             data-match-timeline-json-value=""
+             data-match-timeline-editor-target="chart"
+             class="overflow-x-auto rounded border border-gray-200 bg-gray-900">
+        </div>
+      </div>
+    </div>
+
+    <%# ---- ボタン ---- %>
+    <div class="flex justify-between items-center">
+      <%= button_to "統計データを全削除",
+          match_stats_path(@match),
+          method: :delete,
+          data: { turbo_confirm: "この試合の統計データをすべて削除してもよろしいですか？" },
+          class: "px-4 py-2 bg-red-600 text-white font-semibold rounded-md hover:bg-red-700" %>
+
+      <div class="flex space-x-3">
+        <%= link_to "キャンセル", match_path(@match), class: "px-4 py-2 bg-gray-600 text-white font-semibold rounded-md hover:bg-gray-700" %>
+        <%= submit_tag "保存", class: "px-4 py-2 bg-indigo-600 text-white font-semibold rounded-md hover:bg-indigo-700 cursor-pointer" %>
+      </div>
+    </div>
+  <% end %>
+</div>

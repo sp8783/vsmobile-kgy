@@ -23,8 +23,9 @@
           </div>
         </div>
         <% if current_user.is_admin? %>
-          <div class="flex space-x-3">
+          <div class="flex flex-wrap gap-2">
             <%= link_to "編集", edit_match_path(@match), class: "bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded" %>
+            <%= link_to "統計を編集", edit_match_stats_path(@match), class: "bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded" %>
             <%= button_to "削除", match_path(@match), method: :delete, data: { turbo_confirm: "この対戦記録を削除してもよろしいですか？" }, class: "bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded" %>
           </div>
         <% end %>
@@ -38,8 +39,8 @@
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <% team1_players = @match.match_players.where(team_number: 1).order(:position) %>
-        <% team2_players = @match.match_players.where(team_number: 2).order(:position) %>
+        <% team1_players = @match.match_players.select { |p| p.team_number == 1 }.sort_by(&:position) %>
+        <% team2_players = @match.match_players.select { |p| p.team_number == 2 }.sort_by(&:position) %>
 
         <!-- Team 1 -->
         <div class="<%= @match.winning_team == 1 ? 'bg-blue-50 border-2 border-blue-400 rounded-lg p-6' : 'bg-red-50 border-2 border-red-400 rounded-lg p-6' %>">
@@ -57,12 +58,15 @@
               <div class="bg-white rounded-lg p-4 shadow-sm">
                 <div class="flex items-start justify-between">
                   <div class="flex-1">
-                    <p class="text-lg font-semibold <%= index == 0 ? 'text-red-600' : 'text-gray-900' %>">
-                      <%= player.user.nickname %>
+                    <div class="flex items-center gap-2 flex-wrap">
+                      <%= render "matches/rank_badge", rank: player.match_rank %>
+                      <p class="text-lg font-semibold <%= index == 0 ? 'text-red-600' : 'text-gray-900' %>">
+                        <%= player.user.nickname %>
+                      </p>
                       <% if index == 0 %>
-                        <span class="ml-2 px-2 py-0.5 bg-red-100 text-red-700 rounded text-xs font-semibold">配信台</span>
+                        <span class="px-2 py-0.5 bg-red-100 text-red-700 rounded text-xs font-semibold">配信台</span>
                       <% end %>
-                    </p>
+                    </div>
                     <div class="mt-2">
                       <p class="text-sm text-gray-500">使用機体</p>
                       <p class="text-sm font-medium text-gray-900 flex items-center gap-2">
@@ -93,7 +97,10 @@
               <div class="bg-white rounded-lg p-4 shadow-sm">
                 <div class="flex items-start justify-between">
                   <div class="flex-1">
-                    <p class="text-lg font-semibold text-gray-900"><%= player.user.nickname %></p>
+                    <div class="flex items-center gap-2 flex-wrap">
+                      <%= render "matches/rank_badge", rank: player.match_rank %>
+                      <p class="text-lg font-semibold text-gray-900"><%= player.user.nickname %></p>
+                    </div>
                     <div class="mt-2">
                       <p class="text-sm text-gray-500">使用機体</p>
                       <p class="text-sm font-medium text-gray-900 flex items-center gap-2">
@@ -108,6 +115,108 @@
           </div>
         </div>
       </div>
+
+      <!-- 対戦統計セクション -->
+      <% all_players = team1_players + team2_players %>
+      <% has_stats = all_players.any?(&:has_stats?) || !@match.team1_ex_overlimit_before_end.nil? || !@match.team2_ex_overlimit_before_end.nil? %>
+      <% if has_stats %>
+        <div class="mt-8">
+          <h2 class="text-lg font-bold text-gray-900 mb-4">対戦統計</h2>
+
+          <% [[team1_players, 1], [team2_players, 2]].each do |players, team_num| %>
+            <div class="mb-6">
+              <h3 class="text-sm font-semibold text-gray-600 mb-2">
+                チーム<%= team_num %>
+                <% if @match.winning_team == team_num %>
+                  <span class="ml-1 text-blue-600">WIN</span>
+                <% else %>
+                  <span class="ml-1 text-red-600">LOSE</span>
+                <% end %>
+              </h3>
+              <div class="overflow-x-auto">
+                <table class="min-w-full text-sm border border-gray-200 rounded-lg overflow-hidden">
+                  <thead class="bg-gray-50 text-xs text-gray-500 uppercase">
+                    <tr>
+                      <th class="px-3 py-2 text-left">プレイヤー</th>
+                      <th class="px-3 py-2 text-right">スコア</th>
+                      <th class="px-3 py-2 text-right">撃墜</th>
+                      <th class="px-3 py-2 text-right">被撃墜</th>
+                      <th class="px-3 py-2 text-right">与ダメ</th>
+                      <th class="px-3 py-2 text-right">被ダメ</th>
+                      <th class="px-3 py-2 text-right">EXバーストダメ</th>
+                      <th class="px-3 py-2 text-right">バースト回数</th>
+                      <th class="px-3 py-2 text-right">バースト中被撃墜</th>
+                      <th class="px-3 py-2 text-center">EX覚醒</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-gray-100">
+                    <% players.each do |player| %>
+                      <tr class="bg-white hover:bg-gray-50">
+                        <td class="px-3 py-2 font-medium text-gray-900 whitespace-nowrap">
+                          <div class="flex items-center gap-2">
+                            <%= render "matches/rank_badge", rank: player.match_rank %>
+                            <%= player.user.nickname %>
+                          </div>
+                        </td>
+                        <td class="px-3 py-2 text-right text-gray-700"><%= number_with_delimiter(player.score) if player.score %></td>
+                        <td class="px-3 py-2 text-right text-gray-700"><%= player.kills %></td>
+                        <td class="px-3 py-2 text-right text-gray-700"><%= player.deaths %></td>
+                        <td class="px-3 py-2 text-right text-gray-700"><%= number_with_delimiter(player.damage_dealt) if player.damage_dealt %></td>
+                        <td class="px-3 py-2 text-right text-gray-700"><%= number_with_delimiter(player.damage_received) if player.damage_received %></td>
+                        <td class="px-3 py-2 text-right text-gray-700"><%= number_with_delimiter(player.exburst_damage) if player.exburst_damage %></td>
+                        <td class="px-3 py-2 text-right text-gray-700"><%= player.exburst_count %></td>
+                        <td class="px-3 py-2 text-right text-gray-700"><%= player.exburst_deaths %></td>
+                        <td class="px-3 py-2 text-center">
+                          <% unless player.ex_overlimit_activated.nil? %>
+                            <% if player.ex_overlimit_activated %>
+                              <span class="text-green-600 font-semibold">発動</span>
+                            <% else %>
+                              <span class="text-gray-400">未発動</span>
+                            <% end %>
+                          <% end %>
+                        </td>
+                      </tr>
+                    <% end %>
+                  </tbody>
+                </table>
+              </div>
+
+              <% ol_flag = team_num == 1 ? @match.team1_ex_overlimit_before_end : @match.team2_ex_overlimit_before_end %>
+              <% unless ol_flag.nil? %>
+                <p class="mt-2 text-xs text-gray-500">
+                  EXオーバーリミット発動可能前決着:
+                  <% if ol_flag %>
+                    <span class="text-amber-600 font-semibold">はい（OL前に決着）</span>
+                  <% else %>
+                    <span class="text-gray-600">いいえ</span>
+                  <% end %>
+                </p>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+
+      <!-- タイムラインセクション -->
+      <% if @match.match_timeline %>
+        <div class="mt-8">
+          <h2 class="text-lg font-bold text-gray-900 mb-4">タイムライン</h2>
+          <div class="overflow-x-auto rounded-lg border border-gray-200 bg-gray-900 p-4"
+               data-controller="match-timeline"
+               data-match-timeline-json-value="<%= @match.match_timeline.timeline_raw.to_json.html_safe %>">
+          </div>
+          <div class="mt-2 flex flex-wrap gap-4 text-xs text-gray-500">
+            <span class="flex items-center gap-1"><span class="inline-block w-4 h-2 bg-gray-400 rounded"></span>EXバースト発動可能域</span>
+            <span class="flex items-center gap-1"><span class="inline-block w-4 h-2 bg-orange-500 rounded"></span>ファイティングバースト</span>
+            <span class="flex items-center gap-1"><span class="inline-block w-4 h-2 bg-blue-500 rounded"></span>シューティングバースト</span>
+            <span class="flex items-center gap-1"><span class="inline-block w-4 h-2 bg-green-500 rounded"></span>エクステンドバースト</span>
+            <span class="flex items-center gap-1"><span class="inline-block w-4 h-2 border border-white rounded" style="background:transparent"></span>EXオーバーリミット発動可能域</span>
+            <span class="flex items-center gap-1"><span class="inline-block w-4 h-2 bg-white rounded"></span>EXオーバーリミット発動中</span>
+            <span class="flex items-center gap-1"><span class="inline-block w-4 h-2 bg-gray-700 rounded"></span>EXバーストクロス</span>
+            <span class="flex items-center gap-1 text-red-500 font-bold">✕</span><span>被撃墜</span>
+          </div>
+        </div>
+      <% end %>
 
       <!-- リアクションバー -->
       <%= render "reactions/reaction_bar", match: @match %>

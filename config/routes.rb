@@ -68,6 +68,7 @@ Rails.application.routes.draw do
         post :toggle
       end
     end
+    resource :stats, controller: "match_stats", only: [ :edit, :update, :destroy ]
   end
 
   # Rotations
