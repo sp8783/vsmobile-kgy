@@ -20,6 +20,9 @@ class MatchStatsController < ApplicationController
         mp.update!(attrs)
       end
 
+      # スコアの降順で順位を自動計算して保存
+      recalculate_match_ranks
+
       # タイムラインを更新
       handle_timeline_update
     end
@@ -67,11 +70,23 @@ class MatchStatsController < ApplicationController
   def player_stats_params
     return {} unless params[:match_players].present?
 
-    stat_fields = %i[match_rank score kills deaths damage_dealt damage_received
-                     exburst_damage exburst_count exburst_deaths ex_overlimit_activated]
+    stat_fields = %i[score kills deaths damage_dealt damage_received
+                     exburst_damage exburst_count exburst_deaths]
     @match.match_players.each_with_object({}) do |mp, result|
       next unless params[:match_players][mp.id.to_s]
       result[mp.id] = params[:match_players][mp.id.to_s].permit(*stat_fields).to_h
+    end
+  end
+
+  # スコア降順で1〜4位を自動計算して match_rank に保存
+  def recalculate_match_ranks
+    players = @match.match_players.reload
+    with_score    = players.select { |mp| mp.score.present? }.sort_by { |mp| -mp.score }
+    without_score = players.reject { |mp| mp.score.present? }
+
+    MatchPlayer.where(id: without_score.map(&:id)).update_all(match_rank: nil) if without_score.any?
+    with_score.each_with_index do |mp, i|
+      MatchPlayer.where(id: mp.id).update_all(match_rank: i + 1)
     end
   end
 

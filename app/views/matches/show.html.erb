@@ -146,7 +146,6 @@
                       <th class="px-3 py-2 text-right">EXバーストダメ</th>
                       <th class="px-3 py-2 text-right">バースト回数</th>
                       <th class="px-3 py-2 text-right">バースト中被撃墜</th>
-                      <th class="px-3 py-2 text-center">EX覚醒</th>
                     </tr>
                   </thead>
                   <tbody class="divide-y divide-gray-100">
@@ -166,15 +165,6 @@
                         <td class="px-3 py-2 text-right text-gray-700"><%= number_with_delimiter(player.exburst_damage) if player.exburst_damage %></td>
                         <td class="px-3 py-2 text-right text-gray-700"><%= player.exburst_count %></td>
                         <td class="px-3 py-2 text-right text-gray-700"><%= player.exburst_deaths %></td>
-                        <td class="px-3 py-2 text-center">
-                          <% unless player.ex_overlimit_activated.nil? %>
-                            <% if player.ex_overlimit_activated %>
-                              <span class="text-green-600 font-semibold">発動</span>
-                            <% else %>
-                              <span class="text-gray-400">未発動</span>
-                            <% end %>
-                          <% end %>
-                        </td>
                       </tr>
                     <% end %>
                   </tbody>

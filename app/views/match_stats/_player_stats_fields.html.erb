@@ -6,13 +6,6 @@
 
   <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
     <div>
-      <label class="block text-xs font-medium text-gray-600 mb-1">順位</label>
-      <%= select_tag "#{pfx}[match_rank]",
-          options_for_select([["未設定", ""], ["1位", 1], ["2位", 2], ["3位", 3], ["4位", 4]], player.match_rank),
-          class: "w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" %>
-    </div>
-
-    <div>
       <label class="block text-xs font-medium text-gray-600 mb-1">スコア</label>
       <%= number_field_tag "#{pfx}[score]", player.score, min: 0, class: "w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500", placeholder: "例: 12000" %>
     </div>
@@ -50,13 +43,6 @@
     <div>
       <label class="block text-xs font-medium text-gray-600 mb-1">バースト中被撃墜 ※</label>
       <%= number_field_tag "#{pfx}[exburst_deaths]", player.exburst_deaths, min: 0, class: "w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" %>
-    </div>
-
-    <div>
-      <label class="block text-xs font-medium text-gray-600 mb-1">EX覚醒発動 ※</label>
-      <%= select_tag "#{pfx}[ex_overlimit_activated]",
-          options_for_select([["未設定", ""], ["発動", "true"], ["未発動", "false"]], player.ex_overlimit_activated.nil? ? "" : player.ex_overlimit_activated.to_s),
-          class: "w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" %>
     </div>
   </div>
 
