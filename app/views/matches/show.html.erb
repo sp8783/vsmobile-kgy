@@ -203,7 +203,7 @@
           <h2 class="text-lg font-bold text-gray-900 mb-4">タイムライン</h2>
           <div class="overflow-x-auto rounded-lg border border-gray-200 bg-gray-900 p-4"
                data-controller="match-timeline"
-               data-match-timeline-json-value="<%= @match.match_timeline.timeline_raw.to_json.html_safe %>">
+               data-match-timeline-json-value="<%= @match.match_timeline.timeline_raw.to_json %>">
           </div>
           <div class="mt-2 flex flex-wrap gap-4 text-xs text-gray-500">
             <span class="flex items-center gap-1"><span class="inline-block w-4 h-2 bg-gray-400 rounded"></span>EXバースト発動可能域</span>
