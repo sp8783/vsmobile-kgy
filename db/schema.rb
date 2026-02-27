@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_25_124646) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_27_124645) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -53,11 +53,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_25_124646) do
     t.integer "exburst_damage"
     t.integer "exburst_deaths"
     t.integer "kills"
+    t.boolean "last_death_ex_available"
     t.bigint "match_id", null: false
     t.integer "match_rank"
     t.bigint "mobile_suit_id", null: false
     t.integer "position", null: false
     t.integer "score"
+    t.boolean "survive_loss_ex_available"
     t.integer "team_number", null: false
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false

@@ -15,74 +15,17 @@
       </div>
     <% end %>
 
-    <%# ---- チーム1 ---- %>
-    <div class="bg-white shadow sm:rounded-lg p-6">
-      <div class="flex items-center justify-between mb-4">
-        <h2 class="text-lg font-semibold text-gray-900">チーム1
-          <% if @match.winning_team == 1 %>
-            <span class="ml-2 px-2 py-0.5 bg-blue-600 text-white rounded-full text-xs font-semibold">WIN</span>
-          <% else %>
-            <span class="ml-2 px-2 py-0.5 bg-red-600 text-white rounded-full text-xs font-semibold">LOSE</span>
-          <% end %>
-        </h2>
-      </div>
-
-      <div class="space-y-6">
-        <% @players.select { |p| p.team_number == 1 }.each_with_index do |player, idx| %>
-          <%= render "match_stats/player_stats_fields", player: player, label: "プレイヤー#{idx + 1}#{idx == 0 ? ' (配信台)' : ''}" %>
-        <% end %>
-      </div>
-
-      <div class="mt-6 pt-4 border-t border-gray-200">
-        <label class="flex items-center gap-3 cursor-pointer">
-          <%= select_tag "match[team1_ex_overlimit_before_end]",
-              options_for_select([["未設定", ""], ["はい（OL前に決着）", "true"], ["いいえ（OL後/未到達）", "false"]], @match.team1_ex_overlimit_before_end.nil? ? "" : @match.team1_ex_overlimit_before_end.to_s),
-              class: "px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" %>
-          <span class="text-sm font-medium text-gray-700">EXオーバーリミット発動可能前に決着がついた</span>
-        </label>
-      </div>
-    </div>
-
-    <%# ---- チーム2 ---- %>
-    <div class="bg-white shadow sm:rounded-lg p-6">
-      <div class="flex items-center justify-between mb-4">
-        <h2 class="text-lg font-semibold text-gray-900">チーム2
-          <% if @match.winning_team == 2 %>
-            <span class="ml-2 px-2 py-0.5 bg-blue-600 text-white rounded-full text-xs font-semibold">WIN</span>
-          <% else %>
-            <span class="ml-2 px-2 py-0.5 bg-red-600 text-white rounded-full text-xs font-semibold">LOSE</span>
-          <% end %>
-        </h2>
-      </div>
-
-      <div class="space-y-6">
-        <% @players.select { |p| p.team_number == 2 }.each_with_index do |player, idx| %>
-          <%= render "match_stats/player_stats_fields", player: player, label: "プレイヤー#{idx + 3}" %>
-        <% end %>
-      </div>
-
-      <div class="mt-6 pt-4 border-t border-gray-200">
-        <label class="flex items-center gap-3 cursor-pointer">
-          <%= select_tag "match[team2_ex_overlimit_before_end]",
-              options_for_select([["未設定", ""], ["はい（OL前に決着）", "true"], ["いいえ（OL後/未到達）", "false"]], @match.team2_ex_overlimit_before_end.nil? ? "" : @match.team2_ex_overlimit_before_end.to_s),
-              class: "px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" %>
-          <span class="text-sm font-medium text-gray-700">EXオーバーリミット発動可能前に決着がついた</span>
-        </label>
-      </div>
-    </div>
-
-    <%# ---- タイムライン ---- %>
     <div class="bg-white shadow sm:rounded-lg p-6"
          data-controller="match-timeline-editor">
-      <h2 class="text-lg font-semibold text-gray-900 mb-1">タイムライン</h2>
+      <h2 class="text-lg font-semibold text-gray-900 mb-1">ワークフロー JSON</h2>
       <p class="text-sm text-gray-500 mb-4">
-        <code class="bg-gray-100 px-1 rounded">timeline_raw</code> の JSON をそのまま貼り付けてください。空にすると削除されます。
+        ワークフロー JSON をそのまま貼り付けて保存してください。プレイヤー統計・チームフラグ・タイムラインが自動投入されます。空にすると全データが削除されます。
       </p>
 
       <%= text_area_tag "match_timeline[timeline_raw_text]",
           (@match_timeline.persisted? ? JSON.pretty_generate(@match_timeline.timeline_raw) : ""),
-          rows: 12,
-          placeholder: '{"groups": {...}, "events": [...], "game_end_cs": 36000, "game_end_str": "6:00.00"}',
+          rows: 16,
+          placeholder: '{"team_a": {...}, "team_b": {...}, "timeline_raw": {...}, ...}',
           class: "w-full px-3 py-2 font-mono text-xs border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500",
           data: { "match-timeline-editor-target": "input", action: "input->match-timeline-editor#preview" } %>
 
