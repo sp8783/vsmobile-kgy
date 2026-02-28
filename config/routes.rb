@@ -54,6 +54,7 @@ Rails.application.routes.draw do
       get :edit_timestamps
       patch :update_timestamps
       post :trigger_analysis
+      post :trigger_scraping
     end
     resources :matches, only: [ :new, :create ]
     resources :rotations, only: [ :new, :create ]
