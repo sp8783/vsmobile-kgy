@@ -43,6 +43,7 @@ Rails.application.routes.draw do
       member do
         post :timestamps
         post :notify_failure
+        post :stats
       end
     end
   end
