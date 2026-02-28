@@ -208,7 +208,7 @@ class MatchStatsController < ApplicationController
       # 属性1: 試合を決めた被撃墜時にEX可能域かつ未発動
       last_death_ex_available = if group_key == last_death_group
         last_death = player_events.select { |e| e["is_point"] }.max_by { |e| e["start_cs"] || 0 }
-        ex_available_at.call([last_death["start_cs"], game_end_cs].min) if last_death
+        ex_available_at.call([ last_death["start_cs"], game_end_cs ].min) if last_death
       end
 
       # 属性2: 試合終了時に被撃墜されていないプレイヤー — 試合終了時点でEX可能域かつ未発動
