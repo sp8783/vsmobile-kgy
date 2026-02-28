@@ -53,7 +53,7 @@ module Api
       event = Event.find_by(id: params[:id])
       return render json: { error: "Event not found" }, status: :not_found unless event
 
-      matches_data = request.request_parameters
+      matches_data = JSON.parse(request.body.read)
       unless matches_data.is_a?(Array)
         return render json: { error: "リクエストボディは JSON 配列である必要があります" }, status: :unprocessable_entity
       end
@@ -75,6 +75,8 @@ module Api
       end
 
       render json: { message: "OK", updated: db_matches.size }
+    rescue JSON::ParserError
+      render json: { error: "リクエストボディが不正な JSON 形式です" }, status: :unprocessable_entity
     rescue ActiveRecord::RecordInvalid => e
       render json: { error: e.message }, status: :unprocessable_entity
     end
