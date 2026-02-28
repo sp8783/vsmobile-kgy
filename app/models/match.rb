@@ -4,6 +4,7 @@ class Match < ApplicationRecord
   belongs_to :rotation_match, optional: true
   has_many :match_players, dependent: :destroy
   has_many :reactions, dependent: :destroy
+  has_one :match_timeline, dependent: :destroy
 
   accepts_nested_attributes_for :match_players
 

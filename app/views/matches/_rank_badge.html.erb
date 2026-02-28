@@ -1,0 +1,12 @@
+<%# locals: (rank: nil) %>
+<% if rank %>
+  <% badge_class = case rank
+    when 1 then "bg-yellow-400 text-yellow-900"
+    when 2 then "bg-gray-300 text-gray-700"
+    when 3 then "bg-orange-400 text-orange-900"
+    else        "bg-gray-100 text-gray-500"
+    end %>
+  <span class="inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold <%= badge_class %>">
+    <%= rank %>
+  </span>
+<% end %>

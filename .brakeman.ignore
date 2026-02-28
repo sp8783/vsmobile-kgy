@@ -9,7 +9,7 @@
       "note": "broadcast_url is admin-only input validated to start with http(s)://"
     },
     {
-      "fingerprint": "b44cb82aa09e5a06caf26cb2d5969066628ab35501ba4807677f0e7241a34e54",
+      "fingerprint": "652adbfbfa39ac5b41a8897180055a57808e46418bdf665debbf998d9faefe66",
       "note": "video_url is derived from broadcast_url which is admin-only and validated"
     }
   ]
