@@ -22,6 +22,7 @@
           <option disabled>対戦機体別戦績（要アカウント）</option>
           <option disabled>パートナー別戦績（要アカウント）</option>
           <option disabled>対戦相手別戦績（要アカウント）</option>
+          <option disabled>パフォーマンス（要アカウント）</option>
         <% else %>
           <option value="overview" <%= 'selected' if @active_tab == 'overview' %>>総合戦績</option>
           <option value="events" <%= 'selected' if @active_tab == 'events' %>>イベント別戦績</option>
@@ -30,6 +31,7 @@
           <option value="opponent_suits" <%= 'selected' if @active_tab == 'opponent_suits' %>>対戦機体別戦績</option>
           <option value="partners" <%= 'selected' if @active_tab == 'partners' %>>パートナー別戦績</option>
           <option value="opponents" <%= 'selected' if @active_tab == 'opponents' %>>対戦相手別戦績</option>
+          <option value="performance" <%= 'selected' if @active_tab == 'performance' %>>パフォーマンス</option>
         <% end %>
       </optgroup>
     </select>
@@ -75,6 +77,7 @@
         <span class="whitespace-nowrap py-4 px-1 border-b-2 border-transparent text-gray-300 font-medium text-sm ml-4 cursor-not-allowed" title="個人統計を見るには管理者にアカウント発行を依頼してください">対戦機体別戦績</span>
         <span class="whitespace-nowrap py-4 px-1 border-b-2 border-transparent text-gray-300 font-medium text-sm ml-4 cursor-not-allowed" title="個人統計を見るには管理者にアカウント発行を依頼してください">パートナー別戦績</span>
         <span class="whitespace-nowrap py-4 px-1 border-b-2 border-transparent text-gray-300 font-medium text-sm ml-4 cursor-not-allowed" title="個人統計を見るには管理者にアカウント発行を依頼してください">対戦相手別戦績</span>
+        <span class="whitespace-nowrap py-4 px-1 border-b-2 border-transparent text-gray-300 font-medium text-sm ml-4 cursor-not-allowed" title="個人統計を見るには管理者にアカウント発行を依頼してください">パフォーマンス</span>
       <% else %>
         <%= link_to statistics_path(tab: 'overview', events: params[:events], mobile_suits: params[:mobile_suits], partners: params[:partners]),
             class: "#{@active_tab == 'overview' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm" do %>
@@ -103,6 +106,10 @@
         <%= link_to statistics_path(tab: 'opponents', events: params[:events], mobile_suits: params[:mobile_suits], partners: params[:partners]),
             class: "#{@active_tab == 'opponents' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ml-4" do %>
           対戦相手別戦績
+        <% end %>
+        <%= link_to statistics_path(tab: 'performance', events: params[:events], mobile_suits: params[:mobile_suits], partners: params[:partners]),
+            class: "#{@active_tab == 'performance' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ml-4" do %>
+          パフォーマンス
         <% end %>
       <% end %>
     </nav>
@@ -501,6 +508,8 @@
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap" data-sort="number">使用回数</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap" data-sort="number">勝利</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap" data-sort="percent">勝率</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap" data-sort="number">平均スコア</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap" data-sort="number">KD比</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">よく組むパートナー機体</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap" data-sort="date">最終使用日</th>
               </tr>
@@ -529,6 +538,12 @@
                         <div class="bg-purple-600 h-2 rounded-full" style="width: <%= suit_stat[:win_rate].to_f %>%"></div>
                       </div>
                     </div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <%= suit_stat[:avg_score].nil? ? "N/A" : suit_stat[:avg_score] %>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <%= suit_stat[:kd_ratio].nil? ? "N/A" : suit_stat[:kd_ratio] %>
                   </td>
                   <td class="px-6 py-4 text-sm text-gray-500">
                     <% if suit_stat[:top_partner_suits].any? %>
@@ -1158,6 +1173,162 @@
         <% end %>
       </div>
     </div>
+
+  <% elsif @active_tab == 'performance' %>
+    <!-- Performance Tab -->
+    <div class="space-y-6">
+
+      <!-- セクション1: 基本パフォーマンス統計 -->
+      <div class="bg-white rounded-lg shadow">
+        <div class="px-6 py-5 border-b border-gray-200">
+          <h3 class="text-lg font-semibold text-gray-900">基本パフォーマンス統計</h3>
+          <p class="mt-1 text-sm text-gray-500">
+            統計データあり: <span class="font-semibold"><%= @stats_total %></span> 試合
+            （<span class="text-green-600 font-semibold"><%= @stats_wins %></span> 勝 /
+            <span class="text-red-600 font-semibold"><%= @stats_losses %></span> 敗）
+          </p>
+        </div>
+
+        <% if @stats_total > 0 %>
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">項目</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">全体（<%= @stats_total %>試合）</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap text-green-700">勝利時（<%= @stats_wins %>試合）</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap text-red-700">敗北時（<%= @stats_losses %>試合）</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200">
+                <% perf_rows = [
+                  { label: "スコア",                  key: :score,           suffix: "" },
+                  { label: "撃墜数",                  key: :kills,           suffix: "" },
+                  { label: "被撃墜数",                key: :deaths,          suffix: "" },
+                  { label: "与ダメージ",              key: :damage_dealt,    suffix: "" },
+                  { label: "被ダメージ",              key: :damage_received, suffix: "" },
+                  { label: "EXバーストダメージ",      key: :exburst_damage,  suffix: "" },
+                  { label: "EXバースト発動回数",      key: :exburst_count,   suffix: "" },
+                  { label: "EXバースト中被撃墜数",    key: :exburst_deaths,  suffix: "" },
+                  { label: "OL発動率",                key: :ol_rate,         suffix: "%" },
+                ] %>
+                <% perf_rows.each do |row| %>
+                  <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700"><%= row[:label] %></td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <%= @performance_overall ? "#{@performance_overall[row[:key]]}#{row[:suffix]}" : "-" %>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-green-700">
+                      <%= @performance_wins ? "#{@performance_wins[row[:key]]}#{row[:suffix]}" : "-" %>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-red-700">
+                      <%= @performance_losses ? "#{@performance_losses[row[:key]]}#{row[:suffix]}" : "-" %>
+                    </td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+        <% else %>
+          <div class="px-6 py-12 text-center">
+            <p class="text-gray-500">統計データのある試合がありません</p>
+            <p class="mt-1 text-xs text-gray-400">試合詳細からスコア等の統計データを入力してください</p>
+          </div>
+        <% end %>
+      </div>
+
+      <!-- セクション2: EXバースト活用分析 -->
+      <div class="bg-white rounded-lg shadow">
+        <div class="px-6 py-5 border-b border-gray-200">
+          <h3 class="text-lg font-semibold text-gray-900">EXバースト活用分析（敗北時）</h3>
+          <p class="mt-1 text-sm text-gray-500">EXバーストを残したまま敗北したケースを分析します</p>
+        </div>
+        <div class="px-6 py-5 space-y-4">
+          <% if @stats_losses > 0 %>
+            <div class="flex items-center justify-between py-3 border-b border-gray-100">
+              <div>
+                <div class="text-sm font-medium text-gray-900">EXバースト残し敗北</div>
+                <div class="text-xs text-gray-500 mt-1">最後の撃墜時またはEX残し生存で敗北したケース</div>
+              </div>
+              <div class="text-right">
+                <div class="text-lg font-bold text-red-600">
+                  <%= @ex_remaining_on_loss %> / <%= @stats_losses %>回
+                </div>
+                <div class="text-sm text-gray-500">
+                  (<%= @stats_losses > 0 ? (@ex_remaining_on_loss * 100.0 / @stats_losses).round(1) : 0 %>%)
+                </div>
+              </div>
+            </div>
+            <div class="pl-6 space-y-3">
+              <div class="flex items-center justify-between py-2">
+                <div>
+                  <div class="text-sm text-gray-700">うち 最後の撃墜時EX残し</div>
+                </div>
+                <div class="text-right">
+                  <div class="text-sm font-semibold text-red-500">
+                    <%= @last_death_ex_on_loss %> / <%= @stats_losses %>回
+                    (<%= @stats_losses > 0 ? (@last_death_ex_on_loss * 100.0 / @stats_losses).round(1) : 0 %>%)
+                  </div>
+                </div>
+              </div>
+              <div class="flex items-center justify-between py-2">
+                <div>
+                  <div class="text-sm text-gray-700">うち 生存敗北時EX残し</div>
+                </div>
+                <div class="text-right">
+                  <div class="text-sm font-semibold text-red-500">
+                    <%= @survive_loss_ex_on_loss %> / <%= @stats_losses %>回
+                    (<%= @stats_losses > 0 ? (@survive_loss_ex_on_loss * 100.0 / @stats_losses).round(1) : 0 %>%)
+                  </div>
+                </div>
+              </div>
+            </div>
+          <% else %>
+            <p class="text-gray-500 text-center py-4">統計データのある敗北試合がありません</p>
+          <% end %>
+        </div>
+      </div>
+
+      <!-- セクション3: OL分析 -->
+      <div class="bg-white rounded-lg shadow">
+        <div class="px-6 py-5 border-b border-gray-200">
+          <h3 class="text-lg font-semibold text-gray-900">OL（オーバーリミット）分析</h3>
+          <p class="mt-1 text-sm text-gray-500">全試合を対象にOL発動状況を分析します</p>
+        </div>
+        <div class="px-6 py-5 space-y-4">
+          <div class="flex items-center justify-between py-3 border-b border-gray-100">
+            <div>
+              <div class="text-sm font-medium text-gray-900">自チームOL未発動で敗北</div>
+              <div class="text-xs text-gray-500 mt-1">OLを発動できずに負けた試合</div>
+            </div>
+            <div class="text-right">
+              <div class="text-lg font-bold text-orange-600">
+                <%= @my_team_no_ol_losses %> / <%= @total_losses %>回
+              </div>
+              <div class="text-sm text-gray-500">
+                (<%= @total_losses > 0 ? (@my_team_no_ol_losses * 100.0 / @total_losses).round(1) : 0 %>%)
+              </div>
+            </div>
+          </div>
+          <div class="flex items-center justify-between py-3">
+            <div>
+              <div class="text-sm font-medium text-gray-900">相手チームOL未発動で勝利</div>
+              <div class="text-xs text-gray-500 mt-1">相手にOLを発動させずに勝った試合</div>
+            </div>
+            <div class="text-right">
+              <div class="text-lg font-bold text-green-600">
+                <%= @opponent_no_ol_wins %> / <%= @total_wins_all %>回
+              </div>
+              <div class="text-sm text-gray-500">
+                (<%= @total_wins_all > 0 ? (@opponent_no_ol_wins * 100.0 / @total_wins_all).round(1) : 0 %>%)
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
   <% end %>
 </div>
 
