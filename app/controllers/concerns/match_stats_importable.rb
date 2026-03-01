@@ -130,7 +130,7 @@ module MatchStatsImportable
       # exburst_deaths: 被撃墜時刻がバースト区間内に含まれる数
       exburst_deaths = player_events.select { |e| e["is_point"] }.count do |death|
         cs = death["start_cs"]
-        burst_events.any? { |b| b["start_cs"] && b["end_cs"] && b["start_cs"] <= cs && cs < b["end_cs"] }
+        burst_events.any? { |b| b["start_cs"] && b["end_cs"] && b["start_cs"] <= cs && cs <= b["end_cs"] }
       end
 
       # EXゾーン判定ヘルパー
