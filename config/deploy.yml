@@ -35,6 +35,10 @@ env:
     GITHUB_REPO: sp8783/exvs2ib-replay-parser
     GITHUB_WORKFLOW_ID: analyze.yml
 
+    # Scraper integration (non-secret config)
+    SCRAPER_GITHUB_REPO: sp8783/exvs2ib-vsmobile-scraper
+    SCRAPER_GITHUB_WORKFLOW_ID: scrape.yml
+
     # Database configuration
     DB_HOST: vsmobile-kgy-db
     POSTGRES_USER: vsmobile
