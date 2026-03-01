@@ -559,13 +559,13 @@ class StatisticsController < ApplicationController
 
     @my_team_no_ol_losses = all_losses.count do |mp|
       team_ol = mp.team_number == 1 ? mp.match.team1_ex_overlimit_before_end : mp.match.team2_ex_overlimit_before_end
-      team_ol == false
+      team_ol == true  # true = OL未発動（exbst-ov イベントなし）
     end
     @total_losses = all_losses.size
 
     @opponent_no_ol_wins = all_wins.count do |mp|
       opp_ol = mp.team_number == 1 ? mp.match.team2_ex_overlimit_before_end : mp.match.team1_ex_overlimit_before_end
-      opp_ol == false
+      opp_ol == true  # true = 相手チームOL未発動
     end
     @total_wins_all = all_wins.size
   end
@@ -585,7 +585,15 @@ class StatisticsController < ApplicationController
       exburst_damage:  (sum_field.call(:exburst_damage)  / n).round(0),
       exburst_count:   (sum_field.call(:exburst_count)   / n).round(2),
       exburst_deaths:  (sum_field.call(:exburst_deaths)  / n).round(2),
-      ol_rate:         (mps.count { |mp| mp.ex_overlimit_activated } * 100.0 / n).round(1)
+      exburst_death_rate: begin
+                            total_count  = mps.sum { |mp| mp.exburst_count.to_i }
+                            total_deaths = mps.sum { |mp| mp.exburst_deaths.to_i }
+                            total_count > 0 ? (total_deaths * 100.0 / total_count).round(1) : nil
+                          end,
+      ol_rate:         (mps.count { |mp|
+                         flag = mp.team_number == 1 ? mp.match.team1_ex_overlimit_before_end : mp.match.team2_ex_overlimit_before_end
+                         flag == false
+                       } * 100.0 / n).round(1)
     }
   end
 
