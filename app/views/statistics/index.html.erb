@@ -16,22 +16,22 @@
       <optgroup label="個人">
         <% if viewing_as_user.is_guest %>
           <option disabled>総合戦績（要アカウント）</option>
+          <option disabled>プレイ分析（要アカウント）</option>
           <option disabled>イベント別戦績（要アカウント）</option>
           <option disabled>イベント内期間別戦績（要アカウント）</option>
           <option disabled>使用機体別戦績（要アカウント）</option>
           <option disabled>対戦機体別戦績（要アカウント）</option>
           <option disabled>パートナー別戦績（要アカウント）</option>
           <option disabled>対戦相手別戦績（要アカウント）</option>
-          <option disabled>パフォーマンス（要アカウント）</option>
         <% else %>
           <option value="overview" <%= 'selected' if @active_tab == 'overview' %>>総合戦績</option>
+          <option value="performance" <%= 'selected' if @active_tab == 'performance' %>>プレイ分析</option>
           <option value="events" <%= 'selected' if @active_tab == 'events' %>>イベント別戦績</option>
           <option value="event_progression" <%= 'selected' if @active_tab == 'event_progression' %>>イベント内期間別戦績</option>
           <option value="mobile_suits" <%= 'selected' if @active_tab == 'mobile_suits' %>>使用機体別戦績</option>
           <option value="opponent_suits" <%= 'selected' if @active_tab == 'opponent_suits' %>>対戦機体別戦績</option>
           <option value="partners" <%= 'selected' if @active_tab == 'partners' %>>パートナー別戦績</option>
           <option value="opponents" <%= 'selected' if @active_tab == 'opponents' %>>対戦相手別戦績</option>
-          <option value="performance" <%= 'selected' if @active_tab == 'performance' %>>パフォーマンス</option>
         <% end %>
       </optgroup>
     </select>
@@ -71,17 +71,21 @@
       <% if viewing_as_user.is_guest %>
         <!-- ゲストユーザー: 個人統計タブを無効化 -->
         <span class="whitespace-nowrap py-4 px-1 border-b-2 border-transparent text-gray-300 font-medium text-sm cursor-not-allowed" title="個人統計を見るには管理者にアカウント発行を依頼してください">総合戦績</span>
+        <span class="whitespace-nowrap py-4 px-1 border-b-2 border-transparent text-gray-300 font-medium text-sm ml-4 cursor-not-allowed" title="個人統計を見るには管理者にアカウント発行を依頼してください">プレイ分析</span>
         <span class="whitespace-nowrap py-4 px-1 border-b-2 border-transparent text-gray-300 font-medium text-sm ml-4 cursor-not-allowed" title="個人統計を見るには管理者にアカウント発行を依頼してください">イベント別戦績</span>
         <span class="whitespace-nowrap py-4 px-1 border-b-2 border-transparent text-gray-300 font-medium text-sm ml-4 cursor-not-allowed" title="個人統計を見るには管理者にアカウント発行を依頼してください">イベント内期間別戦績</span>
         <span class="whitespace-nowrap py-4 px-1 border-b-2 border-transparent text-gray-300 font-medium text-sm ml-4 cursor-not-allowed" title="個人統計を見るには管理者にアカウント発行を依頼してください">使用機体別戦績</span>
         <span class="whitespace-nowrap py-4 px-1 border-b-2 border-transparent text-gray-300 font-medium text-sm ml-4 cursor-not-allowed" title="個人統計を見るには管理者にアカウント発行を依頼してください">対戦機体別戦績</span>
         <span class="whitespace-nowrap py-4 px-1 border-b-2 border-transparent text-gray-300 font-medium text-sm ml-4 cursor-not-allowed" title="個人統計を見るには管理者にアカウント発行を依頼してください">パートナー別戦績</span>
         <span class="whitespace-nowrap py-4 px-1 border-b-2 border-transparent text-gray-300 font-medium text-sm ml-4 cursor-not-allowed" title="個人統計を見るには管理者にアカウント発行を依頼してください">対戦相手別戦績</span>
-        <span class="whitespace-nowrap py-4 px-1 border-b-2 border-transparent text-gray-300 font-medium text-sm ml-4 cursor-not-allowed" title="個人統計を見るには管理者にアカウント発行を依頼してください">パフォーマンス</span>
       <% else %>
         <%= link_to statistics_path(tab: 'overview', events: params[:events], mobile_suits: params[:mobile_suits], partners: params[:partners]),
             class: "#{@active_tab == 'overview' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm" do %>
           総合戦績
+        <% end %>
+        <%= link_to statistics_path(tab: 'performance', events: params[:events], mobile_suits: params[:mobile_suits], partners: params[:partners]),
+            class: "#{@active_tab == 'performance' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ml-4" do %>
+          プレイ分析
         <% end %>
         <%= link_to statistics_path(tab: 'events', events: params[:events], mobile_suits: params[:mobile_suits], partners: params[:partners]),
             class: "#{@active_tab == 'events' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ml-4" do %>
@@ -106,10 +110,6 @@
         <%= link_to statistics_path(tab: 'opponents', events: params[:events], mobile_suits: params[:mobile_suits], partners: params[:partners]),
             class: "#{@active_tab == 'opponents' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ml-4" do %>
           対戦相手別戦績
-        <% end %>
-        <%= link_to statistics_path(tab: 'performance', events: params[:events], mobile_suits: params[:mobile_suits], partners: params[:partners]),
-            class: "#{@active_tab == 'performance' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ml-4" do %>
-          パフォーマンス
         <% end %>
       <% end %>
     </nav>
