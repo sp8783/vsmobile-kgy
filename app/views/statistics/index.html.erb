@@ -1179,107 +1179,142 @@
     <div class="space-y-6">
 
       <!-- サマリーカード -->
-      <div class="grid grid-cols-3 gap-4">
-        <div class="bg-indigo-50 border border-indigo-200 rounded-xl p-5 text-center">
-          <div class="text-3xl font-bold text-indigo-700"><%= @stats_total %></div>
-          <div class="text-xs text-indigo-500 mt-1 font-medium">統計データあり試合</div>
+      <div class="grid grid-cols-3 gap-4 sm:gap-6">
+        <div class="bg-white rounded-lg shadow p-4 sm:p-6">
+          <div class="text-xs sm:text-sm font-medium text-gray-500">統計データあり試合</div>
+          <div class="mt-1 sm:mt-2 text-2xl sm:text-3xl font-bold text-indigo-600"><%= @stats_total %></div>
         </div>
-        <div class="bg-green-50 border border-green-200 rounded-xl p-5 text-center">
-          <div class="text-3xl font-bold text-green-700"><%= @stats_wins %></div>
-          <div class="text-xs text-green-600 mt-1 font-medium">勝利</div>
+        <div class="bg-white rounded-lg shadow p-4 sm:p-6">
+          <div class="text-xs sm:text-sm font-medium text-gray-500">勝利</div>
+          <div class="mt-1 sm:mt-2 text-2xl sm:text-3xl font-bold text-green-600"><%= @stats_wins %></div>
         </div>
-        <div class="bg-red-50 border border-red-200 rounded-xl p-5 text-center">
-          <div class="text-3xl font-bold text-red-700"><%= @stats_losses %></div>
-          <div class="text-xs text-red-500 mt-1 font-medium">敗北</div>
+        <div class="bg-white rounded-lg shadow p-4 sm:p-6">
+          <div class="text-xs sm:text-sm font-medium text-gray-500">敗北</div>
+          <div class="mt-1 sm:mt-2 text-2xl sm:text-3xl font-bold text-red-600"><%= @stats_losses %></div>
         </div>
       </div>
 
       <!-- セクション1: 基本パフォーマンス統計 -->
-      <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div class="px-6 py-4 border-b border-gray-200">
-          <h3 class="text-base font-bold text-gray-900">基本パフォーマンス統計</h3>
-          <p class="text-xs text-gray-500 mt-0.5">試合ごとの平均値</p>
+      <div class="bg-white rounded-lg shadow">
+        <div class="px-6 py-5 border-b border-gray-200">
+          <h3 class="text-lg font-semibold text-gray-900">基本パフォーマンス統計</h3>
+          <p class="mt-1 text-sm text-gray-500">試合ごとのスコアやダメージ等の平均値を確認できます</p>
         </div>
         <% if @stats_total.to_i > 0 %>
           <div class="overflow-x-auto">
-            <table class="min-w-full">
-              <thead>
-                <tr class="border-b border-gray-200">
-                  <th class="px-5 py-3 text-left text-xs font-medium text-gray-400 min-w-36">項目</th>
-                  <th class="px-5 py-3 text-center text-xs font-bold text-indigo-700 bg-indigo-50 min-w-28">
-                    全体<br><span class="font-normal text-indigo-400"><%= @stats_total %>試合</span>
+            <table class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">項目</th>
+                  <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                    全体<br><span class="normal-case font-normal"><%= @stats_total %>試合</span>
                   </th>
-                  <th class="px-5 py-3 text-center text-xs font-bold text-green-700 bg-green-50 min-w-28">
-                    勝利時<br><span class="font-normal text-green-500"><%= @stats_wins %>試合</span>
+                  <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                    勝利時<br><span class="normal-case font-normal"><%= @stats_wins %>試合</span>
                   </th>
-                  <th class="px-5 py-3 text-center text-xs font-bold text-red-700 bg-red-50 min-w-28">
-                    敗北時<br><span class="font-normal text-red-400"><%= @stats_losses %>試合</span>
+                  <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                    敗北時<br><span class="normal-case font-normal"><%= @stats_losses %>試合</span>
+                  </th>
+                  <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                    コミュニティ平均・分布
                   </th>
                 </tr>
               </thead>
-              <tbody>
-                <!-- 基本戦績グループ -->
-                <tr class="bg-indigo-50">
-                  <td colspan="4" class="px-5 py-2 text-xs font-semibold text-indigo-600 border-l-2 border-indigo-400">基本戦績</td>
-                </tr>
-                <% [
-                  { label: "スコア",   key: :score,  suffix: "" },
-                  { label: "撃墜数",   key: :kills,  suffix: "" },
-                  { label: "被撃墜数", key: :deaths, suffix: "" },
-                ].each_with_index do |row, i| %>
-                  <tr class="<%= i.odd? ? 'bg-gray-50' : 'bg-white' %> hover:bg-indigo-50 border-t border-gray-100">
-                    <td class="px-5 py-3 text-sm text-gray-700 border-l-2 border-indigo-200 pl-6"><%= row[:label] %></td>
-                    <% [[@performance_overall, "text-indigo-700"], [@performance_wins, "text-green-700"], [@performance_losses, "text-red-700"]].each do |perf, color| %>
-                      <td class="px-5 py-3 text-center text-sm font-semibold <%= color %>">
-                        <%= perf ? "#{perf[row[:key]]}#{row[:suffix]}" : '-' %>
-                      </td>
-                    <% end %>
+              <tbody class="bg-white divide-y divide-gray-100">
+                <%
+                  perf_groups = [
+                    {
+                      label: "基本戦績",
+                      rows: [
+                        { label: "スコア",   key: :score,  suffix: "", higher_is_better: true },
+                        { label: "撃墜数",   key: :kills,  suffix: "", higher_is_better: true },
+                        { label: "被撃墜数", key: :deaths, suffix: "", higher_is_better: false },
+                      ]
+                    },
+                    {
+                      label: "ダメージ",
+                      rows: [
+                        { label: "与ダメージ",         key: :damage_dealt,    suffix: "", higher_is_better: true },
+                        { label: "被ダメージ",         key: :damage_received, suffix: "", higher_is_better: false },
+                        { label: "EXバーストダメージ", key: :exburst_damage,  suffix: "", higher_is_better: true },
+                      ]
+                    },
+                    {
+                      label: "EXバースト",
+                      rows: [
+                        { label: "EXバースト発動回数",   key: :exburst_count,      suffix: "",  higher_is_better: true },
+                        { label: "EXバースト中被撃墜数", key: :exburst_deaths,     suffix: "",  higher_is_better: false },
+                        { label: "EXバースト中被撃墜率", key: :exburst_death_rate, suffix: "%", higher_is_better: false, na_if_nil: true },
+                      ]
+                    },
+                    {
+                      label: "EXオーバーリミット",
+                      rows: [
+                        { label: "EXオーバーリミット発動率", key: :ol_rate, suffix: "%", higher_is_better: true, community_key: :ol_rate_losses, community_perf: :losses, community_note: "※敗北時のみ" },
+                      ]
+                    },
+                  ]
+                %>
+                <% perf_groups.each do |group| %>
+                  <tr class="bg-gray-50">
+                    <td colspan="5" class="px-6 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider"><%= group[:label] %></td>
                   </tr>
-                <% end %>
-
-                <!-- ダメージグループ -->
-                <tr class="bg-purple-50">
-                  <td colspan="4" class="px-5 py-2 text-xs font-semibold text-purple-600 border-l-2 border-purple-400">ダメージ</td>
-                </tr>
-                <% [
-                  { label: "与ダメージ",         key: :damage_dealt,   suffix: "" },
-                  { label: "被ダメージ",         key: :damage_received, suffix: "" },
-                  { label: "EXバーストダメージ", key: :exburst_damage,  suffix: "" },
-                ].each_with_index do |row, i| %>
-                  <tr class="<%= i.odd? ? 'bg-gray-50' : 'bg-white' %> hover:bg-purple-50 border-t border-gray-100">
-                    <td class="px-5 py-3 text-sm text-gray-700 border-l-2 border-purple-200 pl-6"><%= row[:label] %></td>
-                    <% [[@performance_overall, "text-indigo-700"], [@performance_wins, "text-green-700"], [@performance_losses, "text-red-700"]].each do |perf, color| %>
-                      <td class="px-5 py-3 text-center text-sm font-semibold <%= color %>">
-                        <%= perf ? "#{perf[row[:key]]}#{row[:suffix]}" : '-' %>
-                      </td>
-                    <% end %>
-                  </tr>
-                <% end %>
-
-                <!-- EXバーストグループ -->
-                <tr class="bg-orange-50">
-                  <td colspan="4" class="px-5 py-2 text-xs font-semibold text-orange-600 border-l-2 border-orange-400">EXバースト / オーバーリミット</td>
-                </tr>
-                <% [
-                  { label: "発動回数",                  key: :exburst_count,      suffix: "" },
-                  { label: "バースト中被撃墜数",        key: :exburst_deaths,     suffix: "" },
-                  { label: "バースト中被撃墜率",        key: :exburst_death_rate, suffix: "%", na_if_nil: true },
-                  { label: "EXオーバーリミット発動率",  key: :ol_rate,            suffix: "%" },
-                ].each_with_index do |row, i| %>
-                  <tr class="<%= i.odd? ? 'bg-gray-50' : 'bg-white' %> hover:bg-orange-50 border-t border-gray-100">
-                    <td class="px-5 py-3 text-sm text-gray-700 border-l-2 border-orange-200 pl-6"><%= row[:label] %></td>
-                    <% [[@performance_overall, "text-indigo-700"], [@performance_wins, "text-green-700"], [@performance_losses, "text-red-700"]].each do |perf, color| %>
-                      <td class="px-5 py-3 text-center text-sm font-semibold <%= color %>">
-                        <% if perf.nil? %>
-                          <span class="text-gray-300 font-normal">-</span>
-                        <% elsif row[:na_if_nil] && perf[row[:key]].nil? %>
-                          <span class="text-gray-400 text-xs font-normal">N/A</span>
+                  <% group[:rows].each do |row| %>
+                    <tr class="hover:bg-gray-50">
+                      <td class="px-6 py-4 text-sm text-gray-700 pl-8"><%= row[:label] %></td>
+                      <% [[@performance_overall, "text-indigo-600"], [@performance_wins, "text-green-600"], [@performance_losses, "text-red-600"]].each do |perf, color| %>
+                        <td class="px-6 py-4 text-center text-sm font-semibold <%= color %>">
+                          <% if perf.nil? %>
+                            <span class="text-gray-300 font-normal">-</span>
+                          <% elsif row[:na_if_nil] && perf[row[:key]].nil? %>
+                            <span class="text-gray-400 text-xs font-normal">N/A</span>
+                          <% else %>
+                            <%= "#{perf[row[:key]]}#{row[:suffix]}" %>
+                          <% end %>
+                        </td>
+                      <% end %>
+                      <td class="px-6 py-4 text-center">
+                        <% if @community_avg.nil? %>
+                          <span class="text-gray-300">-</span>
                         <% else %>
-                          <%= "#{perf[row[:key]]}#{row[:suffix]}" %>
+                          <%
+                            c_key    = row[:community_key] || row[:key]
+                            avg_val  = @community_avg[c_key]
+                            min_val  = @community_min&.[](c_key)
+                            max_val  = @community_max&.[](c_key)
+                            u_perf   = row[:community_perf] == :losses ? @performance_losses : @performance_overall
+                            user_val = u_perf&.[](row[:key])
+                          %>
+                          <% if row[:na_if_nil] && avg_val.nil? %>
+                            <span class="text-gray-400 text-xs">N/A</span>
+                          <% elsif avg_val.nil? %>
+                            <span class="text-gray-300">-</span>
+                          <% else %>
+                            <div class="text-sm text-gray-600 font-medium"><%= "#{avg_val}#{row[:suffix]}" %></div>
+                            <% if min_val && max_val && user_val && min_val != max_val %>
+                              <%
+                                range    = (max_val - min_val).to_f
+                                user_pct = ((user_val.to_f - min_val) / range * 100).clamp(0, 100).round(1)
+                                avg_pct  = ((avg_val.to_f  - min_val) / range * 100).clamp(0, 100).round(1)
+                                good     = row[:higher_is_better] ? user_val.to_f >= avg_val.to_f : user_val.to_f <= avg_val.to_f
+                              %>
+                              <div class="relative h-1.5 bg-gray-200 rounded-full mt-2 max-w-[100px] mx-auto">
+                                <div class="absolute -top-1 -bottom-1 w-0.5 bg-gray-400 rounded-full" style="left: <%= avg_pct %>%"></div>
+                                <div class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full border-2 border-white shadow-sm <%= good ? 'bg-green-500' : 'bg-red-500' %>" style="left: <%= user_pct %>%"></div>
+                              </div>
+                              <div class="flex justify-between text-[10px] text-gray-400 mt-1 max-w-[100px] mx-auto">
+                                <span><%= min_val %><%= row[:suffix] %></span>
+                                <span><%= max_val %><%= row[:suffix] %></span>
+                              </div>
+                            <% end %>
+                            <% if row[:community_note] %>
+                              <div class="text-[10px] text-gray-400 mt-1"><%= row[:community_note] %></div>
+                            <% end %>
+                          <% end %>
                         <% end %>
                       </td>
-                    <% end %>
-                  </tr>
+                    </tr>
+                  <% end %>
                 <% end %>
               </tbody>
             </table>
@@ -1296,13 +1331,10 @@
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
         <!-- セクション2: EXバースト活用分析 -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200">
-          <div class="px-6 py-4 border-b border-gray-200 flex items-center gap-3">
-            <span class="w-1 h-5 bg-orange-400 rounded-full flex-shrink-0"></span>
-            <div>
-              <h3 class="text-base font-bold text-gray-900">EXバースト活用分析</h3>
-              <p class="text-xs text-gray-400">敗北時のEXバースト残し状況</p>
-            </div>
+        <div class="bg-white rounded-lg shadow">
+          <div class="px-6 py-5 border-b border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-900">EXバースト活用分析</h3>
+            <p class="mt-1 text-sm text-gray-500">敗北時にEXバーストを残してしまった割合を確認できます</p>
           </div>
           <div class="px-6 py-5">
             <% if @stats_losses.to_i > 0 %>
@@ -1311,94 +1343,188 @@
                 last_pct    = (@last_death_ex_on_loss * 100.0 / @stats_losses).round(1)
                 survive_pct = (@survive_loss_ex_on_loss * 100.0 / @stats_losses).round(1)
               %>
-              <!-- メイン指標 -->
-              <div class="mb-5">
-                <div class="flex items-baseline justify-between mb-2">
-                  <span class="text-sm font-medium text-gray-700">EXバースト残し敗北</span>
-                  <span class="text-2xl font-bold text-orange-600"><%= ex_pct %><span class="text-sm font-normal text-gray-500">%</span></span>
+              <!-- メイン指標: あなた vs コミュニティ平均 -->
+              <div class="mb-5 pb-5 border-b border-gray-100">
+                <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">EXバースト残し敗北</div>
+                <div class="flex items-stretch gap-0">
+                  <div class="flex-1 pr-4">
+                    <div class="text-xs text-gray-400 mb-1">あなた</div>
+                    <div class="text-3xl font-bold text-red-600"><%= ex_pct %><span class="text-base font-normal text-gray-500">%</span></div>
+                    <div class="text-xs text-gray-400 mt-1"><%= @ex_remaining_on_loss %> / <%= @stats_losses %> 回</div>
+                  </div>
+                  <% if @community_ex_remaining_rate %>
+                    <div class="w-px bg-gray-200 self-stretch"></div>
+                    <div class="flex-1 pl-4">
+                      <div class="text-xs text-gray-400 mb-1">コミュニティ平均・分布</div>
+                      <div class="text-2xl font-semibold text-gray-500"><%= @community_ex_remaining_rate %><span class="text-sm font-normal">%</span></div>
+                      <% if @community_ex_remaining_min && @community_ex_remaining_max && @community_ex_remaining_min != @community_ex_remaining_max %>
+                        <%
+                          range    = (@community_ex_remaining_max - @community_ex_remaining_min).to_f
+                          user_pct = ((ex_pct - @community_ex_remaining_min) / range * 100).clamp(0, 100).round(1)
+                          avg_pct  = ((@community_ex_remaining_rate - @community_ex_remaining_min) / range * 100).clamp(0, 100).round(1)
+                          good     = ex_pct <= @community_ex_remaining_rate
+                        %>
+                        <div class="relative h-1.5 bg-gray-200 rounded-full mt-2">
+                          <div class="absolute -top-1 -bottom-1 w-0.5 bg-gray-400 rounded-full" style="left: <%= avg_pct %>%"></div>
+                          <div class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full border-2 border-white shadow-sm <%= good ? 'bg-green-500' : 'bg-red-500' %>" style="left: <%= user_pct %>%"></div>
+                        </div>
+                        <div class="flex justify-between text-[10px] text-gray-400 mt-1">
+                          <span><%= @community_ex_remaining_min %>%</span>
+                          <span><%= @community_ex_remaining_max %>%</span>
+                        </div>
+                      <% end %>
+                    </div>
+                  <% end %>
                 </div>
-                <div class="w-full bg-gray-100 rounded-full h-2.5">
-                  <div class="bg-orange-400 h-2.5 rounded-full" style="width: <%= [ex_pct, 100].min %>%"></div>
-                </div>
-                <div class="text-xs text-gray-400 mt-1.5 text-right"><%= @ex_remaining_on_loss %> / <%= @stats_losses %> 回</div>
               </div>
               <!-- 内訳 -->
-              <div class="space-y-4 border-t border-gray-100 pt-4">
+              <div class="space-y-4">
+                <!-- 自機が被撃墜 -->
                 <div>
-                  <div class="flex items-center justify-between mb-1.5">
-                    <div class="flex items-center gap-1.5">
-                      <span class="w-2 h-2 rounded-full bg-red-400 flex-shrink-0"></span>
-                      <span class="text-sm text-gray-600">うち 自機が被撃墜</span>
+                  <div class="flex items-center justify-between">
+                    <span class="text-sm text-gray-600">自機が被撃墜</span>
+                    <div class="text-right">
+                      <span class="text-sm font-semibold text-gray-700"><%= last_pct %>%</span>
+                      <span class="text-xs text-gray-400 ml-1">(<%= @last_death_ex_on_loss %>/<%= @stats_losses %>回)</span>
                     </div>
-                    <span class="text-sm font-bold text-red-600"><%= last_pct %>%</span>
                   </div>
-                  <div class="w-full bg-gray-100 rounded-full h-1.5">
-                    <div class="bg-red-400 h-1.5 rounded-full" style="width: <%= [last_pct, 100].min %>%"></div>
-                  </div>
-                  <div class="text-xs text-gray-400 mt-1 text-right"><%= @last_death_ex_on_loss %> / <%= @stats_losses %> 回</div>
+                  <% if @community_last_death_ex_rate && @community_last_death_ex_min != @community_last_death_ex_max %>
+                    <%
+                      range        = (@community_last_death_ex_max - @community_last_death_ex_min).to_f
+                      user_pct_bar = ((last_pct - @community_last_death_ex_min) / range * 100).clamp(0, 100).round(1)
+                      avg_pct_bar  = ((@community_last_death_ex_rate - @community_last_death_ex_min) / range * 100).clamp(0, 100).round(1)
+                      good         = last_pct <= @community_last_death_ex_rate
+                    %>
+                    <div class="relative h-1.5 bg-gray-200 rounded-full mt-1.5">
+                      <div class="absolute -top-1 -bottom-1 w-0.5 bg-gray-400 rounded-full" style="left: <%= avg_pct_bar %>%"></div>
+                      <div class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full border-2 border-white shadow-sm <%= good ? 'bg-green-500' : 'bg-red-500' %>" style="left: <%= user_pct_bar %>%"></div>
+                    </div>
+                    <div class="relative h-4 text-[10px] text-gray-400 mt-0.5">
+                      <span class="absolute left-0"><%= @community_last_death_ex_min %>%</span>
+                      <span class="absolute -translate-x-1/2 whitespace-nowrap" style="left: <%= avg_pct_bar %>%">avg <%= @community_last_death_ex_rate %>%</span>
+                      <span class="absolute right-0"><%= @community_last_death_ex_max %>%</span>
+                    </div>
+                  <% end %>
                 </div>
+                <!-- パートナー機が被撃墜 -->
                 <div>
-                  <div class="flex items-center justify-between mb-1.5">
-                    <div class="flex items-center gap-1.5">
-                      <span class="w-2 h-2 rounded-full bg-rose-300 flex-shrink-0"></span>
-                      <span class="text-sm text-gray-600">うち パートナー機が被撃墜</span>
+                  <div class="flex items-center justify-between">
+                    <span class="text-sm text-gray-600">パートナー機が被撃墜</span>
+                    <div class="text-right">
+                      <span class="text-sm font-semibold text-gray-700"><%= survive_pct %>%</span>
+                      <span class="text-xs text-gray-400 ml-1">(<%= @survive_loss_ex_on_loss %>/<%= @stats_losses %>回)</span>
                     </div>
-                    <span class="text-sm font-bold text-rose-500"><%= survive_pct %>%</span>
                   </div>
-                  <div class="w-full bg-gray-100 rounded-full h-1.5">
-                    <div class="bg-rose-300 h-1.5 rounded-full" style="width: <%= [survive_pct, 100].min %>%"></div>
-                  </div>
-                  <div class="text-xs text-gray-400 mt-1 text-right"><%= @survive_loss_ex_on_loss %> / <%= @stats_losses %> 回</div>
+                  <% if @community_survive_ex_rate && @community_survive_ex_min != @community_survive_ex_max %>
+                    <%
+                      range        = (@community_survive_ex_max - @community_survive_ex_min).to_f
+                      user_pct_bar = ((survive_pct - @community_survive_ex_min) / range * 100).clamp(0, 100).round(1)
+                      avg_pct_bar  = ((@community_survive_ex_rate - @community_survive_ex_min) / range * 100).clamp(0, 100).round(1)
+                      good         = survive_pct <= @community_survive_ex_rate
+                    %>
+                    <div class="relative h-1.5 bg-gray-200 rounded-full mt-1.5">
+                      <div class="absolute -top-1 -bottom-1 w-0.5 bg-gray-400 rounded-full" style="left: <%= avg_pct_bar %>%"></div>
+                      <div class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full border-2 border-white shadow-sm <%= good ? 'bg-green-500' : 'bg-red-500' %>" style="left: <%= user_pct_bar %>%"></div>
+                    </div>
+                    <div class="relative h-4 text-[10px] text-gray-400 mt-0.5">
+                      <span class="absolute left-0"><%= @community_survive_ex_min %>%</span>
+                      <span class="absolute -translate-x-1/2 whitespace-nowrap" style="left: <%= avg_pct_bar %>%">avg <%= @community_survive_ex_rate %>%</span>
+                      <span class="absolute right-0"><%= @community_survive_ex_max %>%</span>
+                    </div>
+                  <% end %>
                 </div>
               </div>
             <% else %>
-              <p class="text-gray-400 text-sm text-center py-8">統計データのある敗北試合がありません</p>
+              <p class="text-gray-500 text-center py-8">統計データのある敗北試合がありません</p>
             <% end %>
           </div>
         </div>
 
         <!-- セクション3: EXオーバーリミット分析 -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200">
-          <div class="px-6 py-4 border-b border-gray-200 flex items-center gap-3">
-            <span class="w-1 h-5 bg-violet-400 rounded-full flex-shrink-0"></span>
-            <div>
-              <h3 class="text-base font-bold text-gray-900">EXオーバーリミット分析</h3>
-              <p class="text-xs text-gray-400">全試合を対象にEXオーバーリミット発動状況を集計</p>
-            </div>
+        <div class="bg-white rounded-lg shadow">
+          <div class="px-6 py-5 border-b border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-900">EXオーバーリミット分析</h3>
+            <p class="mt-1 text-sm text-gray-500">全試合のEXオーバーリミット発動状況を確認できます</p>
           </div>
-          <div class="px-6 py-5 space-y-6">
+          <div class="px-6 py-5 space-y-5">
+            <% if @has_ol_data %>
             <%
-              no_ol_pct     = @total_losses.to_i > 0    ? (@my_team_no_ol_losses * 100.0 / @total_losses).round(1)   : 0.0
-              opp_no_ol_pct = @total_wins_all.to_i > 0  ? (@opponent_no_ol_wins  * 100.0 / @total_wins_all).round(1) : 0.0
+              no_ol_pct     = @total_losses.to_i > 0   ? (@my_team_no_ol_losses * 100.0 / @total_losses).round(1)   : 0.0
+              opp_no_ol_pct = @total_wins_all.to_i > 0 ? (@opponent_no_ol_wins  * 100.0 / @total_wins_all).round(1) : 0.0
             %>
-            <!-- 自チーム -->
-            <div>
-              <div class="flex items-start justify-between mb-2 gap-3">
-                <div>
-                  <div class="text-sm font-medium text-gray-700">自チームEXオーバーリミット未発動で敗北</div>
-                  <div class="text-xs text-gray-400 mt-0.5">EXオーバーリミットを発動できずに負けた試合</div>
+            <!-- 相手チーム勝利 -->
+            <div class="pb-5 border-b border-gray-100">
+              <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">相手チームEXオーバーリミット未発動で勝利</div>
+              <div class="text-xs text-gray-400 mb-3">相手にEXオーバーリミットを発動させずに勝った試合</div>
+              <div class="flex items-stretch gap-0">
+                <div class="flex-1 pr-4">
+                  <div class="text-xs text-gray-400 mb-1">あなた</div>
+                  <div class="text-3xl font-bold text-green-600"><%= opp_no_ol_pct %><span class="text-base font-normal text-gray-500">%</span></div>
+                  <div class="text-xs text-gray-400 mt-1"><%= @opponent_no_ol_wins %> / <%= @total_wins_all %> 回</div>
                 </div>
-                <span class="text-2xl font-bold text-red-600 flex-shrink-0"><%= no_ol_pct %><span class="text-sm font-normal text-gray-500">%</span></span>
+                <% if @community_opp_no_ol_win_rate %>
+                  <div class="w-px bg-gray-200 self-stretch"></div>
+                  <div class="flex-1 pl-4">
+                    <div class="text-xs text-gray-400 mb-1">コミュニティ平均・分布</div>
+                    <div class="text-2xl font-semibold text-gray-500"><%= @community_opp_no_ol_win_rate %><span class="text-sm font-normal">%</span></div>
+                    <% if @community_opp_no_ol_win_min && @community_opp_no_ol_win_max && @community_opp_no_ol_win_min != @community_opp_no_ol_win_max %>
+                      <%
+                        range    = (@community_opp_no_ol_win_max - @community_opp_no_ol_win_min).to_f
+                        user_pct = ((opp_no_ol_pct - @community_opp_no_ol_win_min) / range * 100).clamp(0, 100).round(1)
+                        avg_pct  = ((@community_opp_no_ol_win_rate - @community_opp_no_ol_win_min) / range * 100).clamp(0, 100).round(1)
+                        good     = opp_no_ol_pct >= @community_opp_no_ol_win_rate
+                      %>
+                      <div class="relative h-1.5 bg-gray-200 rounded-full mt-2">
+                        <div class="absolute -top-1 -bottom-1 w-0.5 bg-gray-400 rounded-full" style="left: <%= avg_pct %>%"></div>
+                        <div class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full border-2 border-white shadow-sm <%= good ? 'bg-green-500' : 'bg-red-500' %>" style="left: <%= user_pct %>%"></div>
+                      </div>
+                      <div class="flex justify-between text-[10px] text-gray-400 mt-1">
+                        <span><%= @community_opp_no_ol_win_min %>%</span>
+                        <span><%= @community_opp_no_ol_win_max %>%</span>
+                      </div>
+                    <% end %>
+                  </div>
+                <% end %>
               </div>
-              <div class="w-full bg-gray-100 rounded-full h-2.5">
-                <div class="bg-red-400 h-2.5 rounded-full" style="width: <%= [no_ol_pct, 100].min %>%"></div>
-              </div>
-              <div class="text-xs text-gray-400 mt-1.5 text-right"><%= @my_team_no_ol_losses %> / <%= @total_losses %> 回</div>
             </div>
-            <!-- 相手チーム -->
+            <!-- 自チーム敗北 -->
             <div>
-              <div class="flex items-start justify-between mb-2 gap-3">
-                <div>
-                  <div class="text-sm font-medium text-gray-700">相手チームEXオーバーリミット未発動で勝利</div>
-                  <div class="text-xs text-gray-400 mt-0.5">相手にEXオーバーリミットを発動させずに勝った試合</div>
+              <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">自チームEXオーバーリミット未発動で敗北</div>
+              <div class="text-xs text-gray-400 mb-3">EXオーバーリミットを発動できずに負けた試合</div>
+              <div class="flex items-stretch gap-0">
+                <div class="flex-1 pr-4">
+                  <div class="text-xs text-gray-400 mb-1">あなた</div>
+                  <div class="text-3xl font-bold text-red-600"><%= no_ol_pct %><span class="text-base font-normal text-gray-500">%</span></div>
+                  <div class="text-xs text-gray-400 mt-1"><%= @my_team_no_ol_losses %> / <%= @total_losses %> 回</div>
                 </div>
-                <span class="text-2xl font-bold text-green-600 flex-shrink-0"><%= opp_no_ol_pct %><span class="text-sm font-normal text-gray-500">%</span></span>
+                <% if @community_no_ol_loss_rate %>
+                  <div class="w-px bg-gray-200 self-stretch"></div>
+                  <div class="flex-1 pl-4">
+                    <div class="text-xs text-gray-400 mb-1">コミュニティ平均・分布</div>
+                    <div class="text-2xl font-semibold text-gray-500"><%= @community_no_ol_loss_rate %><span class="text-sm font-normal">%</span></div>
+                    <% if @community_no_ol_loss_min && @community_no_ol_loss_max && @community_no_ol_loss_min != @community_no_ol_loss_max %>
+                      <%
+                        range    = (@community_no_ol_loss_max - @community_no_ol_loss_min).to_f
+                        user_pct = ((no_ol_pct - @community_no_ol_loss_min) / range * 100).clamp(0, 100).round(1)
+                        avg_pct  = ((@community_no_ol_loss_rate - @community_no_ol_loss_min) / range * 100).clamp(0, 100).round(1)
+                        good     = no_ol_pct <= @community_no_ol_loss_rate
+                      %>
+                      <div class="relative h-1.5 bg-gray-200 rounded-full mt-2">
+                        <div class="absolute -top-1 -bottom-1 w-0.5 bg-gray-400 rounded-full" style="left: <%= avg_pct %>%"></div>
+                        <div class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full border-2 border-white shadow-sm <%= good ? 'bg-green-500' : 'bg-red-500' %>" style="left: <%= user_pct %>%"></div>
+                      </div>
+                      <div class="flex justify-between text-[10px] text-gray-400 mt-1">
+                        <span><%= @community_no_ol_loss_min %>%</span>
+                        <span><%= @community_no_ol_loss_max %>%</span>
+                      </div>
+                    <% end %>
+                  </div>
+                <% end %>
               </div>
-              <div class="w-full bg-gray-100 rounded-full h-2.5">
-                <div class="bg-green-400 h-2.5 rounded-full" style="width: <%= [opp_no_ol_pct, 100].min %>%"></div>
-              </div>
-              <div class="text-xs text-gray-400 mt-1.5 text-right"><%= @opponent_no_ol_wins %> / <%= @total_wins_all %> 回</div>
             </div>
+            <% else %>
+              <p class="text-gray-500 text-center py-8">EXオーバーリミットのデータがありません</p>
+            <% end %>
           </div>
         </div>
 
