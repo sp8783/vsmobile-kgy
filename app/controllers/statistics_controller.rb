@@ -689,8 +689,8 @@ class StatisticsController < ApplicationController
         ol_rate:            (user_perf_list.sum { |u| u[:ol_rate] }         / nu).round(1)
       }
       stat_keys = %i[score kills deaths damage_dealt damage_received exburst_damage exburst_count exburst_deaths ol_rate]
-      @community_min = stat_keys.to_h { |k| [k, user_perf_list.map { |u| u[k] }.compact.min] }
-      @community_max = stat_keys.to_h { |k| [k, user_perf_list.map { |u| u[k] }.compact.max] }
+      @community_min = stat_keys.to_h { |k| [ k, user_perf_list.map { |u| u[k] }.compact.min ] }
+      @community_max = stat_keys.to_h { |k| [ k, user_perf_list.map { |u| u[k] }.compact.max ] }
       if valid_dr.any?
         @community_min[:exburst_death_rate] = valid_dr.min
         @community_max[:exburst_death_rate] = valid_dr.max
@@ -702,7 +702,6 @@ class StatisticsController < ApplicationController
         @community_max[:ol_rate_losses]  = valid_ol_losses.max
       end
     end
-
   end
 
   def calc_perf_stats(mps)
