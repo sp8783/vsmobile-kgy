@@ -20,15 +20,99 @@ class MatchesController < ApplicationController
     # フィルター: 参加ユーザー（複数選択対応）
     if params[:users].present?
       user_ids = params[:users].reject(&:blank?).map(&:to_i)
-      @matches = @matches.joins(:match_players).where(match_players: { user_id: user_ids }).distinct if user_ids.any?
+      if user_ids.any?
+        if params[:users_mode] == "and"
+          user_ids.each do |uid|
+            @matches = @matches.where(
+              "EXISTS (SELECT 1 FROM match_players mp WHERE mp.match_id = matches.id AND mp.user_id = ?)", uid
+            )
+          end
+        else
+          @matches = @matches.joins(:match_players).where(match_players: { user_id: user_ids }).distinct
+        end
+      end
     end
 
     # フィルター: 配信台ユーザー（複数選択対応）
     if params[:streaming_users].present?
       streaming_user_ids = params[:streaming_users].reject(&:blank?).map(&:to_i)
-      @matches = @matches.joins(:match_players).where(
-        match_players: { user_id: streaming_user_ids, team_number: 1, position: 1 }
-      ).distinct if streaming_user_ids.any?
+      if streaming_user_ids.any?
+        if params[:streaming_users_mode] == "and"
+          streaming_user_ids.each do |uid|
+            @matches = @matches.where(
+              "EXISTS (SELECT 1 FROM match_players mp WHERE mp.match_id = matches.id AND mp.user_id = ? AND mp.team_number = 1 AND mp.position = 1)", uid
+            )
+          end
+        else
+          @matches = @matches.joins(:match_players).where(
+            match_players: { user_id: streaming_user_ids, team_number: 1, position: 1 }
+          ).distinct
+        end
+      end
+    end
+
+    # 統計条件フィルター共通: 対象プレイヤー
+    stat_player_id = params[:stat_player_id].present? ? params[:stat_player_id].to_i : nil
+
+    # フィルター: OL条件（排他選択）
+    ol_filter = params[:ol_filter].presence_in(%w[ol_unused_win ol_unused_loss])
+    case ol_filter
+    when "ol_unused_win"
+      # 勝利チームがOL未発動だった試合
+      scope = @matches.where(
+        "(winning_team = 1 AND team1_ex_overlimit_before_end = TRUE) OR " \
+        "(winning_team = 2 AND team2_ex_overlimit_before_end = TRUE)"
+      )
+      if stat_player_id
+        scope = scope.joins(:match_players).where(
+          "match_players.user_id = ? AND match_players.team_number = matches.winning_team",
+          stat_player_id
+        )
+        @matches = scope.distinct
+      else
+        @matches = scope
+      end
+    when "ol_unused_loss"
+      # 敗北チームがOL未発動だった試合
+      scope = @matches.where(
+        "(winning_team = 1 AND team2_ex_overlimit_before_end = TRUE) OR " \
+        "(winning_team = 2 AND team1_ex_overlimit_before_end = TRUE)"
+      )
+      if stat_player_id
+        scope = scope.joins(:match_players).where(
+          "match_players.user_id = ? AND match_players.team_number != matches.winning_team",
+          stat_player_id
+        )
+        @matches = scope.distinct
+      else
+        @matches = scope
+      end
+    end
+
+    # フィルター: EX条件（チェックボックス）
+    stat_filters = Array(params[:stat_filters]).reject(&:blank?)
+    if stat_filters.include?("ex_leftover_loss")
+      scope = @matches.joins(:match_players).where(
+        "match_players.team_number != matches.winning_team AND " \
+        "(match_players.last_death_ex_available = TRUE OR match_players.survive_loss_ex_available = TRUE)"
+      )
+      scope = scope.where(match_players: { user_id: stat_player_id }) if stat_player_id
+      @matches = scope.distinct
+    end
+
+    # フィルター: ダメージ閾値（以上/以下切り替え対応）
+    if params[:damage_dealt_val].present? && (dealt_val = params[:damage_dealt_val].to_i) > 0
+      dealt_op = params[:damage_dealt_dir] == "lte" ? "<=" : ">="
+      scope = @matches.joins(:match_players).where("match_players.damage_dealt #{dealt_op} ?", dealt_val)
+      scope = scope.where(match_players: { user_id: stat_player_id }) if stat_player_id
+      @matches = scope.distinct
+    end
+
+    if params[:damage_received_val].present? && (received_val = params[:damage_received_val].to_i) > 0
+      received_op = params[:damage_received_dir] == "lte" ? "<=" : ">="
+      scope = @matches.joins(:match_players).where("match_players.damage_received #{received_op} ?", received_val)
+      scope = scope.where(match_players: { user_id: stat_player_id }) if stat_player_id
+      @matches = scope.distinct
     end
 
     @per_page = [ 10, 20, 50 ].include?(params[:per].to_i) ? params[:per].to_i : 20
@@ -43,7 +127,16 @@ class MatchesController < ApplicationController
     # 選択されたフィルター値
     @filter_events = params[:events].present? ? params[:events].reject(&:blank?).map(&:to_i) : []
     @filter_users = params[:users].present? ? params[:users].reject(&:blank?).map(&:to_i) : []
+    @filter_users_mode = params[:users_mode].presence_in(%w[or and]) || "or"
     @filter_streaming_users = params[:streaming_users].present? ? params[:streaming_users].reject(&:blank?).map(&:to_i) : []
+    @filter_streaming_users_mode = params[:streaming_users_mode].presence_in(%w[or and]) || "or"
+    @filter_stat_player_id = stat_player_id
+    @filter_ol_filter = ol_filter
+    @filter_stat_filters = stat_filters
+    @filter_damage_dealt_val = params[:damage_dealt_val].presence
+    @filter_damage_dealt_dir = params[:damage_dealt_dir].presence_in(%w[gte lte]) || "gte"
+    @filter_damage_received_val = params[:damage_received_val].presence
+    @filter_damage_received_dir = params[:damage_received_dir].presence_in(%w[gte lte]) || "gte"
   end
 
   def show

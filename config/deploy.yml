@@ -25,7 +25,7 @@ env:
   secret:
     - RAILS_MASTER_KEY
     - POSTGRES_PASSWORD
-    - TIMESTAMP_API_TOKEN
+    - VSMOBILE_API_TOKEN
     - GITHUB_TOKEN
   clear:
     # Run the Solid Queue Supervisor inside the web server's Puma process to do jobs.
