@@ -21,7 +21,12 @@
       <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         <!-- イベント選択 -->
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">イベント</label>
+          <div class="flex items-center justify-between mb-2">
+            <label class="block text-sm font-medium text-gray-700">イベント</label>
+            <span class="inline-flex rounded border border-gray-200 bg-white text-xs font-medium overflow-hidden">
+              <span class="block px-2 py-1 bg-indigo-600 text-white">OR</span>
+            </span>
+          </div>
           <select name="events[]" id="event-filter" multiple class="w-full">
             <% @all_events.each do |event| %>
               <option value="<%= event.id %>" <%= 'selected' if @filter_events.include?(event.id) %>>
