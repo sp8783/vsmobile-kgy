@@ -1,9 +1,13 @@
 module Admin
   class AnnouncementsController < BaseController
-    before_action :set_announcement, only: [ :edit, :update, :destroy ]
+    before_action :set_announcement, only: [ :show, :edit, :update, :destroy ]
 
     def index
       @announcements = Announcement.order(published_at: :desc)
+    end
+
+    def show
+      @readers = @announcement.read_by_users.order(:nickname)
     end
 
     def new
