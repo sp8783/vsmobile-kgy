@@ -20,15 +20,35 @@ class MatchesController < ApplicationController
     # フィルター: 参加ユーザー（複数選択対応）
     if params[:users].present?
       user_ids = params[:users].reject(&:blank?).map(&:to_i)
-      @matches = @matches.joins(:match_players).where(match_players: { user_id: user_ids }).distinct if user_ids.any?
+      if user_ids.any?
+        if params[:users_mode] == "and"
+          user_ids.each do |uid|
+            @matches = @matches.where(
+              "EXISTS (SELECT 1 FROM match_players mp WHERE mp.match_id = matches.id AND mp.user_id = ?)", uid
+            )
+          end
+        else
+          @matches = @matches.joins(:match_players).where(match_players: { user_id: user_ids }).distinct
+        end
+      end
     end
 
     # フィルター: 配信台ユーザー（複数選択対応）
     if params[:streaming_users].present?
       streaming_user_ids = params[:streaming_users].reject(&:blank?).map(&:to_i)
-      @matches = @matches.joins(:match_players).where(
-        match_players: { user_id: streaming_user_ids, team_number: 1, position: 1 }
-      ).distinct if streaming_user_ids.any?
+      if streaming_user_ids.any?
+        if params[:streaming_users_mode] == "and"
+          streaming_user_ids.each do |uid|
+            @matches = @matches.where(
+              "EXISTS (SELECT 1 FROM match_players mp WHERE mp.match_id = matches.id AND mp.user_id = ? AND mp.team_number = 1 AND mp.position = 1)", uid
+            )
+          end
+        else
+          @matches = @matches.joins(:match_players).where(
+            match_players: { user_id: streaming_user_ids, team_number: 1, position: 1 }
+          ).distinct
+        end
+      end
     end
 
     # 統計条件フィルター共通: 対象プレイヤー
@@ -107,7 +127,9 @@ class MatchesController < ApplicationController
     # 選択されたフィルター値
     @filter_events = params[:events].present? ? params[:events].reject(&:blank?).map(&:to_i) : []
     @filter_users = params[:users].present? ? params[:users].reject(&:blank?).map(&:to_i) : []
+    @filter_users_mode = params[:users_mode].presence_in(%w[or and]) || "or"
     @filter_streaming_users = params[:streaming_users].present? ? params[:streaming_users].reject(&:blank?).map(&:to_i) : []
+    @filter_streaming_users_mode = params[:streaming_users_mode].presence_in(%w[or and]) || "or"
     @filter_stat_player_id = stat_player_id
     @filter_ol_filter = ol_filter
     @filter_stat_filters = stat_filters
