@@ -646,60 +646,80 @@ class StatisticsController < ApplicationController
       .where(has_stats_sql).where(users: { is_guest: false }).to_a
     if all_stats_mps.any?
       by_user = all_stats_mps.group_by(&:user_id)
-      user_perf_list = by_user.map do |_uid, mps|
-        n  = mps.size
-        sf = ->(f) { mps.sum { |mp| mp.send(f).to_f } }
-        total_ex   = mps.sum { |mp| mp.exburst_count.to_i }
-        total_ex_d = mps.sum { |mp| mp.exburst_deaths.to_i }
-        ol_count   = mps.count { |mp|
-          flag = mp.team_number == 1 ? mp.match.team1_ex_overlimit_before_end : mp.match.team2_ex_overlimit_before_end
-          flag == false
-        }
-        loss_mps   = mps.select { |mp| mp.match.winning_team && mp.match.winning_team != mp.team_number }
-        ol_loss_count = loss_mps.count { |mp|
+
+      build_perf = lambda do |subset|
+        m = subset.size
+        next nil if m == 0
+        sf = ->(f) { subset.sum { |mp| mp.send(f).to_f } }
+        total_ex   = subset.sum { |mp| mp.exburst_count.to_i }
+        total_ex_d = subset.sum { |mp| mp.exburst_deaths.to_i }
+        ol_count = subset.count { |mp|
           flag = mp.team_number == 1 ? mp.match.team1_ex_overlimit_before_end : mp.match.team2_ex_overlimit_before_end
           flag == false
         }
         {
-          score:              (sf.call(:score)          / n).round(1),
-          kills:              (sf.call(:kills)           / n).round(2),
-          deaths:             (sf.call(:deaths)          / n).round(2),
-          damage_dealt:       (sf.call(:damage_dealt)    / n).round(0),
-          damage_received:    (sf.call(:damage_received) / n).round(0),
-          exburst_damage:     (sf.call(:exburst_damage)  / n).round(0),
-          exburst_count:      (sf.call(:exburst_count)   / n).round(2),
-          exburst_deaths:     (sf.call(:exburst_deaths)  / n).round(2),
+          score:              (sf.call(:score)          / m).round(1),
+          kills:              (sf.call(:kills)           / m).round(2),
+          deaths:             (sf.call(:deaths)          / m).round(2),
+          damage_dealt:       (sf.call(:damage_dealt)    / m).round(0),
+          damage_received:    (sf.call(:damage_received) / m).round(0),
+          exburst_damage:     (sf.call(:exburst_damage)  / m).round(0),
+          exburst_count:      (sf.call(:exburst_count)   / m).round(2),
+          exburst_deaths:     (sf.call(:exburst_deaths)  / m).round(2),
           exburst_death_rate: total_ex > 0 ? (total_ex_d * 100.0 / total_ex).round(1) : nil,
-          ol_rate:            (ol_count * 100.0 / n).round(1),
-          ol_rate_losses:     loss_mps.any? ? (ol_loss_count * 100.0 / loss_mps.size).round(1) : nil
+          ol_rate:            (ol_count * 100.0 / m).round(1)
         }
       end
-      nu = user_perf_list.size
-      valid_dr = user_perf_list.map { |u| u[:exburst_death_rate] }.compact
-      @community_avg = {
-        score:              (user_perf_list.sum { |u| u[:score] }          / nu).round(1),
-        kills:              (user_perf_list.sum { |u| u[:kills] }           / nu).round(2),
-        deaths:             (user_perf_list.sum { |u| u[:deaths] }          / nu).round(2),
-        damage_dealt:       (user_perf_list.sum { |u| u[:damage_dealt] }    / nu).round(0),
-        damage_received:    (user_perf_list.sum { |u| u[:damage_received] } / nu).round(0),
-        exburst_damage:     (user_perf_list.sum { |u| u[:exburst_damage] }  / nu).round(0),
-        exburst_count:      (user_perf_list.sum { |u| u[:exburst_count] }   / nu).round(2),
-        exburst_deaths:     (user_perf_list.sum { |u| u[:exburst_deaths] }  / nu).round(2),
-        exburst_death_rate: valid_dr.any? ? (valid_dr.sum / valid_dr.size).round(1) : nil,
-        ol_rate:            (user_perf_list.sum { |u| u[:ol_rate] }         / nu).round(1)
-      }
-      stat_keys = %i[score kills deaths damage_dealt damage_received exburst_damage exburst_count exburst_deaths ol_rate]
-      @community_min = stat_keys.to_h { |k| [ k, user_perf_list.map { |u| u[k] }.compact.min ] }
-      @community_max = stat_keys.to_h { |k| [ k, user_perf_list.map { |u| u[k] }.compact.max ] }
-      if valid_dr.any?
-        @community_min[:exburst_death_rate] = valid_dr.min
-        @community_max[:exburst_death_rate] = valid_dr.max
+
+      build_community = lambda do |list|
+        next nil unless list.any?
+        n = list.size
+        valid_dr = list.map { |u| u[:exburst_death_rate] }.compact
+        avg = {
+          score:              (list.sum { |u| u[:score] }          / n).round(1),
+          kills:              (list.sum { |u| u[:kills] }           / n).round(2),
+          deaths:             (list.sum { |u| u[:deaths] }          / n).round(2),
+          damage_dealt:       (list.sum { |u| u[:damage_dealt] }    / n).round(0),
+          damage_received:    (list.sum { |u| u[:damage_received] } / n).round(0),
+          exburst_damage:     (list.sum { |u| u[:exburst_damage] }  / n).round(0),
+          exburst_count:      (list.sum { |u| u[:exburst_count] }   / n).round(2),
+          exburst_deaths:     (list.sum { |u| u[:exburst_deaths] }  / n).round(2),
+          exburst_death_rate: valid_dr.any? ? (valid_dr.sum / valid_dr.size).round(1) : nil,
+          ol_rate:            (list.sum { |u| u[:ol_rate] }         / n).round(1)
+        }
+        stat_keys = %i[score kills deaths damage_dealt damage_received exburst_damage exburst_count exburst_deaths ol_rate]
+        min_h = stat_keys.to_h { |k| [ k, list.map { |u| u[k] }.compact.min ] }
+        max_h = stat_keys.to_h { |k| [ k, list.map { |u| u[k] }.compact.max ] }
+        if valid_dr.any?
+          min_h[:exburst_death_rate] = valid_dr.min
+          max_h[:exburst_death_rate] = valid_dr.max
+        end
+        [ avg, min_h, max_h ]
       end
-      valid_ol_losses = user_perf_list.map { |u| u[:ol_rate_losses] }.compact
-      if valid_ol_losses.any?
-        @community_avg[:ol_rate_losses]  = (valid_ol_losses.sum / valid_ol_losses.size).round(1)
-        @community_min[:ol_rate_losses]  = valid_ol_losses.min
-        @community_max[:ol_rate_losses]  = valid_ol_losses.max
+
+      user_perf_list   = []
+      user_wins_list   = []
+      user_losses_list = []
+      by_user.each do |_uid, mps|
+        overall  = build_perf.call(mps)
+        win_mps  = mps.select { |mp| mp.match.winning_team == mp.team_number }
+        loss_mps = mps.select { |mp| mp.match.winning_team && mp.match.winning_team != mp.team_number }
+        user_perf_list   << overall                    if overall
+        user_wins_list   << build_perf.call(win_mps)   if win_mps.any?
+        user_losses_list << build_perf.call(loss_mps)  if loss_mps.any?
+      end
+
+      if user_perf_list.any?
+        result = build_community.call(user_perf_list)
+        @community_avg, @community_min, @community_max = result if result
+      end
+      if user_wins_list.any?
+        result = build_community.call(user_wins_list)
+        @community_wins_avg, @community_wins_min, @community_wins_max = result if result
+      end
+      if user_losses_list.any?
+        result = build_community.call(user_losses_list)
+        @community_losses_avg, @community_losses_min, @community_losses_max = result if result
       end
     end
   end
