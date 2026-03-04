@@ -688,13 +688,13 @@ class StatisticsController < ApplicationController
           ol_rate:            (list.sum { |u| u[:ol_rate] }         / n).round(1)
         }
         stat_keys = %i[score kills deaths damage_dealt damage_received exburst_damage exburst_count exburst_deaths ol_rate]
-        min_h = stat_keys.to_h { |k| [k, list.map { |u| u[k] }.compact.min] }
-        max_h = stat_keys.to_h { |k| [k, list.map { |u| u[k] }.compact.max] }
+        min_h = stat_keys.to_h { |k| [ k, list.map { |u| u[k] }.compact.min ] }
+        max_h = stat_keys.to_h { |k| [ k, list.map { |u| u[k] }.compact.max ] }
         if valid_dr.any?
           min_h[:exburst_death_rate] = valid_dr.min
           max_h[:exburst_death_rate] = valid_dr.max
         end
-        [avg, min_h, max_h]
+        [ avg, min_h, max_h ]
       end
 
       user_perf_list   = []
