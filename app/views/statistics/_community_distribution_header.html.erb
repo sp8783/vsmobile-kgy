@@ -1,0 +1,41 @@
+<span class="inline-flex items-center justify-center gap-1 relative"
+      data-controller="tooltip"
+      data-action="mouseenter->tooltip#show mouseleave->tooltip#hide">
+  コミュニティ平均・分布
+  <button type="button"
+          class="text-gray-500 hover:text-gray-700 focus:outline-none cursor-help"
+          data-action="click->tooltip#toggle"
+          aria-label="コミュニティ平均・分布の見方">
+    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+      <path fill-rule="evenodd"
+            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+            clip-rule="evenodd"/>
+    </svg>
+  </button>
+  <div data-tooltip-target="content"
+       class="hidden z-50 w-60 bg-gray-900 text-white text-xs rounded-lg shadow-xl p-3
+              text-left font-normal normal-case tracking-normal pointer-events-none">
+    <p class="font-semibold text-white mb-2">コミュニティ平均・分布の見方</p>
+    <p class="text-gray-300 mb-2"><span class="font-semibold text-white">数値</span> — コミュニティ全体の平均値</p>
+    <div class="bg-gray-800 rounded p-2 mb-2">
+      <div class="flex items-center gap-0.5 text-[10px] text-gray-400 mb-1">
+        <span>最小</span>
+        <span class="flex-1 border-t border-gray-500 mx-0.5"></span>
+        <span class="inline-block w-px h-3 bg-gray-300 mx-0.5 shrink-0"></span>
+        <span class="flex-1 border-t border-gray-500 mx-0.5"></span>
+        <span class="inline-block w-2.5 h-2.5 rounded-full bg-green-400 border border-gray-900 shrink-0"></span>
+        <span class="flex-1 border-t border-gray-500 mx-0.5"></span>
+        <span>最大</span>
+      </div>
+      <div class="flex text-[9px] text-gray-500 justify-center gap-4">
+        <span>↑ 平均（縦線）</span>
+        <span>↑ あなた（●）</span>
+      </div>
+    </div>
+    <ul class="text-gray-300 space-y-0.5 text-[10px]">
+      <li><span class="inline-block w-2 h-2 rounded-full bg-green-500 mr-1 align-middle"></span>緑ドット: 平均以上（良好）</li>
+      <li><span class="inline-block w-2 h-2 rounded-full bg-red-500 mr-1 align-middle"></span>赤ドット: 平均未満</li>
+    </ul>
+    <div class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+  </div>
+</span>
