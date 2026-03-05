@@ -142,20 +142,28 @@
                 <table class="min-w-full text-sm border border-gray-200 rounded-lg overflow-hidden">
                   <thead class="bg-gray-50 text-xs text-gray-500 uppercase">
                     <tr>
-                      <th class="px-3 py-2 text-left">プレイヤー</th>
-                      <th class="px-3 py-2 text-right">スコア</th>
-                      <th class="px-3 py-2 text-right">撃墜</th>
-                      <th class="px-3 py-2 text-right">被撃墜</th>
-                      <th class="px-3 py-2 text-right">与ダメージ</th>
-                      <th class="px-3 py-2 text-right">被ダメージ</th>
-                      <th class="px-3 py-2 text-right">EXバーストダメージ</th>
-                      <th class="px-3 py-2 text-right">EXバースト回数</th>
-                      <th class="px-3 py-2 text-right">EXバースト中被撃墜</th>
-                      <th class="px-3 py-2 text-right <%= is_winner ? 'text-gray-300' : '' %>">EXバースト残し</th>
-                      <% survival_col_count.times do |n| %>
-                        <th class="px-3 py-2 text-right text-indigo-500"><%= n + 1 %>機体目<br><span class="font-normal text-gray-400 normal-case">生存時間</span></th>
+                      <% row_span = survival_col_count > 0 ? 2 : 1 %>
+                      <th class="px-3 py-2 text-left" rowspan="<%= row_span %>">プレイヤー</th>
+                      <th class="px-3 py-2 text-right" rowspan="<%= row_span %>">スコア</th>
+                      <th class="px-3 py-2 text-right" rowspan="<%= row_span %>">撃墜</th>
+                      <th class="px-3 py-2 text-right" rowspan="<%= row_span %>">被撃墜</th>
+                      <th class="px-3 py-2 text-right" rowspan="<%= row_span %>">与ダメージ</th>
+                      <th class="px-3 py-2 text-right" rowspan="<%= row_span %>">被ダメージ</th>
+                      <th class="px-3 py-2 text-right" rowspan="<%= row_span %>">EXバーストダメージ</th>
+                      <th class="px-3 py-2 text-right" rowspan="<%= row_span %>">EXバースト回数</th>
+                      <th class="px-3 py-2 text-right" rowspan="<%= row_span %>">EXバースト中被撃墜</th>
+                      <th class="px-3 py-2 text-right <%= is_winner ? 'text-gray-300' : '' %>" rowspan="<%= row_span %>">EXバースト残し</th>
+                      <% if survival_col_count > 0 %>
+                        <th colspan="<%= survival_col_count %>" class="px-3 py-2 text-center text-indigo-600 border-l border-indigo-200 bg-indigo-50 normal-case tracking-normal font-semibold">生存時間</th>
                       <% end %>
                     </tr>
+                    <% if survival_col_count > 0 %>
+                      <tr>
+                        <% survival_col_count.times do |n| %>
+                          <th class="px-3 py-2 text-center text-indigo-400 border-l border-indigo-100 bg-indigo-50 normal-case font-medium"><%= n + 1 %>機体目</th>
+                        <% end %>
+                      </tr>
+                    <% end %>
                   </thead>
                   <tbody class="divide-y divide-gray-100">
                     <% players.each do |player| %>
@@ -187,13 +195,13 @@
                           <% end %>
                         </td>
                         <% survival_col_count.times do |n| %>
-                          <td class="px-3 py-2 text-right text-gray-700 whitespace-nowrap">
+                          <td class="px-3 py-2 text-center whitespace-nowrap bg-indigo-50/40 <%= n == 0 ? 'border-l border-indigo-200' : 'border-l border-indigo-100' %>">
                             <% if n >= st.size %>
                               <span class="text-gray-300">—</span>
                             <% elsif st[n].nil? %>
                               <span class="px-1.5 py-0.5 rounded bg-green-100 text-green-700 text-xs font-semibold">生存</span>
                             <% else %>
-                              <%= format_survival_cs(st[n]) %>
+                              <span class="text-gray-700 font-mono"><%= format_survival_cs(st[n]) %></span>
                             <% end %>
                           </td>
                         <% end %>
