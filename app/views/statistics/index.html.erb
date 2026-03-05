@@ -1541,6 +1541,111 @@
                     </tr>
                   <% end %>
                 <% end %>
+
+                <%# 生存時間グループ — 動的行数のため perf_groups とは別に描画 %>
+                <% if @survival_time_stats.present? %>
+                  <tr class="bg-gray-50">
+                    <td colspan="7" class="px-6 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                      <span class="inline-flex items-center gap-1.5">
+                        生存時間
+                        <span data-controller="tooltip"
+                              data-action="mouseenter->tooltip#show mouseleave->tooltip#hide">
+                          <button type="button"
+                                  class="text-gray-400 hover:text-gray-600 focus:outline-none cursor-help"
+                                  data-action="click->tooltip#toggle"
+                                  aria-label="生存時間の集計方法について">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                            </svg>
+                          </button>
+                          <div data-tooltip-target="content"
+                               class="hidden z-50 w-64 bg-gray-900 text-white text-xs rounded-lg shadow-xl p-3
+                                      text-left font-normal normal-case tracking-normal pointer-events-none">
+                            <p class="font-semibold text-white mb-1.5">集計方法について</p>
+                            <ul class="text-gray-300 space-y-1">
+                              <li><span class="text-green-400 font-semibold">生存：</span>そのライフで生存したまま試合終了した試合の平均時間</li>
+                              <li><span class="text-rose-400 font-semibold">被撃破：</span>そのライフで被撃破して終わった試合の平均時間</li>
+                            </ul>
+                            <div class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+                          </div>
+                        </span>
+                      </span>
+                    </td>
+                  </tr>
+                  <%
+                    st_cols = [
+                      { stats_arr: @survival_time_stats,        color: "text-indigo-600", border: "border-l-2 border-indigo-300" },
+                      { stats_arr: @survival_time_stats_wins,   color: "text-green-600",  border: "border-l-2 border-green-300" },
+                      { stats_arr: @survival_time_stats_losses, color: "text-red-600",    border: "border-l-2 border-red-300"   },
+                    ]
+                    st_max_n = st_cols.map { |c| c[:stats_arr].size }.max.to_i
+                  %>
+                  <% st_max_n.times do |i| %>
+                    <%# n機体目 区切り行 %>
+                    <tr class="bg-gray-50/50">
+                      <td colspan="7" class="px-6 py-1.5 text-xs font-medium text-gray-400 pl-10">
+                        <%= i + 1 %>機体目
+                      </td>
+                    </tr>
+                    <%# 死亡・生存 サブ行 %>
+                    <%
+                      overall_grp = @survival_time_stats[i]
+                      sub_outcomes = [
+                        { key: :survived, label: "生存", label_color: "text-green-600", show: overall_grp&.dig(:survived, :user_count).to_i > 0 },
+                        { key: :died,     label: "被撃破", label_color: "text-red-600",   show: overall_grp&.dig(:died,     :user_count).to_i > 0 },
+                      ]
+                    %>
+                    <% sub_outcomes.each do |outcome| %>
+                      <% next unless outcome[:show] %>
+                      <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-3 pl-12">
+                          <span class="text-sm font-semibold <%= outcome[:label_color] %>"><%= outcome[:label] %></span>
+                        </td>
+                        <% st_cols.each do |col| %>
+                          <% grp = col[:stats_arr][i] %>
+                          <% st = grp&.dig(outcome[:key]) %>
+                          <td class="px-6 py-3 text-center text-sm font-semibold <%= col[:color] %> <%= col[:border] %>">
+                            <% if st.nil? || st[:user_avg_cs].nil? %>
+                              <span class="text-gray-300 font-normal">-</span>
+                            <% else %>
+                              <%= format_survival_cs(st[:user_avg_cs]) %>
+                              <div class="text-xs font-normal text-gray-400 mt-0.5"><%= st[:user_count] %>試合</div>
+                            <% end %>
+                          </td>
+                          <td class="px-6 py-3 text-center">
+                            <% if st && st[:community_avg_cs] && st[:user_avg_cs] %>
+                              <%
+                                c_avg = st[:community_avg_cs]
+                                c_min = st[:community_min_cs]
+                                c_max = st[:community_max_cs]
+                                u_cs  = st[:user_avg_cs]
+                              %>
+                              <div class="text-sm text-gray-600 font-medium"><%= format_survival_cs(c_avg) %></div>
+                              <% if c_min && c_max && c_min != c_max %>
+                                <%
+                                  range   = (c_max - c_min).to_f
+                                  u_pct   = ((u_cs  - c_min) / range * 100).clamp(0, 100).round(1)
+                                  avg_pct = ((c_avg - c_min) / range * 100).clamp(0, 100).round(1)
+                                  good    = u_cs >= c_avg
+                                %>
+                                <div class="relative h-1.5 bg-gray-200 rounded-full mt-2 max-w-[100px] mx-auto">
+                                  <div class="absolute -top-1 -bottom-1 w-0.5 bg-gray-400 rounded-full" style="left: <%= avg_pct %>%"></div>
+                                  <div class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full border-2 border-white shadow-sm <%= good ? 'bg-green-500' : 'bg-red-500' %>" style="left: <%= u_pct %>%"></div>
+                                </div>
+                                <div class="flex justify-between text-[10px] text-gray-400 mt-1 max-w-[100px] mx-auto">
+                                  <span><%= format_survival_cs(c_min) %></span>
+                                  <span><%= format_survival_cs(c_max) %></span>
+                                </div>
+                              <% end %>
+                            <% else %>
+                              <span class="text-gray-300">-</span>
+                            <% end %>
+                          </td>
+                        <% end %>
+                      </tr>
+                    <% end %>
+                  <% end %>
+                <% end %>
               </tbody>
             </table>
           </div>
@@ -1551,84 +1656,6 @@
           </div>
         <% end %>
       </div>
-
-      <!-- セクション4: 生存時間統計 -->
-      <% if @survival_time_stats.present? %>
-        <div class="bg-white rounded-lg shadow">
-          <div class="px-6 py-5 border-b border-gray-200">
-            <h3 class="text-lg font-semibold text-gray-900">生存時間</h3>
-            <p class="mt-1 text-sm text-gray-500">機体ごとの平均生存時間（タイムラインデータのある試合のみ）</p>
-          </div>
-          <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-              <thead class="bg-gray-50">
-                <tr class="border-b border-gray-200">
-                  <th rowspan="2" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider align-middle">機体</th>
-                  <th colspan="2" class="px-4 py-2 text-center text-sm font-semibold text-indigo-700 border-l-2 border-indigo-300 bg-indigo-50">
-                    <span class="inline-flex items-center gap-1.5 justify-center">
-                      <span class="w-2 h-2 rounded-full bg-indigo-400 shrink-0"></span>全体
-                    </span>
-                  </th>
-                </tr>
-                <tr>
-                  <th class="px-6 py-2 text-center text-xs font-medium text-gray-500 whitespace-nowrap border-l-2 border-indigo-300">値</th>
-                  <th class="px-6 py-2 text-center text-xs font-medium text-gray-400 whitespace-nowrap"><%= render "statistics/community_distribution_header" %></th>
-                </tr>
-              </thead>
-              <tbody class="bg-white divide-y divide-gray-100">
-                <% @survival_time_stats.each do |st| %>
-                  <tr class="hover:bg-gray-50">
-                    <td class="px-6 py-3 text-sm font-medium text-gray-700 whitespace-nowrap">
-                      <%= st[:n] %>機体目
-                    </td>
-                    <%
-                      user_val = st[:user_avg_cs] ? format_survival_cs(st[:user_avg_cs]) : nil
-                      comm_avg = st[:community_avg_cs]
-                      comm_min = st[:community_min_cs]
-                      comm_max = st[:community_max_cs]
-                      count_label = "#{st[:user_count]}試合"
-                      count_label += " <span class='text-orange-400'>※生存#{st[:survived_count]}試合を除く</span>" if st[:n] > 1 && st[:survived_count] > 0
-                    %>
-                    <td class="px-6 py-3 text-center border-l-2 border-indigo-300">
-                      <% if user_val %>
-                        <span class="text-sm font-semibold text-gray-800"><%= user_val %></span>
-                        <div class="text-xs text-gray-400 mt-0.5"><%= count_label.html_safe %></div>
-                      <% else %>
-                        <span class="text-gray-300 text-sm">—</span>
-                      <% end %>
-                    </td>
-                    <td class="px-6 py-3 text-center">
-                      <% if comm_avg && comm_min && comm_max && user_val %>
-                        <%
-                          user_cs  = st[:user_avg_cs]
-                          range    = (comm_max - comm_min).to_f
-                          user_pct = range > 0 ? ([ [ (user_cs - comm_min) * 100.0 / range, 0 ].max, 100 ].min).round(1) : 50
-                          good     = user_cs >= comm_avg
-                        %>
-                        <div class="text-xs text-gray-600 font-medium"><%= format_survival_cs(comm_avg) %></div>
-                        <div class="relative mt-1 max-w-[100px] mx-auto">
-                          <div class="w-full bg-gray-200 rounded-full" style="height:6px"></div>
-                          <div class="absolute top-0 left-0 h-full rounded-full bg-indigo-400" style="width: <%= user_pct %>%"></div>
-                          <div class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full border-2 border-white shadow-sm <%= good ? 'bg-green-500' : 'bg-red-500' %>" style="left: <%= user_pct %>%"></div>
-                        </div>
-                        <div class="flex justify-between text-[10px] text-gray-400 mt-1 max-w-[100px] mx-auto">
-                          <span><%= format_survival_cs(comm_min) %></span>
-                          <span><%= format_survival_cs(comm_max) %></span>
-                        </div>
-                      <% else %>
-                        <span class="text-gray-300 text-xs">—</span>
-                      <% end %>
-                    </td>
-                  </tr>
-                <% end %>
-              </tbody>
-            </table>
-          </div>
-          <p class="px-6 py-2 text-xs text-gray-400">
-            ※ 1機体目は試合終了まで生存した場合も実時間を含みます。2機体目以降は死亡で終了したケースのみ集計対象です。
-          </p>
-        </div>
-      <% end %>
 
     </div>
 

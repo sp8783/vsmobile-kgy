@@ -154,13 +154,13 @@
                       <th class="px-3 py-2 text-right" rowspan="<%= row_span %>">EXバースト中被撃墜</th>
                       <th class="px-3 py-2 text-right <%= is_winner ? 'text-gray-300' : '' %>" rowspan="<%= row_span %>">EXバースト残し</th>
                       <% if survival_col_count > 0 %>
-                        <th colspan="<%= survival_col_count %>" class="px-3 py-2 text-center text-indigo-600 border-l border-indigo-200 bg-indigo-50 normal-case tracking-normal font-semibold">生存時間</th>
+                        <th colspan="<%= survival_col_count %>" class="px-3 py-2 text-center normal-case tracking-normal font-medium">生存時間</th>
                       <% end %>
                     </tr>
                     <% if survival_col_count > 0 %>
                       <tr>
                         <% survival_col_count.times do |n| %>
-                          <th class="px-3 py-2 text-center text-indigo-400 border-l border-indigo-100 bg-indigo-50 normal-case font-medium"><%= n + 1 %>機体目</th>
+                          <th class="px-3 py-2 text-center normal-case font-medium"><%= n + 1 %>機体目</th>
                         <% end %>
                       </tr>
                     <% end %>
@@ -195,13 +195,16 @@
                           <% end %>
                         </td>
                         <% survival_col_count.times do |n| %>
-                          <td class="px-3 py-2 text-center whitespace-nowrap bg-indigo-50/40 <%= n == 0 ? 'border-l border-indigo-200' : 'border-l border-indigo-100' %>">
+                          <td class="px-3 py-2 text-right text-gray-700 whitespace-nowrap">
                             <% if n >= st.size %>
                               <span class="text-gray-300">—</span>
-                            <% elsif st[n].nil? %>
-                              <span class="px-1.5 py-0.5 rounded bg-green-100 text-green-700 text-xs font-semibold">生存</span>
                             <% else %>
-                              <span class="text-gray-700 font-mono"><%= format_survival_cs(st[n]) %></span>
+                              <% if n == st.size - 1 && st.size > player.deaths.to_i %>
+                                <span class="mr-1 px-1 py-0.5 rounded bg-green-100 text-green-700 text-[10px] font-semibold">生存</span>
+                              <% else %>
+                                <span class="mr-1 px-1 py-0.5 rounded bg-red-100 text-red-700 text-[10px] font-semibold">被撃破</span>
+                              <% end %>
+                              <%= format_survival_cs(st[n]) %>
                             <% end %>
                           </td>
                         <% end %>
