@@ -96,7 +96,7 @@ Rails.application.routes.draw do
 
   # Admin
   namespace :admin do
-    resources :announcements, except: [ :show ]
+    resources :announcements
     resources :users, except: [ :show ] do
       member do
         post :switch_view
