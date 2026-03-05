@@ -119,6 +119,10 @@
       <!-- 対戦統計セクション -->
       <% all_players = team1_players + team2_players %>
       <% has_stats = all_players.any?(&:has_stats?) || !@match.team1_ex_overlimit_before_end.nil? || !@match.team2_ex_overlimit_before_end.nil? %>
+      <%
+        # 生存時間列数: 全プレイヤーの survival_times 配列長の最大値
+        survival_col_count = all_players.map { |p| (p.survival_times || []).size }.max.to_i
+      %>
       <% if has_stats %>
         <div class="mt-8">
           <h2 class="text-lg font-bold text-gray-900 mb-4">対戦統計</h2>
@@ -138,20 +142,32 @@
                 <table class="min-w-full text-sm border border-gray-200 rounded-lg overflow-hidden">
                   <thead class="bg-gray-50 text-xs text-gray-500 uppercase">
                     <tr>
-                      <th class="px-3 py-2 text-left">プレイヤー</th>
-                      <th class="px-3 py-2 text-right">スコア</th>
-                      <th class="px-3 py-2 text-right">撃墜</th>
-                      <th class="px-3 py-2 text-right">被撃墜</th>
-                      <th class="px-3 py-2 text-right">与ダメージ</th>
-                      <th class="px-3 py-2 text-right">被ダメージ</th>
-                      <th class="px-3 py-2 text-right">EXバーストダメージ</th>
-                      <th class="px-3 py-2 text-right">EXバースト回数</th>
-                      <th class="px-3 py-2 text-right">EXバースト中被撃墜</th>
-                      <th class="px-3 py-2 text-right <%= is_winner ? 'text-gray-300' : '' %>">EXバースト残し</th>
+                      <% row_span = survival_col_count > 0 ? 2 : 1 %>
+                      <th class="px-3 py-2 text-left" rowspan="<%= row_span %>">プレイヤー</th>
+                      <th class="px-3 py-2 text-right" rowspan="<%= row_span %>">スコア</th>
+                      <th class="px-3 py-2 text-right" rowspan="<%= row_span %>">撃墜</th>
+                      <th class="px-3 py-2 text-right" rowspan="<%= row_span %>">被撃墜</th>
+                      <th class="px-3 py-2 text-right" rowspan="<%= row_span %>">与ダメージ</th>
+                      <th class="px-3 py-2 text-right" rowspan="<%= row_span %>">被ダメージ</th>
+                      <th class="px-3 py-2 text-right" rowspan="<%= row_span %>">EXバーストダメージ</th>
+                      <th class="px-3 py-2 text-right" rowspan="<%= row_span %>">EXバースト回数</th>
+                      <th class="px-3 py-2 text-right" rowspan="<%= row_span %>">EXバースト中被撃墜</th>
+                      <th class="px-3 py-2 text-right <%= is_winner ? 'text-gray-300' : '' %>" rowspan="<%= row_span %>">EXバースト残し</th>
+                      <% if survival_col_count > 0 %>
+                        <th colspan="<%= survival_col_count %>" class="px-3 py-2 text-center normal-case tracking-normal font-medium">生存時間</th>
+                      <% end %>
                     </tr>
+                    <% if survival_col_count > 0 %>
+                      <tr>
+                        <% survival_col_count.times do |n| %>
+                          <th class="px-3 py-2 text-center normal-case font-medium"><%= n + 1 %>機体目</th>
+                        <% end %>
+                      </tr>
+                    <% end %>
                   </thead>
                   <tbody class="divide-y divide-gray-100">
                     <% players.each do |player| %>
+                      <% st = player.survival_times || [] %>
                       <tr class="bg-white hover:bg-gray-50">
                         <td class="px-3 py-2 font-medium text-gray-900 whitespace-nowrap">
                           <div class="flex items-center gap-2">
@@ -178,6 +194,20 @@
                             <span class="text-gray-300">―</span>
                           <% end %>
                         </td>
+                        <% survival_col_count.times do |n| %>
+                          <td class="px-3 py-2 text-right text-gray-700 whitespace-nowrap">
+                            <% if n >= st.size %>
+                              <span class="text-gray-300">—</span>
+                            <% else %>
+                              <% if n == st.size - 1 && st.size > player.deaths.to_i %>
+                                <span class="mr-1 px-1 py-0.5 rounded bg-green-100 text-green-700 text-[10px] font-semibold">生存</span>
+                              <% else %>
+                                <span class="mr-1 px-1 py-0.5 rounded bg-red-100 text-red-700 text-[10px] font-semibold">被撃破</span>
+                              <% end %>
+                              <%= format_survival_cs(st[n]) %>
+                            <% end %>
+                          </td>
+                        <% end %>
                       </tr>
                     <% end %>
                   </tbody>

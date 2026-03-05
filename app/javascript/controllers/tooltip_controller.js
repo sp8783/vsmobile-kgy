@@ -13,8 +13,8 @@ export default class extends Controller {
 
   show() {
     const tooltip = this.contentTarget
-    tooltip.classList.remove("hidden")
     this._position()
+    tooltip.classList.remove("hidden")
     document.addEventListener("click", this._outsideClickHandler)
   }
 

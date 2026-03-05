@@ -35,6 +35,13 @@ module ApplicationHelper
     content_tag(:span, cost, class: "px-2 inline-flex text-xs leading-5 font-semibold rounded-full", style: style)
   end
 
+  # centiseconds を "M:SS" 形式の文字列に変換する
+  def format_survival_cs(cs)
+    return nil unless cs
+    total_sec = cs / 100
+    "#{total_sec / 60}:#{format('%02d', total_sec % 60)}"
+  end
+
   # コスト帯の組み合わせ（例："3000+2500"）を2つのバッジで表示
   def cost_combo_badges(cost_combo)
     costs = cost_combo.split("+").map(&:strip)
