@@ -119,6 +119,10 @@
       <!-- 対戦統計セクション -->
       <% all_players = team1_players + team2_players %>
       <% has_stats = all_players.any?(&:has_stats?) || !@match.team1_ex_overlimit_before_end.nil? || !@match.team2_ex_overlimit_before_end.nil? %>
+      <%
+        # 生存時間列数: 全プレイヤーの survival_times 配列長の最大値
+        survival_col_count = all_players.map { |p| (p.survival_times || []).size }.max.to_i
+      %>
       <% if has_stats %>
         <div class="mt-8">
           <h2 class="text-lg font-bold text-gray-900 mb-4">対戦統計</h2>
@@ -148,10 +152,14 @@
                       <th class="px-3 py-2 text-right">EXバースト回数</th>
                       <th class="px-3 py-2 text-right">EXバースト中被撃墜</th>
                       <th class="px-3 py-2 text-right <%= is_winner ? 'text-gray-300' : '' %>">EXバースト残し</th>
+                      <% survival_col_count.times do |n| %>
+                        <th class="px-3 py-2 text-right text-indigo-500"><%= n + 1 %>機体目<br><span class="font-normal text-gray-400 normal-case">生存時間</span></th>
+                      <% end %>
                     </tr>
                   </thead>
                   <tbody class="divide-y divide-gray-100">
                     <% players.each do |player| %>
+                      <% st = player.survival_times || [] %>
                       <tr class="bg-white hover:bg-gray-50">
                         <td class="px-3 py-2 font-medium text-gray-900 whitespace-nowrap">
                           <div class="flex items-center gap-2">
@@ -178,6 +186,17 @@
                             <span class="text-gray-300">―</span>
                           <% end %>
                         </td>
+                        <% survival_col_count.times do |n| %>
+                          <td class="px-3 py-2 text-right text-gray-700 whitespace-nowrap">
+                            <% if n >= st.size %>
+                              <span class="text-gray-300">—</span>
+                            <% elsif st[n].nil? %>
+                              <span class="px-1.5 py-0.5 rounded bg-green-100 text-green-700 text-xs font-semibold">生存</span>
+                            <% else %>
+                              <%= format_survival_cs(st[n]) %>
+                            <% end %>
+                          </td>
+                        <% end %>
                       </tr>
                     <% end %>
                   </tbody>
