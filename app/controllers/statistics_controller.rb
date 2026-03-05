@@ -722,6 +722,9 @@ class StatisticsController < ApplicationController
         @community_losses_avg, @community_losses_min, @community_losses_max = result if result
       end
     end
+
+    # 生存時間統計
+    @survival_time_stats = calculate_survival_time_stats(stats_mps)
   end
 
   def calc_perf_stats(mps)
@@ -749,6 +752,54 @@ class StatisticsController < ApplicationController
                          flag == false
                        } * 100.0 / n).round(1)
     }
+  end
+
+  # 生存時間統計を計算する
+  # @param user_mps [Array<MatchPlayer>] フィルター済みのユーザー match_player 一覧
+  # @return [Array<Hash>] ライフ番号ごとの統計配列。survival_times データがない場合は []
+  def calculate_survival_time_stats(user_mps)
+    # survival_times が存在するものだけ対象
+    user_st_mps = user_mps.select { |mp| mp.survival_times.present? }
+    return [] if user_st_mps.empty?
+
+    # コミュニティデータ（非ゲストかつ survival_times 存在）
+    community_mps = MatchPlayer.joins(:user)
+      .where(users: { is_guest: false })
+      .where("survival_times IS NOT NULL AND jsonb_array_length(survival_times) > 0")
+      .to_a
+
+    # 最大ライフ数を決定（ユーザーとコミュニティ両方から）
+    max_lives = [ user_st_mps, community_mps ].flat_map { |mps|
+      mps.map { |mp| (mp.survival_times || []).size }
+    }.max.to_i
+    return [] if max_lives == 0
+
+    max_lives.times.map do |n|
+      # ユーザー側
+      # life n+1 が存在するプレイヤーを対象とする（配列長 >= n+1）
+      mps_with_life = user_st_mps.select { |mp| (mp.survival_times || []).size > n }
+      died_values   = mps_with_life.map  { |mp| mp.survival_times[n] }.compact  # nil = 生存 → 除外
+      survived_count = mps_with_life.count { |mp| mp.survival_times[n].nil? }
+
+      user_avg_cs = died_values.any? ? (died_values.sum.to_f / died_values.size).round : nil
+
+      # コミュニティ側: ユーザー別の平均を計算してから avg/min/max を算出
+      community_user_avgs = community_mps.group_by(&:user_id).filter_map do |_uid, mps|
+        vals = mps.filter_map { |mp| (mp.survival_times || [])[n] }
+        next unless vals.any?
+        (vals.sum.to_f / vals.size).round
+      end
+
+      {
+        n:               n + 1,
+        user_count:      died_values.size,
+        survived_count:  survived_count,
+        user_avg_cs:     user_avg_cs,
+        community_avg_cs: community_user_avgs.any? ? (community_user_avgs.sum.to_f / community_user_avgs.size).round : nil,
+        community_min_cs: community_user_avgs.min,
+        community_max_cs: community_user_avgs.max
+      }
+    end
   end
 
   def calculate_overall_stats
