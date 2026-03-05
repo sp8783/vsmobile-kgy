@@ -151,10 +151,9 @@ module MatchStatsImportable
         ex_available_at.call(game_end_cs)
       end
 
-      # 生存時間: 各ライフの duration を計算して配列で保存
-      # - 死亡で終わったライフ: centiseconds（整数）
-      # - 1機体目 survived: game_end_cs の実値（常に集計対象）
-      # - 2機体目以降 survived: nil（試合詳細では「生存」表示、統計では除外）
+      # 生存時間: 各ライフの duration を計算して配列で保存（全て整数 cs）
+      # - 全ライフ実時間を格納（死亡・生存問わず）
+      # - 生存判定: survival_times.size > mp.deaths.to_i（最終ライフが生存で終わった）
       death_times = player_events.select { |e| e["is_point"] }
                                   .sort_by { |e| e["start_cs"] || 0 }
                                   .map { |e| e["start_cs"] }
@@ -173,8 +172,8 @@ module MatchStatsImportable
         # 一度も死なず生存 → 1機体目に実時間を格納
         survival_times = game_end_cs != Float::INFINITY ? [ game_end_cs.to_i ] : []
       elsif alive_at_end
-        # 最終ライフを生存で終えた → 末尾に nil
-        survival_times << nil
+        # 最終ライフを生存で終えた → 残り時間（実値）を格納
+        survival_times << (game_end_cs.to_i - prev)
       end
 
       mp.update!(

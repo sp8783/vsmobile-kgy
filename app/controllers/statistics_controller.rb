@@ -540,6 +540,10 @@ class StatisticsController < ApplicationController
     win_mps  = stats_mps.select { |mp| mp.match.winning_team == mp.team_number }
     loss_mps = stats_mps.reject { |mp| mp.match.winning_team == mp.team_number }
 
+    # by_user.each ループ内で win_mps/loss_mps が上書きされるため先に退避する
+    user_win_mps  = win_mps
+    user_loss_mps = loss_mps
+
     @stats_total  = stats_mps.size
     @stats_wins   = win_mps.size
     @stats_losses = loss_mps.size
@@ -723,8 +727,11 @@ class StatisticsController < ApplicationController
       end
     end
 
-    # 生存時間統計
-    @survival_time_stats = calculate_survival_time_stats(stats_mps)
+    # 生存時間統計（全体・勝利時・敗北時）
+    # 注意: by_user.each ループ内で win_mps/loss_mps が上書きされるため、事前に退避した変数を使う
+    @survival_time_stats         = calculate_survival_time_stats(stats_mps,       community_scope: :all)
+    @survival_time_stats_wins    = calculate_survival_time_stats(user_win_mps,    community_scope: :wins)
+    @survival_time_stats_losses  = calculate_survival_time_stats(user_loss_mps,   community_scope: :losses)
   end
 
   def calc_perf_stats(mps)
@@ -756,17 +763,23 @@ class StatisticsController < ApplicationController
 
   # 生存時間統計を計算する
   # @param user_mps [Array<MatchPlayer>] フィルター済みのユーザー match_player 一覧
+  # @param community_scope [Symbol] :all / :wins / :losses — コミュニティ側の勝敗絞り込み
   # @return [Array<Hash>] ライフ番号ごとの統計配列。survival_times データがない場合は []
-  def calculate_survival_time_stats(user_mps)
+  def calculate_survival_time_stats(user_mps, community_scope: :all)
     # survival_times が存在するものだけ対象
     user_st_mps = user_mps.select { |mp| mp.survival_times.present? }
     return [] if user_st_mps.empty?
 
     # コミュニティデータ（非ゲストかつ survival_times 存在）
-    community_mps = MatchPlayer.joins(:user)
+    community_q = MatchPlayer.joins(:match, :user)
       .where(users: { is_guest: false })
       .where("survival_times IS NOT NULL AND jsonb_array_length(survival_times) > 0")
-      .to_a
+    community_q = case community_scope
+    when :wins   then community_q.where("matches.winning_team = match_players.team_number")
+    when :losses then community_q.where("matches.winning_team != match_players.team_number")
+    else community_q
+    end
+    community_mps = community_q.to_a
 
     # 最大ライフ数を決定（ユーザーとコミュニティ両方から）
     max_lives = [ user_st_mps, community_mps ].flat_map { |mps|
@@ -775,29 +788,53 @@ class StatisticsController < ApplicationController
     return [] if max_lives == 0
 
     max_lives.times.map do |n|
-      # ユーザー側
-      # life n+1 が存在するプレイヤーを対象とする（配列長 >= n+1）
-      mps_with_life = user_st_mps.select { |mp| (mp.survival_times || []).size > n }
-      died_values   = mps_with_life.map  { |mp| mp.survival_times[n] }.compact  # nil = 生存 → 除外
-      survived_count = mps_with_life.count { |mp| mp.survival_times[n].nil? }
+      mps_with_life  = user_st_mps.select    { |mp| (mp.survival_times || []).size > n }
+      comm_with_life = community_mps.select  { |mp| (mp.survival_times || []).size > n }
 
-      user_avg_cs = died_values.any? ? (died_values.sum.to_f / died_values.size).round : nil
+      # 死亡・生存を分離（survival_times.size > deaths なら最終ライフは生存）
+      survived_life = ->(mp, idx) {
+        st = mp.survival_times || []
+        idx == st.size - 1 && st.size > mp.deaths.to_i
+      }
+      user_died_mps     = mps_with_life.reject  { |mp| survived_life.(mp, n) }
+      user_survived_mps = mps_with_life.select  { |mp| survived_life.(mp, n) }
+      comm_died_mps     = comm_with_life.reject  { |mp| survived_life.(mp, n) }
+      comm_survived_mps = comm_with_life.select  { |mp| survived_life.(mp, n) }
 
-      # コミュニティ側: ユーザー別の平均を計算してから avg/min/max を算出
-      community_user_avgs = community_mps.group_by(&:user_id).filter_map do |_uid, mps|
-        vals = mps.filter_map { |mp| (mp.survival_times || [])[n] }
+      # 死亡統計
+      died_values    = user_died_mps.map { |mp| mp.survival_times[n] }
+      died_avg_cs    = died_values.any? ? (died_values.sum.to_f / died_values.size).round : nil
+      died_comm_avgs = comm_died_mps.group_by(&:user_id).filter_map do |_uid, mps|
+        vals = mps.map { |mp| (mp.survival_times || [])[n] }.compact
+        next unless vals.any?
+        (vals.sum.to_f / vals.size).round
+      end
+
+      # 生存統計（全ライフ実時間あり）
+      survived_values    = user_survived_mps.map { |mp| mp.survival_times[n] }
+      survived_avg_cs    = survived_values.any? ? (survived_values.sum.to_f / survived_values.size).round : nil
+      survived_comm_avgs = comm_survived_mps.group_by(&:user_id).filter_map do |_uid, mps|
+        vals = mps.map { |mp| (mp.survival_times || [])[n] }.compact
         next unless vals.any?
         (vals.sum.to_f / vals.size).round
       end
 
       {
-        n:               n + 1,
-        user_count:      died_values.size,
-        survived_count:  survived_count,
-        user_avg_cs:     user_avg_cs,
-        community_avg_cs: community_user_avgs.any? ? (community_user_avgs.sum.to_f / community_user_avgs.size).round : nil,
-        community_min_cs: community_user_avgs.min,
-        community_max_cs: community_user_avgs.max
+        n: n + 1,
+        died: {
+          user_count:       user_died_mps.size,
+          user_avg_cs:      died_avg_cs,
+          community_avg_cs: died_comm_avgs.any? ? (died_comm_avgs.sum.to_f / died_comm_avgs.size).round : nil,
+          community_min_cs: died_comm_avgs.min,
+          community_max_cs: died_comm_avgs.max
+        },
+        survived: {
+          user_count:       user_survived_mps.size,
+          user_avg_cs:      survived_avg_cs,
+          community_avg_cs: survived_comm_avgs.any? ? (survived_comm_avgs.sum.to_f / survived_comm_avgs.size).round : nil,
+          community_min_cs: survived_comm_avgs.min,
+          community_max_cs: survived_comm_avgs.max
+        }
       }
     end
   end
