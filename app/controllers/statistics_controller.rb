@@ -32,6 +32,8 @@ class StatisticsController < ApplicationController
       calculate_opponent_stats
     when "performance"
       calculate_performance_stats
+    when "highlights"
+      calculate_highlights
     end
 
     # フィルター用のデータ
@@ -837,6 +839,87 @@ class StatisticsController < ApplicationController
         }
       }
     end
+  end
+
+  def calculate_highlights
+    base_mps = MatchPlayer.joins(:match, :mobile_suit, :user)
+                          .includes(:match, :mobile_suit, :user, match: :event)
+    base_mps = base_mps.where(matches: { event_id: @filter_events }) if @filter_events.any?
+
+    stats_mps = base_mps.where.not(damage_dealt: nil)
+
+    # 最多ダメージ
+    @highlight_most_damage = stats_mps.order(damage_dealt: :desc).first
+
+    # 最多 EX バーストダメージ
+    @highlight_most_exburst_damage = base_mps.where.not(exburst_damage: nil)
+                                             .order(exburst_damage: :desc).first
+
+    # 最少被ダメージ（勝利プレイヤー単位）
+    @highlight_min_damage_received = MatchPlayer
+      .joins(:match, :mobile_suit, :user)
+      .includes(:match, :mobile_suit, :user, match: :event)
+      .where.not(damage_received: nil)
+      .where("matches.winning_team = match_players.team_number")
+      .then { |q| @filter_events.any? ? q.where(matches: { event_id: @filter_events }) : q }
+      .order(damage_received: :asc)
+      .first
+
+    # 最高スコア
+    @highlight_top_score = base_mps.where.not(score: nil).order(score: :desc).first
+
+    # 最も激しい試合（全プレイヤーの damage_dealt 合計が最大の試合）
+    intense_mps = MatchPlayer.joins(:match)
+      .includes(match: :event)
+      .where.not(damage_dealt: nil)
+    intense_mps = intense_mps.where(matches: { event_id: @filter_events }) if @filter_events.any?
+
+    best_intense = intense_mps.to_a
+      .group_by(&:match_id)
+      .filter_map do |_mid, mps|
+        next if mps.any? { |mp| mp.damage_dealt.nil? }
+        [ mps.sum(&:damage_dealt), mps.first.match ]
+      end
+      .max_by { |total, _| total }
+
+    if best_intense
+      @highlight_most_intense_total = best_intense[0]
+      @highlight_most_intense_match = best_intense[1]
+    end
+
+    # 生存時間: survival_times[0] があるものだけ対象
+    survival_mps = base_mps.where("survival_times IS NOT NULL AND jsonb_array_length(survival_times) > 0")
+
+    loaded_survival = survival_mps.to_a
+
+    # 最長 1 機体目生存時間（死亡・生存問わず）
+    longest_life_mp = loaded_survival.max_by { |mp| (mp.survival_times || [])[0].to_i }
+    @highlight_longest_first_life    = longest_life_mp
+    @highlight_longest_first_life_cs = longest_life_mp ? (longest_life_mp.survival_times || [])[0].to_i : nil
+
+    # 最短 1 機体目生存時間（死亡のみ = survival_times が 2 個以上 OR deaths >= 1）
+    died_on_first = loaded_survival.select do |mp|
+      st = mp.survival_times || []
+      st.size >= 2 || mp.deaths.to_i >= 1
+    end
+    shortest_life_mp = died_on_first.min_by { |mp| (mp.survival_times || [])[0].to_i }
+    @highlight_shortest_first_life    = shortest_life_mp
+    @highlight_shortest_first_life_cs = shortest_life_mp ? (shortest_life_mp.survival_times || [])[0].to_i : nil
+
+    # 試合時間: match_timelines.game_end_cs を使用
+    timelines_q = MatchTimeline.joins(:match)
+                               .includes(match: :event)
+                               .where.not(game_end_cs: nil)
+    timelines_q = timelines_q.where(matches: { event_id: @filter_events }) if @filter_events.any?
+
+    longest_tl  = timelines_q.order(game_end_cs: :desc).first
+    shortest_tl = timelines_q.order(game_end_cs: :asc).first
+
+    @highlight_longest_match    = longest_tl&.match
+    @highlight_longest_match_cs = longest_tl&.game_end_cs
+
+    @highlight_shortest_match    = shortest_tl&.match
+    @highlight_shortest_match_cs = shortest_tl&.game_end_cs
   end
 
   def calculate_overall_stats
