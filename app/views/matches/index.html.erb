@@ -148,16 +148,22 @@
         <div class="mb-4">
           <label class="block text-xs font-medium text-gray-500 mb-1.5">EX条件</label>
           <div class="flex flex-wrap gap-2">
-            <label class="cursor-pointer select-none">
-              <input type="checkbox" name="stat_filters[]" value="ex_leftover_loss"
-                     <%= 'checked' if @filter_stat_filters.include?('ex_leftover_loss') %>
-                     class="peer sr-only">
-              <span class="inline-flex items-center px-3 py-1.5 rounded-full border text-sm font-medium transition-all
-                           border-gray-200 text-gray-400 bg-gray-50 hover:border-gray-300 hover:text-gray-600 hover:bg-gray-100
-                           peer-checked:bg-indigo-600 peer-checked:text-white peer-checked:border-indigo-600 peer-checked:hover:bg-indigo-700">
-                EXバースト残し敗北
-              </span>
-            </label>
+            <% [
+              ["ex_leftover_win",  "EXバーストを使わせず勝利"],
+              ["ex_leftover_loss", "EXバーストを残して敗北"],
+              ["exburst_death",    "EXバースト中被撃墜あり"],
+            ].each do |value, label| %>
+              <label class="cursor-pointer select-none">
+                <input type="checkbox" name="stat_filters[]" value="<%= value %>"
+                       <%= 'checked' if @filter_stat_filters.include?(value) %>
+                       class="peer sr-only">
+                <span class="inline-flex items-center px-3 py-1.5 rounded-full border text-sm font-medium transition-all
+                             border-gray-200 text-gray-400 bg-gray-50 hover:border-gray-300 hover:text-gray-600 hover:bg-gray-100
+                             peer-checked:bg-indigo-600 peer-checked:text-white peer-checked:border-indigo-600 peer-checked:hover:bg-indigo-700">
+                  <%= label %>
+                </span>
+              </label>
+            <% end %>
           </div>
         </div>
 
