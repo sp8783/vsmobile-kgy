@@ -101,14 +101,16 @@ class MatchesController < ApplicationController
     end
 
     # フィルター: ダメージ閾値（以上/以下切り替え対応）
-    if params[:damage_dealt_val].present? && (dealt_val = params[:damage_dealt_val].to_i) > 0
+    if params[:damage_dealt_val].present?
+      dealt_val = params[:damage_dealt_val].to_i
       dealt_op = params[:damage_dealt_dir] == "lte" ? "<=" : ">="
       scope = @matches.joins(:match_players).where("match_players.damage_dealt #{dealt_op} ?", dealt_val)
       scope = scope.where(match_players: { user_id: stat_player_id }) if stat_player_id
       @matches = scope.distinct
     end
 
-    if params[:damage_received_val].present? && (received_val = params[:damage_received_val].to_i) > 0
+    if params[:damage_received_val].present?
+      received_val = params[:damage_received_val].to_i
       received_op = params[:damage_received_dir] == "lte" ? "<=" : ">="
       scope = @matches.joins(:match_players).where("match_players.damage_received #{received_op} ?", received_val)
       scope = scope.where(match_players: { user_id: stat_player_id }) if stat_player_id
