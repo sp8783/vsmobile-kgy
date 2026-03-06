@@ -91,11 +91,36 @@ class MatchesController < ApplicationController
 
     # フィルター: EX条件（チェックボックス）
     stat_filters = Array(params[:stat_filters]).reject(&:blank?)
+
     if stat_filters.include?("ex_leftover_loss")
       scope = @matches.joins(:match_players).where(
         "match_players.team_number != matches.winning_team AND " \
         "(match_players.last_death_ex_available = TRUE OR match_players.survive_loss_ex_available = TRUE)"
       )
+      scope = scope.where(match_players: { user_id: stat_player_id }) if stat_player_id
+      @matches = scope.distinct
+    end
+
+    if stat_filters.include?("ex_leftover_win")
+      # 敗北チームにEXバースト残しプレイヤーがいる試合（= 勝利チームがEXを残させた試合）
+      scope = @matches.where(
+        "EXISTS (SELECT 1 FROM match_players mp WHERE mp.match_id = matches.id " \
+        "AND mp.team_number != matches.winning_team " \
+        "AND (mp.last_death_ex_available = TRUE OR mp.survive_loss_ex_available = TRUE))"
+      )
+      if stat_player_id
+        scope = scope.joins(:match_players).where(
+          "match_players.user_id = ? AND match_players.team_number = matches.winning_team",
+          stat_player_id
+        )
+        @matches = scope.distinct
+      else
+        @matches = scope
+      end
+    end
+
+    if stat_filters.include?("exburst_death")
+      scope = @matches.joins(:match_players).where("match_players.exburst_deaths > 0")
       scope = scope.where(match_players: { user_id: stat_player_id }) if stat_player_id
       @matches = scope.distinct
     end
