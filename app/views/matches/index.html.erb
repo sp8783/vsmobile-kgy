@@ -83,6 +83,40 @@
             <% end %>
           </select>
         </div>
+
+        <!-- 使用機体選択 -->
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <label class="block text-sm font-medium text-gray-700">使用機体</label>
+            <span class="inline-flex rounded border border-gray-200 bg-white text-xs font-medium overflow-hidden">
+              <span class="block px-2 py-1 bg-indigo-600 text-white">OR</span>
+            </span>
+          </div>
+          <select name="mobile_suits[]" id="mobile-suit-filter" multiple class="w-full">
+            <% @all_mobile_suits.each do |suit| %>
+              <option value="<%= suit.id %>" <%= 'selected' if @filter_mobile_suits.include?(suit.id) %>>
+                <%= suit.name %> (<%= suit.cost %>)
+              </option>
+            <% end %>
+          </select>
+        </div>
+      </div>
+
+      <!-- コストフィルター -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">コスト</label>
+        <div class="flex flex-wrap gap-2">
+          <% [3000, 2500, 2000, 1500].each do |cost| %>
+            <label class="cursor-pointer select-none">
+              <input type="checkbox" name="costs[]" value="<%= cost %>"
+                     <%= 'checked' if @filter_costs.include?(cost) %>
+                     class="sr-only">
+              <span class="cost-pill cost-pill-<%= cost %> inline-flex items-center px-3 py-1.5 rounded-full border text-sm font-medium transition-all">
+                <%= cost %>
+              </span>
+            </label>
+          <% end %>
+        </div>
       </div>
 
       <!-- 詳細条件（折りたたみ） -->
@@ -247,13 +281,13 @@
               <span class="px-3 py-1 text-sm font-semibold text-white bg-indigo-600 border border-indigo-600 rounded-lg"><%= label %></span>
             <% else %>
               <%= link_to label,
-                    matches_path(sort: value, per: @per_page, events: params[:events], users: params[:users], users_mode: params[:users_mode], streaming_users: params[:streaming_users], streaming_users_mode: params[:streaming_users_mode], stat_player_id: params[:stat_player_id], ol_filter: params[:ol_filter], stat_filters: params[:stat_filters], damage_dealt_val: params[:damage_dealt_val], damage_dealt_dir: params[:damage_dealt_dir], damage_received_val: params[:damage_received_val], damage_received_dir: params[:damage_received_dir]),
+                    matches_path(sort: value, per: @per_page, events: params[:events], users: params[:users], users_mode: params[:users_mode], streaming_users: params[:streaming_users], streaming_users_mode: params[:streaming_users_mode], mobile_suits: params[:mobile_suits], costs: params[:costs], stat_player_id: params[:stat_player_id], ol_filter: params[:ol_filter], stat_filters: params[:stat_filters], damage_dealt_val: params[:damage_dealt_val], damage_dealt_dir: params[:damage_dealt_dir], damage_received_val: params[:damage_received_val], damage_received_dir: params[:damage_received_dir]),
                     class: "px-3 py-1 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-300 transition" %>
             <% end %>
           <% end %>
         </div>
       </div>
-      <%= render "shared/per_page_selector", per_page: @per_page, url_builder: ->(n) { matches_path(sort: @sort, per: n, events: params[:events], users: params[:users], users_mode: params[:users_mode], streaming_users: params[:streaming_users], streaming_users_mode: params[:streaming_users_mode], stat_player_id: params[:stat_player_id], ol_filter: params[:ol_filter], stat_filters: params[:stat_filters], damage_dealt_val: params[:damage_dealt_val], damage_dealt_dir: params[:damage_dealt_dir], damage_received_val: params[:damage_received_val], damage_received_dir: params[:damage_received_dir]) } %>
+      <%= render "shared/per_page_selector", per_page: @per_page, url_builder: ->(n) { matches_path(sort: @sort, per: n, events: params[:events], users: params[:users], users_mode: params[:users_mode], streaming_users: params[:streaming_users], streaming_users_mode: params[:streaming_users_mode], mobile_suits: params[:mobile_suits], costs: params[:costs], stat_player_id: params[:stat_player_id], ol_filter: params[:ol_filter], stat_filters: params[:stat_filters], damage_dealt_val: params[:damage_dealt_val], damage_dealt_dir: params[:damage_dealt_dir], damage_received_val: params[:damage_received_val], damage_received_dir: params[:damage_received_dir]) } %>
     </div>
     <ul class="divide-y divide-gray-200">
       <% @matches.each do |match| %>
@@ -340,7 +374,7 @@
     <% if @matches.respond_to?(:total_pages) && @matches.total_pages > 1 %>
       <div class="px-4 py-4 flex flex-col items-center gap-4 border-t border-gray-200">
         <%= paginate @matches, params: { per: @per_page, sort: @sort } %>
-        <%= render "shared/per_page_selector", per_page: @per_page, url_builder: ->(n) { matches_path(sort: @sort, per: n, events: params[:events], users: params[:users], users_mode: params[:users_mode], streaming_users: params[:streaming_users], streaming_users_mode: params[:streaming_users_mode], stat_player_id: params[:stat_player_id], ol_filter: params[:ol_filter], stat_filters: params[:stat_filters], damage_dealt_val: params[:damage_dealt_val], damage_dealt_dir: params[:damage_dealt_dir], damage_received_val: params[:damage_received_val], damage_received_dir: params[:damage_received_dir]) } %>
+        <%= render "shared/per_page_selector", per_page: @per_page, url_builder: ->(n) { matches_path(sort: @sort, per: n, events: params[:events], users: params[:users], users_mode: params[:users_mode], streaming_users: params[:streaming_users], streaming_users_mode: params[:streaming_users_mode], mobile_suits: params[:mobile_suits], costs: params[:costs], stat_player_id: params[:stat_player_id], ol_filter: params[:ol_filter], stat_filters: params[:stat_filters], damage_dealt_val: params[:damage_dealt_val], damage_dealt_dir: params[:damage_dealt_dir], damage_received_val: params[:damage_received_val], damage_received_dir: params[:damage_received_dir]) } %>
       </div>
     <% end %>
   </div>
@@ -429,11 +463,12 @@
 <script>
   (function() {
     // TomSelectインスタンスを管理
-    const selectors = ['#event-filter', '#user-filter', '#streaming-user-filter'];
+    const selectors = ['#event-filter', '#user-filter', '#streaming-user-filter', '#mobile-suit-filter'];
     const placeholders = {
       '#event-filter': 'イベントを選択...',
       '#user-filter': '参加ユーザーを選択...',
-      '#streaming-user-filter': '配信台ユーザーを選択...'
+      '#streaming-user-filter': '配信台ユーザーを選択...',
+      '#mobile-suit-filter': '機体を選択...'
     };
 
     function destroyTomSelects() {
@@ -487,4 +522,13 @@
   /* summary デフォルトマーカー非表示 */
   .stat-summary { list-style: none; }
   .stat-summary::-webkit-details-marker { display: none; }
+  /* コストフィルターピル */
+  .cost-pill-3000 { background: #FEE2E2; color: #991B1B; border-color: #FCA5A5; }
+  .cost-pill-2500 { background: #FFEDD5; color: #C2410C; border-color: #FDBA74; }
+  .cost-pill-2000 { background: #FEF9C3; color: #A16207; border-color: #FDE047; }
+  .cost-pill-1500 { background: #DCFCE7; color: #166534; border-color: #86EFAC; }
+  input:checked + .cost-pill-3000 { background: #DC2626; color: white; border-color: #DC2626; }
+  input:checked + .cost-pill-2500 { background: #EA580C; color: white; border-color: #EA580C; }
+  input:checked + .cost-pill-2000 { background: #CA8A04; color: white; border-color: #CA8A04; }
+  input:checked + .cost-pill-1500 { background: #16A34A; color: white; border-color: #16A34A; }
 </style>
