@@ -135,15 +135,54 @@
       </div>
     </div>
   <% else %>
-  <div class="bg-white shadow rounded-lg p-6 mb-6">
-    <h3 class="text-lg font-semibold text-gray-900 mb-4">フィルター</h3>
-    <%= form_with url: statistics_path, method: :get, local: true, class: "space-y-4" do |form| %>
-      <%= hidden_field_tag :tab, @active_tab %>
-        <!-- 個人統計タブ: 全フィルター -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-          <!-- Event Filter -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">イベント</label>
+  <% stat_filter_active_count = @filter_events.size + @filter_mobile_suits.size + @filter_partners.size + @filter_costs.size %>
+  <% if stat_filter_active_count > 0 %>
+    <% stat_cost_chip_colors = { 3000 => 'bg-red-500 text-white border-red-500', 2500 => 'bg-orange-500 text-white border-orange-500', 2000 => 'bg-yellow-400 text-white border-yellow-400', 1500 => 'bg-green-500 text-white border-green-500' } %>
+    <% stat_base_chip = { tab: @active_tab } %>
+    <% stat_chip_url = ->(overrides) { statistics_path(stat_base_chip.merge({ events: @filter_events, mobile_suits: @filter_mobile_suits, partners: @filter_partners, costs: @filter_costs }.merge(overrides))) } %>
+    <% x_svg = '<svg class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>'.html_safe %>
+  <% end %>
+  <details class="group/filter bg-white rounded-xl shadow-sm ring-1 ring-gray-900/5 mb-6">
+    <summary class="filter-summary select-none cursor-pointer flex items-start justify-between gap-3 px-5 py-4 border-b border-transparent group-open/filter:border-gray-100 hover:bg-gray-50/70 transition-colors">
+      <div class="flex flex-wrap items-center gap-x-2.5 gap-y-1.5 flex-1 min-w-0">
+        <div class="flex items-center gap-2 shrink-0">
+          <div class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-500">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z"/>
+            </svg>
+          </div>
+          <span class="text-base font-semibold text-gray-800">フィルター</span>
+        </div>
+        <% if stat_filter_active_count > 0 %>
+          <% @all_events.select { |e| @filter_events.include?(e.id) }.each do |event| %>
+            <span class="filter-chip"><span class="filter-chip-label">イベント: <%= event.name %></span><%= link_to stat_chip_url.call(events: @filter_events - [event.id]), class: "filter-chip-x" do %><%= x_svg %><% end %></span>
+          <% end %>
+          <% @all_mobile_suits.select { |s| @filter_mobile_suits.include?(s.id) }.each do |suit| %>
+            <span class="filter-chip"><span class="filter-chip-label"><%= suit.name %></span><%= link_to stat_chip_url.call(mobile_suits: @filter_mobile_suits - [suit.id]), class: "filter-chip-x" do %><%= x_svg %><% end %></span>
+          <% end %>
+          <% @all_partners.select { |p| @filter_partners.include?(p.id) }.each do |partner| %>
+            <span class="filter-chip"><span class="filter-chip-label">パートナー: <%= partner.nickname %></span><%= link_to stat_chip_url.call(partners: @filter_partners - [partner.id]), class: "filter-chip-x" do %><%= x_svg %><% end %></span>
+          <% end %>
+          <% @filter_costs.each do |cost| %>
+            <span class="inline-flex items-center gap-1 pl-2.5 pr-1 py-0.5 rounded-full text-xs font-semibold border <%= stat_cost_chip_colors[cost] %>">
+              <%= cost %><%= link_to stat_chip_url.call(costs: @filter_costs - [cost]), class: "flex items-center opacity-80 hover:opacity-100 ml-0.5" do %><%= x_svg %><% end %>
+            </span>
+          <% end %>
+          <%= link_to "すべてクリア", statistics_path(tab: @active_tab), class: "text-xs font-medium text-red-400 hover:text-red-600 transition-colors shrink-0" %>
+        <% end %>
+      </div>
+      <svg class="h-4 w-4 text-gray-400 transition-transform duration-200 group-open/filter:rotate-180 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+      </svg>
+    </summary>
+
+    <div class="filter-body px-5 pb-5">
+      <!-- フィルターフォーム -->
+      <%= form_with url: statistics_path, method: :get, local: true, class: "mt-4 space-y-4" do |form| %>
+        <%= hidden_field_tag :tab, @active_tab %>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="space-y-1.5">
+            <label class="text-xs font-semibold text-gray-500 uppercase tracking-wide">イベント</label>
             <select name="events[]" id="event-filter" multiple class="w-full">
               <% @all_events.each do |event| %>
                 <option value="<%= event.id %>" <%= 'selected' if @filter_events.include?(event.id) %>>
@@ -152,22 +191,8 @@
               <% end %>
             </select>
           </div>
-
-          <!-- Mobile Suit Filter -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">使用機体</label>
-            <select name="mobile_suits[]" id="mobile-suit-filter" multiple class="w-full">
-              <% @all_mobile_suits.each do |suit| %>
-                <option value="<%= suit.id %>" <%= 'selected' if @filter_mobile_suits.include?(suit.id) %>>
-                  <%= suit.name %> (<%= suit.cost %>)
-                </option>
-              <% end %>
-            </select>
-          </div>
-
-          <!-- Partner Filter -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">パートナー</label>
+          <div class="space-y-1.5">
+            <label class="text-xs font-semibold text-gray-500 uppercase tracking-wide">パートナー</label>
             <select name="partners[]" id="partner-filter" multiple class="w-full">
               <% @all_partners.each do |partner| %>
                 <option value="<%= partner.id %>" <%= 'selected' if @filter_partners.include?(partner.id) %>>
@@ -178,29 +203,39 @@
           </div>
         </div>
 
-        <!-- Cost Filter -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">コスト</label>
-          <div class="flex flex-wrap gap-2">
+        <!-- 機体・コスト（統合・連動） -->
+        <div class="rounded-xl border border-gray-200 bg-gray-50/40 p-4 space-y-3">
+          <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide">機体・コスト</p>
+          <div class="flex flex-wrap items-center gap-2">
             <% [3000, 2500, 2000, 1500].each do |cost| %>
               <label class="cursor-pointer select-none">
                 <input type="checkbox" name="costs[]" value="<%= cost %>"
                        <%= 'checked' if @filter_costs.include?(cost) %>
-                       class="sr-only">
-                <span class="cost-pill cost-pill-<%= cost %> inline-flex items-center px-3 py-1.5 rounded-full border text-sm font-medium transition-all">
+                       class="sr-only stat-cost-filter-cb">
+                <span class="cost-pill cost-pill-<%= cost %> inline-flex items-center px-3 py-1.5 rounded-full border text-sm font-semibold transition-all shadow-sm">
                   <%= cost %>
                 </span>
               </label>
             <% end %>
+            <span class="text-xs text-gray-400 ml-1">コストを選ぶと機体リストが絞り込まれます</span>
           </div>
+          <select name="mobile_suits[]" id="mobile-suit-filter" multiple class="w-full">
+            <% @all_mobile_suits.each do |suit| %>
+              <option value="<%= suit.id %>" data-cost="<%= suit.cost %>" <%= 'selected' if @filter_mobile_suits.include?(suit.id) %>>
+                <%= suit.name %> (<%= suit.cost %>)
+              </option>
+            <% end %>
+          </select>
         </div>
 
-      <div class="flex space-x-3">
-        <%= form.submit "適用", class: "bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded" %>
-        <%= link_to "クリア", statistics_path(tab: @active_tab), class: "bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded" %>
-      </div>
-    <% end %>
-  </div>
+        <div class="flex items-center justify-end gap-3 pt-2 border-t border-gray-100">
+          <%= link_to "クリア", statistics_path(tab: @active_tab), class: "px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors" %>
+          <%= form.submit "適用", class: "px-5 py-2 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 rounded-lg shadow-sm transition-colors cursor-pointer" %>
+        </div>
+      <% end %>
+    </div>
+  </details>
+
   <% end %>
 
   <!-- Tab Content -->
@@ -1722,6 +1757,17 @@
       });
     }
 
+    // TomSelect 初期化前に機体オプションを全件キャプチャ
+    let allStatSuitOptions = [];
+    const statNativeSelect = document.querySelector('#mobile-suit-filter');
+    if (statNativeSelect) {
+      allStatSuitOptions = Array.from(statNativeSelect.options).map(opt => ({
+        value: opt.value,
+        text: opt.text,
+        cost: parseInt(opt.dataset.cost)
+      }));
+    }
+
     function initTomSelects() {
       tomSelectSelectors.forEach(selector => {
         const element = document.querySelector(selector);
@@ -1729,10 +1775,36 @@
           new TomSelect(selector, {
             plugins: ['remove_button'],
             placeholder: placeholders[selector],
-            maxOptions: null
+            maxOptions: null,
+            dropdownParent: 'body'
           });
         }
       });
+      syncStatSuitsToSelectedCosts();
+      document.querySelectorAll('.stat-cost-filter-cb').forEach(cb => {
+        cb.removeEventListener('change', syncStatSuitsToSelectedCosts);
+        cb.addEventListener('change', syncStatSuitsToSelectedCosts);
+      });
+    }
+
+    function syncStatSuitsToSelectedCosts() {
+      const ts = document.querySelector('#mobile-suit-filter')?.tomselect;
+      if (!ts || allStatSuitOptions.length === 0) return;
+
+      const selectedCosts = Array.from(document.querySelectorAll('.stat-cost-filter-cb:checked'))
+        .map(cb => parseInt(cb.value));
+
+      const visible = selectedCosts.length === 0
+        ? allStatSuitOptions
+        : allStatSuitOptions.filter(o => selectedCosts.includes(o.cost));
+
+      const visibleValues = new Set(visible.map(o => String(o.value)));
+      const current = [].concat(ts.getValue()).filter(Boolean);
+      current.forEach(v => { if (!visibleValues.has(String(v))) ts.removeItem(v, true); });
+
+      ts.clearOptions();
+      visible.forEach(o => ts.addOption({ value: String(o.value), text: o.text }));
+      ts.refreshOptions(false);
     }
 
     // Turboキャッシュ前にTomSelectを破棄
@@ -1936,13 +2008,34 @@
       gap: 1.5rem;
     }
   }
-  /* コストフィルターピル */
+  /* summary マーカー非表示 */
+  .filter-summary { list-style: none; }
+  .filter-summary::-webkit-details-marker { display: none; }
+  /* フィルターパネル開閉アニメーション */
+  details.group\/filter > .filter-body { animation: filterSlideIn 160ms ease-out; }
+  @keyframes filterSlideIn {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  /* アクティブフィルターチップ */
+  .filter-chip {
+    display: inline-flex; align-items: center; gap: 2px;
+    padding: 0.2rem 0.25rem 0.2rem 0.6rem;
+    border-radius: 9999px; font-size: 0.7rem; font-weight: 500;
+    background: white; border: 1px solid #c7d2fe; color: #4338ca;
+    box-shadow: 0 1px 2px rgba(0,0,0,.06);
+  }
+  .filter-chip-label { white-space: nowrap; }
+  .filter-chip-x { display: flex; align-items: center; color: #a5b4fc; transition: color .15s; }
+  .filter-chip-x:hover { color: #4338ca; }
+  /* コストフィルターピル（未選択） */
   .cost-pill-3000 { background: #FEE2E2; color: #991B1B; border-color: #FCA5A5; }
   .cost-pill-2500 { background: #FFEDD5; color: #C2410C; border-color: #FDBA74; }
   .cost-pill-2000 { background: #FEF9C3; color: #A16207; border-color: #FDE047; }
   .cost-pill-1500 { background: #DCFCE7; color: #166534; border-color: #86EFAC; }
-  input:checked + .cost-pill-3000 { background: #DC2626; color: white; border-color: #DC2626; }
-  input:checked + .cost-pill-2500 { background: #EA580C; color: white; border-color: #EA580C; }
-  input:checked + .cost-pill-2000 { background: #CA8A04; color: white; border-color: #CA8A04; }
-  input:checked + .cost-pill-1500 { background: #16A34A; color: white; border-color: #16A34A; }
+  /* コストフィルターピル（選択済）＋リングハイライト */
+  input:checked + .cost-pill-3000 { background: #DC2626; color: white; border-color: #DC2626; box-shadow: 0 0 0 3px #fecaca; }
+  input:checked + .cost-pill-2500 { background: #EA580C; color: white; border-color: #EA580C; box-shadow: 0 0 0 3px #fed7aa; }
+  input:checked + .cost-pill-2000 { background: #CA8A04; color: white; border-color: #CA8A04; box-shadow: 0 0 0 3px #fef08a; }
+  input:checked + .cost-pill-1500 { background: #16A34A; color: white; border-color: #16A34A; box-shadow: 0 0 0 3px #bbf7d0; }
 </style>
