@@ -211,22 +211,30 @@
     <!-- Overview Tab -->
     <div class="space-y-6">
       <!-- Summary Cards -->
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
-        <div class="bg-white rounded-lg shadow p-4 sm:p-6">
-          <div class="text-xs sm:text-sm font-medium text-gray-500">総試合数</div>
-          <div class="mt-1 sm:mt-2 text-2xl sm:text-3xl font-bold text-blue-600"><%= @total_matches %></div>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-5">
+        <div class="relative overflow-hidden bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl p-4 sm:p-5 text-white shadow-md">
+          <div class="absolute -right-4 -top-4 w-20 h-20 bg-white/10 rounded-full"></div>
+          <div class="absolute -right-2 -bottom-5 w-14 h-14 bg-white/5 rounded-full"></div>
+          <p class="text-indigo-100 text-xs sm:text-sm font-medium relative">総試合数</p>
+          <p class="mt-1 text-3xl sm:text-4xl font-bold tabular-nums relative"><%= @total_matches %></p>
         </div>
-        <div class="bg-white rounded-lg shadow p-4 sm:p-6">
-          <div class="text-xs sm:text-sm font-medium text-gray-500">勝利数</div>
-          <div class="mt-1 sm:mt-2 text-2xl sm:text-3xl font-bold text-green-600"><%= @total_wins %></div>
+        <div class="relative overflow-hidden bg-gradient-to-br from-emerald-500 to-green-600 rounded-xl p-4 sm:p-5 text-white shadow-md">
+          <div class="absolute -right-4 -top-4 w-20 h-20 bg-white/10 rounded-full"></div>
+          <div class="absolute -right-2 -bottom-5 w-14 h-14 bg-white/5 rounded-full"></div>
+          <p class="text-green-100 text-xs sm:text-sm font-medium relative">勝利数</p>
+          <p class="mt-1 text-3xl sm:text-4xl font-bold tabular-nums relative"><%= @total_wins %></p>
         </div>
-        <div class="bg-white rounded-lg shadow p-4 sm:p-6">
-          <div class="text-xs sm:text-sm font-medium text-gray-500">勝率</div>
-          <div class="mt-1 sm:mt-2 text-2xl sm:text-3xl font-bold text-purple-600"><%= @win_rate %>%</div>
+        <div class="relative overflow-hidden bg-gradient-to-br from-violet-500 to-purple-600 rounded-xl p-4 sm:p-5 text-white shadow-md">
+          <div class="absolute -right-4 -top-4 w-20 h-20 bg-white/10 rounded-full"></div>
+          <div class="absolute -right-2 -bottom-5 w-14 h-14 bg-white/5 rounded-full"></div>
+          <p class="text-purple-100 text-xs sm:text-sm font-medium relative">勝率</p>
+          <p class="mt-1 text-3xl sm:text-4xl font-bold tabular-nums relative"><%= @win_rate %>%</p>
         </div>
-        <div class="bg-white rounded-lg shadow p-4 sm:p-6">
-          <div class="text-xs sm:text-sm font-medium text-gray-500">最多連勝</div>
-          <div class="mt-1 sm:mt-2 text-2xl sm:text-3xl font-bold text-orange-600"><%= @max_winning_streak %></div>
+        <div class="relative overflow-hidden bg-gradient-to-br from-orange-500 to-amber-600 rounded-xl p-4 sm:p-5 text-white shadow-md">
+          <div class="absolute -right-4 -top-4 w-20 h-20 bg-white/10 rounded-full"></div>
+          <div class="absolute -right-2 -bottom-5 w-14 h-14 bg-white/5 rounded-full"></div>
+          <p class="text-orange-100 text-xs sm:text-sm font-medium relative">最多連勝</p>
+          <p class="mt-1 text-3xl sm:text-4xl font-bold tabular-nums relative"><%= @max_winning_streak %></p>
         </div>
       </div>
 
@@ -980,18 +988,24 @@
     <!-- Overall Statistics Tab -->
     <div class="space-y-6">
       <!-- 全体サマリー -->
-      <div class="overall-summary-grid gap-4">
-        <div class="bg-white rounded-lg shadow p-4 sm:p-6">
-          <div class="text-xs sm:text-sm font-medium text-gray-500">総試合数</div>
-          <div class="mt-1 sm:mt-2 text-2xl sm:text-3xl font-bold text-blue-600"><%= @overall_total_matches %></div>
+      <div class="overall-summary-grid gap-3 sm:gap-5">
+        <div class="relative overflow-hidden bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl p-4 sm:p-5 text-white shadow-md">
+          <div class="absolute -right-4 -top-4 w-20 h-20 bg-white/10 rounded-full"></div>
+          <div class="absolute -right-2 -bottom-5 w-14 h-14 bg-white/5 rounded-full"></div>
+          <p class="text-indigo-100 text-xs sm:text-sm font-medium relative">総試合数</p>
+          <p class="mt-1 text-3xl sm:text-4xl font-bold tabular-nums relative"><%= @overall_total_matches %></p>
         </div>
-        <div class="bg-white rounded-lg shadow p-4 sm:p-6">
-          <div class="text-xs sm:text-sm font-medium text-gray-500">参加プレイヤー数</div>
-          <div class="mt-1 sm:mt-2 text-2xl sm:text-3xl font-bold text-green-600"><%= @overall_total_players %></div>
+        <div class="relative overflow-hidden bg-gradient-to-br from-emerald-500 to-green-600 rounded-xl p-4 sm:p-5 text-white shadow-md">
+          <div class="absolute -right-4 -top-4 w-20 h-20 bg-white/10 rounded-full"></div>
+          <div class="absolute -right-2 -bottom-5 w-14 h-14 bg-white/5 rounded-full"></div>
+          <p class="text-green-100 text-xs sm:text-sm font-medium relative">参加プレイヤー数</p>
+          <p class="mt-1 text-3xl sm:text-4xl font-bold tabular-nums relative"><%= @overall_total_players %></p>
         </div>
-        <div class="bg-white rounded-lg shadow p-4 sm:p-6">
-          <div class="text-xs sm:text-sm font-medium text-gray-500">開催イベント数</div>
-          <div class="mt-1 sm:mt-2 text-2xl sm:text-3xl font-bold text-purple-600"><%= @overall_total_events %></div>
+        <div class="relative overflow-hidden bg-gradient-to-br from-violet-500 to-purple-600 rounded-xl p-4 sm:p-5 text-white shadow-md">
+          <div class="absolute -right-4 -top-4 w-20 h-20 bg-white/10 rounded-full"></div>
+          <div class="absolute -right-2 -bottom-5 w-14 h-14 bg-white/5 rounded-full"></div>
+          <p class="text-purple-100 text-xs sm:text-sm font-medium relative">開催イベント数</p>
+          <p class="mt-1 text-3xl sm:text-4xl font-bold tabular-nums relative"><%= @overall_total_events %></p>
         </div>
       </div>
 
