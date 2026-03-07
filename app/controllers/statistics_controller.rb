@@ -39,7 +39,16 @@ class StatisticsController < ApplicationController
     # フィルター用のデータ
     @all_events = Event.order(held_on: :desc)
     @all_mobile_suits = MobileSuit.order(:name)
-    @all_partners = User.regular_users.where.not(id: viewing_as_user.id).order(:nickname)
+    all_partners = User.regular_users.where.not(id: viewing_as_user.id).order(:nickname)
+    if @filter_events.any?
+      partner_ids_in_events = MatchPlayer.joins(:match)
+                                         .where(matches: { event_id: @filter_events })
+                                         .where.not(user_id: viewing_as_user.id)
+                                         .distinct
+                                         .pluck(:user_id)
+      all_partners = all_partners.where(id: partner_ids_in_events)
+    end
+    @all_partners = all_partners
   end
 
   private
