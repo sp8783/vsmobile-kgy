@@ -1458,10 +1458,51 @@
       </div>
 
       <!-- セクション3: 基本パフォーマンス統計 -->
-      <div class="bg-white rounded-lg shadow">
-        <div class="px-6 py-5 border-b border-gray-200">
-          <h3 class="text-lg font-semibold text-gray-900">基本パフォーマンス統計</h3>
-          <p class="mt-1 text-sm text-gray-500">試合ごとのスコアやダメージ等の平均値を確認できます</p>
+      <div class="bg-white rounded-lg shadow" id="perf-stats-section">
+        <div class="px-6 py-5 border-b border-gray-200 flex items-start justify-between gap-4 flex-wrap">
+          <div>
+            <h3 class="text-lg font-semibold text-gray-900">基本パフォーマンス統計</h3>
+            <p class="mt-1 text-sm text-gray-500">試合ごとのスコアやダメージ等の平均値を確認できます</p>
+          </div>
+          <% if @user_overall_avg %>
+            <div class="flex items-center gap-1 bg-gray-100 rounded-lg p-1 text-sm shrink-0 flex-wrap">
+              <button type="button" id="perf-community-btn"
+                      onclick="setPerfComparisonMode('community')"
+                      class="px-3 py-1.5 rounded-md font-medium transition-colors bg-white text-gray-700 shadow-sm">
+                コミュニティ比較
+              </button>
+              <button type="button" id="perf-self-btn"
+                      onclick="setPerfComparisonMode('self-overall')"
+                      class="px-3 py-1.5 rounded-md font-medium transition-colors text-gray-400">
+                自分の全体平均
+              </button>
+              <% if @user_same_cost_avg %>
+                <button type="button" id="perf-same-cost-btn"
+                        onclick="setPerfComparisonMode('same-cost')"
+                        class="px-3 py-1.5 rounded-md font-medium transition-colors text-gray-400">
+                  自分の<%= @same_cost_label %>平均
+                </button>
+              <% end %>
+            </div>
+            <script>
+              function setPerfComparisonMode(mode) {
+                const section = document.getElementById('perf-stats-section');
+                ['community', 'self-overall', 'same-cost'].forEach(function(col) {
+                  section.querySelectorAll("[data-perf-col='" + col + "']").forEach(function(el) {
+                    el.classList.toggle('hidden', mode !== col);
+                  });
+                });
+                const btnIds = { 'community': 'perf-community-btn', 'self-overall': 'perf-self-btn', 'same-cost': 'perf-same-cost-btn' };
+                Object.values(btnIds).forEach(function(id) {
+                  const btn = document.getElementById(id);
+                  if (btn) btn.className = 'px-3 py-1.5 rounded-md font-medium transition-colors text-gray-400';
+                });
+                const activeId = btnIds[mode];
+                const activeBtn = activeId ? document.getElementById(activeId) : null;
+                if (activeBtn) activeBtn.className = 'px-3 py-1.5 rounded-md font-medium transition-colors bg-white text-gray-700 shadow-sm';
+              }
+            </script>
+          <% end %>
         </div>
         <% if @stats_total.to_i > 0 %>
           <div class="overflow-x-auto">
@@ -1489,15 +1530,21 @@
                   <th class="px-6 py-2 text-center text-xs font-medium text-gray-500 whitespace-nowrap border-l-2 border-indigo-300">
                     値<br><span class="font-normal text-gray-400"><%= @stats_total %>試合</span>
                   </th>
-                  <th class="px-6 py-2 text-center text-xs font-medium text-gray-400 whitespace-nowrap"><%= render "statistics/community_distribution_header" %></th>
+                  <th data-perf-col="community" class="px-6 py-2 text-center text-xs font-medium text-gray-400 whitespace-nowrap"><%= render "statistics/community_distribution_header" %></th>
+                  <% if @user_overall_avg %><th data-perf-col="self-overall" class="hidden px-6 py-2 text-center text-xs font-medium text-gray-400 whitespace-nowrap">自分の全体平均</th><% end %>
+                  <% if @user_same_cost_avg %><th data-perf-col="same-cost" class="hidden px-6 py-2 text-center text-xs font-medium text-gray-400 whitespace-nowrap"><%= @same_cost_label %>平均</th><% end %>
                   <th class="px-6 py-2 text-center text-xs font-medium text-gray-500 whitespace-nowrap border-l-2 border-green-300">
                     値<br><span class="font-normal text-gray-400"><%= @stats_wins %>試合</span>
                   </th>
-                  <th class="px-6 py-2 text-center text-xs font-medium text-gray-400 whitespace-nowrap"><%= render "statistics/community_distribution_header" %></th>
+                  <th data-perf-col="community" class="px-6 py-2 text-center text-xs font-medium text-gray-400 whitespace-nowrap"><%= render "statistics/community_distribution_header" %></th>
+                  <% if @user_overall_avg %><th data-perf-col="self-overall" class="hidden px-6 py-2 text-center text-xs font-medium text-gray-400 whitespace-nowrap">自分の全体平均</th><% end %>
+                  <% if @user_same_cost_avg %><th data-perf-col="same-cost" class="hidden px-6 py-2 text-center text-xs font-medium text-gray-400 whitespace-nowrap"><%= @same_cost_label %>平均</th><% end %>
                   <th class="px-6 py-2 text-center text-xs font-medium text-gray-500 whitespace-nowrap border-l-2 border-red-300">
                     値<br><span class="font-normal text-gray-400"><%= @stats_losses %>試合</span>
                   </th>
-                  <th class="px-6 py-2 text-center text-xs font-medium text-gray-400 whitespace-nowrap"><%= render "statistics/community_distribution_header" %></th>
+                  <th data-perf-col="community" class="px-6 py-2 text-center text-xs font-medium text-gray-400 whitespace-nowrap"><%= render "statistics/community_distribution_header" %></th>
+                  <% if @user_overall_avg %><th data-perf-col="self-overall" class="hidden px-6 py-2 text-center text-xs font-medium text-gray-400 whitespace-nowrap">自分の全体平均</th><% end %>
+                  <% if @user_same_cost_avg %><th data-perf-col="same-cost" class="hidden px-6 py-2 text-center text-xs font-medium text-gray-400 whitespace-nowrap"><%= @same_cost_label %>平均</th><% end %>
                 </tr>
               </thead>
               <tbody class="bg-white divide-y divide-gray-100">
@@ -1538,21 +1585,27 @@
                 <%
                   perf_columns = [
                     { perf: @performance_overall, color: "text-indigo-600", border: "border-l-2 border-indigo-300",
-                      c_avg: @community_avg,        c_min: @community_min,        c_max: @community_max },
+                      c_avg: @community_avg,        c_min: @community_min,        c_max: @community_max,
+                      self_overall: @user_overall_avg, self_same_cost: @user_same_cost_avg },
                     { perf: @performance_wins,    color: "text-green-600",  border: "border-l-2 border-green-300",
-                      c_avg: @community_wins_avg,   c_min: @community_wins_min,   c_max: @community_wins_max },
+                      c_avg: @community_wins_avg,   c_min: @community_wins_min,   c_max: @community_wins_max,
+                      self_overall: @user_overall_wins, self_same_cost: @user_same_cost_wins },
                     { perf: @performance_losses,  color: "text-red-600",    border: "border-l-2 border-red-300",
-                      c_avg: @community_losses_avg, c_min: @community_losses_min, c_max: @community_losses_max },
+                      c_avg: @community_losses_avg, c_min: @community_losses_min, c_max: @community_losses_max,
+                      self_overall: @user_overall_losses, self_same_cost: @user_same_cost_losses },
                   ]
+                  extra_cols = (@user_overall_avg ? 1 : 0) + (@user_same_cost_avg ? 1 : 0)
+                  perf_col_count = 1 + (perf_columns.size * (2 + extra_cols))
                 %>
                 <% perf_groups.each do |group| %>
                   <tr class="bg-gray-50">
-                    <td colspan="7" class="px-6 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider"><%= group[:label] %></td>
+                    <td colspan="<%= perf_col_count %>" class="px-6 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider"><%= group[:label] %></td>
                   </tr>
                   <% group[:rows].each do |row| %>
                     <tr class="hover:bg-gray-50">
                       <td class="px-6 py-4 text-sm text-gray-700 pl-8"><%= row[:label] %></td>
                       <% perf_columns.each do |col| %>
+                        <%# ユーザー値セル %>
                         <td class="px-6 py-4 text-center text-sm font-semibold <%= col[:color] %> <%= col[:border] %>">
                           <% if col[:perf].nil? %>
                             <span class="text-gray-300 font-normal">-</span>
@@ -1562,7 +1615,8 @@
                             <%= "#{col[:perf][row[:key]]}#{row[:suffix]}" %>
                           <% end %>
                         </td>
-                        <td class="px-6 py-4 text-center">
+                        <%# コミュニティ比較セル %>
+                        <td data-perf-col="community" class="px-6 py-4 text-center">
                           <% if col[:c_avg].nil? %>
                             <span class="text-gray-300">-</span>
                           <% else %>
@@ -1597,6 +1651,39 @@
                             <% end %>
                           <% end %>
                         </td>
+                        <%# 自己比較セル共通ヘルパー: self_overall / same_cost %>
+                        <% [
+                             { key_sym: :self_overall,  col_id: "self-overall", ref: @user_overall_avg },
+                             { key_sym: :self_same_cost, col_id: "same-cost",   ref: @user_same_cost_avg },
+                           ].each do |cmp| %>
+                          <% next unless cmp[:ref] %>
+                          <%
+                            cmp_val  = col[cmp[:key_sym]]&.[](row[:key])
+                            user_val = col[:perf]&.[](row[:key])
+                          %>
+                          <td data-perf-col="<%= cmp[:col_id] %>" class="hidden px-6 py-4 text-center">
+                            <% if cmp_val.nil? %>
+                              <span class="text-gray-300">-</span>
+                            <% elsif row[:na_if_nil] && cmp_val.nil? %>
+                              <span class="text-gray-400 text-xs">N/A</span>
+                            <% else %>
+                              <div class="text-sm text-gray-600 font-medium"><%= "#{cmp_val}#{row[:suffix]}" %></div>
+                              <% if user_val %>
+                                <%
+                                  diff = (user_val.to_f - cmp_val.to_f).round(2)
+                                  good = row[:higher_is_better] ? diff >= 0 : diff <= 0
+                                  sign = diff >= 0 ? "+" : ""
+                                  diff_label = "#{sign}#{diff}"
+                                %>
+                                <% unless diff.abs < 0.005 %>
+                                  <span class="inline-block mt-1 px-1.5 py-0.5 rounded text-xs font-semibold <%= good ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' %>">
+                                    <%= diff_label %><%= row[:suffix] %>
+                                  </span>
+                                <% end %>
+                              <% end %>
+                            <% end %>
+                          </td>
+                        <% end %>
                       <% end %>
                     </tr>
                   <% end %>
@@ -1605,7 +1692,7 @@
                 <%# 生存時間グループ — 動的行数のため perf_groups とは別に描画 %>
                 <% if @survival_time_stats.present? %>
                   <tr class="bg-gray-50">
-                    <td colspan="7" class="px-6 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    <td colspan="<%= perf_col_count %>" class="px-6 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                       <span class="inline-flex items-center gap-1.5">
                         生存時間
                         <span data-controller="tooltip"
@@ -1643,7 +1730,7 @@
                   <% st_max_n.times do |i| %>
                     <%# n機体目 区切り行 %>
                     <tr class="bg-gray-50/50">
-                      <td colspan="7" class="px-6 py-1.5 text-xs font-medium text-gray-400 pl-10">
+                      <td colspan="<%= perf_col_count %>" class="px-6 py-1.5 text-xs font-medium text-gray-400 pl-10">
                         <%= i + 1 %>機体目
                       </td>
                     </tr>

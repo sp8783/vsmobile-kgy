@@ -548,6 +548,34 @@ class StatisticsController < ApplicationController
     win_mps  = stats_mps.select { |mp| mp.match.winning_team == mp.team_number }
     loss_mps = stats_mps.reject { |mp| mp.match.winning_team == mp.team_number }
 
+    # 機体/コストフィルター適用時: フィルターなしの自分の全体平均・同コスト帯平均を算出（比較用）
+    if @filter_mobile_suits.any? || @filter_costs.any?
+      all_user_mps = MatchPlayer.where(user_id: viewing_as_user.id)
+                                .joins(:match)
+                                .includes(:match, :mobile_suit, :user, match: { rotation_match: :rotation })
+      all_user_mps = all_user_mps.where(matches: { event_id: @filter_events }) if @filter_events.any?
+
+      all_stats = all_user_mps.to_a.select(&:has_stats?)
+      @user_overall_avg    = calc_perf_stats(all_stats)
+      @user_overall_wins   = calc_perf_stats(all_stats.select { |mp| mp.match.winning_team == mp.team_number })
+      @user_overall_losses = calc_perf_stats(all_stats.reject { |mp| mp.match.winning_team == mp.team_number })
+
+      # 同コスト帯平均: 機体フィルター時は絞った機体のコストを使用、コストフィルター時はそのコストを使用
+      same_costs = if @filter_mobile_suits.any?
+        MobileSuit.where(id: @filter_mobile_suits).pluck(:cost).uniq
+      else
+        @filter_costs
+      end
+      same_cost_stats = all_stats.select { |mp| same_costs.include?(mp.mobile_suit.cost) }
+      # 絞り込み済みデータと実質同一になる場合（例: コストのみフィルター）は表示しない
+      if same_cost_stats.size != stats_mps.select(&:has_stats?).size
+        @user_same_cost_avg    = calc_perf_stats(same_cost_stats)
+        @user_same_cost_wins   = calc_perf_stats(same_cost_stats.select { |mp| mp.match.winning_team == mp.team_number })
+        @user_same_cost_losses = calc_perf_stats(same_cost_stats.reject { |mp| mp.match.winning_team == mp.team_number })
+        @same_cost_label = same_costs.sort.reverse.map { |c| "#{c}" }.join("・") + "コスト"
+      end
+    end
+
     # by_user.each ループ内で win_mps/loss_mps が上書きされるため先に退避する
     user_win_mps  = win_mps
     user_loss_mps = loss_mps
