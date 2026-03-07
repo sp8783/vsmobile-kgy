@@ -1461,7 +1461,33 @@
       <div class="bg-white rounded-lg shadow" id="perf-stats-section">
         <div class="px-6 py-5 border-b border-gray-200 flex items-start justify-between gap-4 flex-wrap">
           <div>
-            <h3 class="text-lg font-semibold text-gray-900">基本パフォーマンス統計</h3>
+            <span class="inline-flex items-center gap-1.5">
+              <h3 class="text-lg font-semibold text-gray-900">基本パフォーマンス統計</h3>
+              <span data-controller="tooltip"
+                    data-action="mouseenter->tooltip#show mouseleave->tooltip#hide">
+                <button type="button"
+                        class="text-gray-400 hover:text-gray-600 focus:outline-none cursor-help"
+                        data-action="click->tooltip#toggle"
+                        aria-label="各列の説明">
+                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                  </svg>
+                </button>
+                <div data-tooltip-target="content"
+                     class="hidden z-50 w-80 bg-gray-900 text-white text-xs rounded-lg shadow-xl p-3
+                            text-left font-normal normal-case tracking-normal pointer-events-none">
+                  <p class="font-semibold text-white mb-2">各列について</p>
+                  <ul class="text-gray-300 space-y-2">
+                    <li><span class="text-white font-semibold">あなたの値：</span>現在のフィルター条件を適用した自分の試合の平均</li>
+                    <li><span class="text-white font-semibold">コミュニティ比較：</span>フィルターに関係なく、コミュニティ全員の全試合の平均・分布</li>
+                    <li><span class="text-white font-semibold">自分の全体平均：</span>フィルターに関係なく、自分の全試合の平均</li>
+                    <li><span class="text-white font-semibold">同コスト帯平均：</span>フィルターに関係なく、自分が同コスト帯の機体を使った試合の平均</li>
+                  </ul>
+                  <p class="text-gray-400 mt-2 text-[10px]">※ 機体またはコストフィルター適用時に全体平均・同コスト帯平均との比較が表示されます</p>
+                  <div class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+                </div>
+              </span>
+            </span>
             <p class="mt-1 text-sm text-gray-500">試合ごとのスコアやダメージ等の平均値を確認できます</p>
           </div>
           <% if @user_overall_avg %>
