@@ -1239,29 +1239,105 @@
     <div class="space-y-6">
 
       <!-- サマリーカード -->
-      <div class="grid grid-cols-3 gap-4 sm:gap-6">
-        <div class="bg-white rounded-lg shadow p-4 sm:p-6">
-          <div class="text-xs sm:text-sm font-medium text-gray-500">統計データあり試合</div>
-          <div class="mt-1 sm:mt-2 text-2xl sm:text-3xl font-bold text-indigo-600"><%= @stats_total %></div>
+      <div class="grid grid-cols-3 gap-3 sm:gap-5">
+        <div class="relative overflow-hidden bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl p-4 sm:p-5 text-white shadow-md">
+          <div class="absolute -right-4 -top-4 w-20 h-20 bg-white/10 rounded-full"></div>
+          <div class="absolute -right-2 -bottom-5 w-14 h-14 bg-white/5 rounded-full"></div>
+          <p class="text-indigo-100 text-xs sm:text-sm font-medium relative">総試合数</p>
+          <p class="mt-1 text-3xl sm:text-4xl font-bold tabular-nums relative"><%= @stats_total %></p>
+          <p class="mt-1 text-indigo-200 text-xs relative">統計あり</p>
         </div>
-        <div class="bg-white rounded-lg shadow p-4 sm:p-6">
-          <div class="text-xs sm:text-sm font-medium text-gray-500">勝利</div>
-          <div class="mt-1 sm:mt-2 text-2xl sm:text-3xl font-bold text-green-600"><%= @stats_wins %></div>
+        <div class="relative overflow-hidden bg-gradient-to-br from-emerald-500 to-green-600 rounded-xl p-4 sm:p-5 text-white shadow-md">
+          <div class="absolute -right-4 -top-4 w-20 h-20 bg-white/10 rounded-full"></div>
+          <div class="absolute -right-2 -bottom-5 w-14 h-14 bg-white/5 rounded-full"></div>
+          <p class="text-green-100 text-xs sm:text-sm font-medium relative">勝利</p>
+          <p class="mt-1 text-3xl sm:text-4xl font-bold tabular-nums relative"><%= @stats_wins %></p>
+          <% win_pct = @stats_total.to_i > 0 ? (@stats_wins * 100.0 / @stats_total).round(1) : 0 %>
+          <p class="mt-1 text-green-200 text-xs relative">勝率 <%= win_pct %>%</p>
         </div>
-        <div class="bg-white rounded-lg shadow p-4 sm:p-6">
-          <div class="text-xs sm:text-sm font-medium text-gray-500">敗北</div>
-          <div class="mt-1 sm:mt-2 text-2xl sm:text-3xl font-bold text-red-600"><%= @stats_losses %></div>
+        <div class="relative overflow-hidden bg-gradient-to-br from-rose-500 to-red-600 rounded-xl p-4 sm:p-5 text-white shadow-md">
+          <div class="absolute -right-4 -top-4 w-20 h-20 bg-white/10 rounded-full"></div>
+          <div class="absolute -right-2 -bottom-5 w-14 h-14 bg-white/5 rounded-full"></div>
+          <p class="text-red-100 text-xs sm:text-sm font-medium relative">敗北</p>
+          <p class="mt-1 text-3xl sm:text-4xl font-bold tabular-nums relative"><%= @stats_losses %></p>
+          <% loss_pct = @stats_total.to_i > 0 ? (@stats_losses * 100.0 / @stats_total).round(1) : 0 %>
+          <p class="mt-1 text-red-200 text-xs relative">敗率 <%= loss_pct %>%</p>
         </div>
       </div>
 
       <!-- セクション1 & 2: 2カラムレイアウト -->
+      <div id="ex-analysis-section">
+      <% if @user_overall_avg %>
+        <div class="flex flex-wrap justify-end items-start gap-3 mb-4">
+          <div class="flex flex-col items-end gap-1.5 shrink-0">
+            <div class="flex items-center gap-2">
+              <span class="text-[11px] font-medium text-gray-400">比較対象</span>
+              <div class="flex rounded-xl bg-gray-100 p-0.5 gap-0.5">
+                <button type="button" id="ex-community-btn"
+                        onclick="setExComparisonMode('community')"
+                        class="px-3.5 py-1.5 rounded-lg text-sm font-semibold transition-all bg-white text-gray-800 shadow-sm">
+                  コミュニティ全体
+                </button>
+                <button type="button" id="ex-self-group-btn"
+                        onclick="setExComparisonMode('self-overall')"
+                        class="px-3.5 py-1.5 rounded-lg text-sm font-semibold transition-all text-gray-400 hover:text-gray-600">
+                  自分
+                </button>
+              </div>
+            </div>
+            <% if @user_same_cost_avg %>
+              <div id="ex-cost-range-row" class="flex items-center gap-2" style="display:none">
+                <span class="text-[11px] font-medium text-gray-400">コスト範囲</span>
+                <div class="flex rounded-xl bg-gray-100 p-0.5 gap-0.5">
+                  <button type="button" id="ex-self-btn"
+                          onclick="setExComparisonMode('self-overall')"
+                          class="px-3.5 py-1.5 rounded-lg text-sm font-semibold transition-all bg-white text-gray-800 shadow-sm">
+                    全コスト
+                  </button>
+                  <button type="button" id="ex-same-cost-btn"
+                          onclick="setExComparisonMode('same-cost')"
+                          class="px-3.5 py-1.5 rounded-lg text-sm font-semibold transition-all text-gray-400 hover:text-gray-600">
+                    <%= @same_cost_label %>
+                  </button>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        </div>
+        <script>
+          function setExComparisonMode(mode) {
+            const section = document.getElementById('ex-analysis-section');
+            const ACTIVE   = 'px-3.5 py-1.5 rounded-lg text-sm font-semibold transition-all bg-white text-gray-800 shadow-sm';
+            const INACTIVE = 'px-3.5 py-1.5 rounded-lg text-sm font-semibold transition-all text-gray-400 hover:text-gray-600';
+            ['community', 'self-overall', 'same-cost'].forEach(function(col) {
+              section.querySelectorAll("[data-ex-col='" + col + "']").forEach(function(el) {
+                el.classList.toggle('hidden', mode !== col);
+              });
+            });
+            const isSelf = mode === 'self-overall' || mode === 'same-cost';
+            const communityBtn = document.getElementById('ex-community-btn');
+            const selfGroupBtn = document.getElementById('ex-self-group-btn');
+            if (communityBtn) communityBtn.className = isSelf ? INACTIVE : ACTIVE;
+            if (selfGroupBtn) selfGroupBtn.className = isSelf ? ACTIVE   : INACTIVE;
+            const costRow = document.getElementById('ex-cost-range-row');
+            if (costRow) costRow.style.display = isSelf ? 'flex' : 'none';
+            const selfBtn     = document.getElementById('ex-self-btn');
+            const sameCostBtn = document.getElementById('ex-same-cost-btn');
+            if (selfBtn)     selfBtn.className     = mode === 'self-overall' ? ACTIVE : INACTIVE;
+            if (sameCostBtn) sameCostBtn.className = mode === 'same-cost'    ? ACTIVE : INACTIVE;
+          }
+        </script>
+      <% end %>
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
         <!-- セクション1: EXバースト活用分析 -->
-        <div class="bg-white rounded-lg shadow">
-          <div class="px-6 py-5 border-b border-gray-200">
-            <h3 class="text-lg font-semibold text-gray-900">EXバースト活用分析</h3>
-            <p class="mt-1 text-sm text-gray-500">敗北時にEXバーストを残してしまった割合を確認できます</p>
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+          <div class="px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-violet-50 to-white">
+            <div class="flex items-center gap-2">
+              <span class="w-1 h-5 bg-violet-500 rounded-full shrink-0"></span>
+              <h3 class="text-base font-bold text-gray-900">EXバースト活用分析</h3>
+            </div>
+            <p class="mt-0.5 text-xs text-gray-500 pl-3">敗北時にEXバーストを残してしまった割合を確認できます</p>
           </div>
           <div class="px-6 py-5">
             <% if @stats_losses.to_i > 0 %>
@@ -1270,7 +1346,25 @@
                 last_pct    = (@last_death_ex_on_loss * 100.0 / @stats_losses).round(1)
                 survive_pct = (@survive_loss_ex_on_loss * 100.0 / @stats_losses).round(1)
               %>
-              <!-- メイン指標: あなた vs コミュニティ平均 -->
+              <%
+                # 自己比較用ヘルパーlambda: %比較の range bar パラメータを計算
+                ex_self_bar = ->(user_v, cmp_v, lower_is_better) {
+                  next nil if cmp_v.nil?
+                  lo    = [user_v, cmp_v].min
+                  hi    = [user_v, cmp_v].max
+                  span  = hi - lo
+                  next nil if span < 0.1
+                  pad       = span * 0.5
+                  dyn_min   = [[(lo - pad).round(1), 0].max, lo].min
+                  dyn_max   = [[(hi + pad).round(1), 100].min, hi].max
+                  dyn_range = dyn_max - dyn_min
+                  { dyn_min: dyn_min, dyn_max: dyn_max,
+                    user_pct: ((user_v - dyn_min) / dyn_range * 100).clamp(0, 100).round(1),
+                    cmp_pct:  ((cmp_v  - dyn_min) / dyn_range * 100).clamp(0, 100).round(1),
+                    good:     lower_is_better ? user_v <= cmp_v : user_v >= cmp_v }
+                }
+              %>
+              <!-- メイン指標: あなた vs 比較対象 -->
               <div class="mb-5 pb-5 border-b border-gray-100">
                 <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">EXバースト残し敗北</div>
                 <div class="flex items-stretch gap-0">
@@ -1280,25 +1374,75 @@
                     <div class="text-xs text-gray-400 mt-1"><%= @ex_remaining_on_loss %> / <%= @stats_losses %> 回</div>
                   </div>
                   <% if @community_ex_remaining_rate %>
-                    <div class="w-px bg-gray-200 self-stretch"></div>
-                    <div class="flex-1 pl-4">
-                      <div class="text-xs text-gray-400 mb-1">コミュニティ平均・分布</div>
+                    <div class="w-px bg-gray-200 self-stretch" data-ex-col="community"></div>
+                    <div class="flex-1 pl-4" data-ex-col="community">
+                      <div class="text-xs text-gray-400 mb-1 inline-flex items-center gap-1">
+                        コミュニティ平均・分布
+                        <%= render 'statistics/ex_comparison_tooltip', kind: :community %>
+                      </div>
                       <div class="text-2xl font-semibold text-gray-500"><%= @community_ex_remaining_rate %><span class="text-sm font-normal">%</span></div>
-                      <% if @community_ex_remaining_min && @community_ex_remaining_max && @community_ex_remaining_min != @community_ex_remaining_max %>
+                      <% if @community_ex_remaining_min && @community_ex_remaining_max %>
                         <%
-                          range    = (@community_ex_remaining_max - @community_ex_remaining_min).to_f
-                          user_pct = ((ex_pct - @community_ex_remaining_min) / range * 100).clamp(0, 100).round(1)
-                          avg_pct  = ((@community_ex_remaining_rate - @community_ex_remaining_min) / range * 100).clamp(0, 100).round(1)
+                          c_min    = [@community_ex_remaining_min, ex_pct].min
+                          c_max    = [@community_ex_remaining_max, ex_pct].max
+                        %>
+                        <% if c_min != c_max %>
+                        <%
+                          range    = (c_max - c_min).to_f
+                          u_pct    = ((ex_pct - c_min) / range * 100).clamp(0, 100).round(1)
+                          a_pct    = ((@community_ex_remaining_rate - c_min) / range * 100).clamp(0, 100).round(1)
                           good     = ex_pct <= @community_ex_remaining_rate
                         %>
                         <div class="relative h-1.5 bg-gray-200 rounded-full mt-2">
-                          <div class="absolute -top-1 -bottom-1 w-0.5 bg-gray-400 rounded-full" style="left: <%= avg_pct %>%"></div>
-                          <div class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full border-2 border-white shadow-sm <%= good ? 'bg-green-500' : 'bg-red-500' %>" style="left: <%= user_pct %>%"></div>
+                          <div class="absolute -top-1 -bottom-1 w-0.5 bg-gray-400 rounded-full" style="left: <%= a_pct %>%"></div>
+                          <div class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full border-2 border-white shadow-sm <%= good ? 'bg-green-500' : 'bg-red-500' %>" style="left: <%= u_pct %>%"></div>
                         </div>
                         <div class="flex justify-between text-[10px] text-gray-400 mt-1">
-                          <span><%= @community_ex_remaining_min %>%</span>
-                          <span><%= @community_ex_remaining_max %>%</span>
+                          <span><%= c_min %>%</span>
+                          <span><%= c_max %>%</span>
                         </div>
+                        <% end %>
+                        <% c_diff = (ex_pct - @community_ex_remaining_rate).round(1) %>
+                        <% unless c_diff.abs < 0.05 %>
+                          <span class="inline-block mt-1 px-1.5 py-0.5 rounded text-xs font-semibold <%= good ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' %>">
+                            <%= c_diff >= 0 ? '+' : '' %><%= c_diff %>%
+                          </span>
+                        <% end %>
+                      <% end %>
+                    </div>
+                  <% end %>
+                  <% [
+                    { col: 'self-overall', label: '自分の全体平均', cmp: @user_overall_ex_remaining_rate },
+                    { col: 'same-cost',    label: "#{@same_cost_label}平均", cmp: @user_same_cost_ex_remaining_rate }
+                  ].each do |s| %>
+                    <% next unless @user_overall_avg && (s[:col] == 'self-overall' || @user_same_cost_avg) %>
+                    <div class="w-px bg-gray-200 self-stretch hidden" data-ex-col="<%= s[:col] %>"></div>
+                    <div class="flex-1 pl-4 hidden" data-ex-col="<%= s[:col] %>">
+                      <div class="text-xs text-gray-400 mb-1 inline-flex items-center gap-1">
+                        <%= s[:label] %>
+                        <%= render 'statistics/ex_comparison_tooltip', kind: :self %>
+                      </div>
+                      <% if s[:cmp] %>
+                        <div class="text-2xl font-semibold text-gray-500"><%= s[:cmp] %><span class="text-sm font-normal">%</span></div>
+                        <% bar = ex_self_bar.call(ex_pct, s[:cmp], true) %>
+                        <% if bar %>
+                          <div class="relative h-1.5 bg-gray-200 rounded-full mt-2">
+                            <div class="absolute -top-1 -bottom-1 w-0.5 bg-gray-400 rounded-full" style="left: <%= bar[:cmp_pct] %>%"></div>
+                            <div class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full border-2 border-white shadow-sm <%= bar[:good] ? 'bg-green-500' : 'bg-red-500' %>" style="left: <%= bar[:user_pct] %>%"></div>
+                          </div>
+                          <div class="flex justify-between text-[10px] text-gray-400 mt-1">
+                            <span><%= bar[:dyn_min] %>%</span>
+                            <span><%= bar[:dyn_max] %>%</span>
+                          </div>
+                        <% end %>
+                        <% s_diff = (ex_pct - s[:cmp]).round(1) %>
+                        <% unless s_diff.abs < 0.05 %>
+                          <span class="inline-block mt-1 px-1.5 py-0.5 rounded text-xs font-semibold <%= bar&.dig(:good) ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' %>">
+                            <%= s_diff >= 0 ? '+' : '' %><%= s_diff %>%
+                          </span>
+                        <% end %>
+                      <% else %>
+                        <span class="text-gray-300 text-sm">-</span>
                       <% end %>
                     </div>
                   <% end %>
@@ -1306,60 +1450,68 @@
               </div>
               <!-- 内訳 -->
               <div class="space-y-4">
-                <!-- 自機が被撃墜 -->
-                <div>
-                  <div class="flex items-center justify-between">
-                    <span class="text-sm text-gray-600">自機が被撃墜</span>
-                    <div class="text-right">
-                      <span class="text-sm font-semibold text-gray-700"><%= last_pct %>%</span>
-                      <span class="text-xs text-gray-400 ml-1">(<%= @last_death_ex_on_loss %>/<%= @stats_losses %>回)</span>
+                <% [
+                  { label: '自機が被撃墜',      user_v: last_pct,    comm_rate: @community_last_death_ex_rate, comm_min: @community_last_death_ex_min, comm_max: @community_last_death_ex_max, count: @last_death_ex_on_loss,   overall: @user_overall_last_death_ex_rate, same_cost: @user_same_cost_last_death_ex_rate },
+                  { label: 'パートナー機が被撃墜', user_v: survive_pct, comm_rate: @community_survive_ex_rate,   comm_min: @community_survive_ex_min,   comm_max: @community_survive_ex_max,   count: @survive_loss_ex_on_loss, overall: @user_overall_survive_ex_rate,    same_cost: @user_same_cost_survive_ex_rate }
+                ].each do |item| %>
+                  <div>
+                    <div class="flex items-center justify-between">
+                      <span class="text-sm text-gray-600"><%= item[:label] %></span>
+                      <div class="text-right">
+                        <span class="text-sm font-semibold text-gray-700"><%= item[:user_v] %>%</span>
+                        <span class="text-xs text-gray-400 ml-1">(<%= item[:count] %>/<%= @stats_losses %>回)</span>
+                      </div>
                     </div>
+                    <% if item[:comm_rate] && item[:comm_min] && item[:comm_max] %>
+                      <%
+                        ic_min       = [item[:comm_min], item[:user_v]].min
+                        ic_max       = [item[:comm_max], item[:user_v]].max
+                      %>
+                      <% if ic_min != ic_max %>
+                      <%
+                        range        = (ic_max - ic_min).to_f
+                        user_pct_bar = ((item[:user_v] - ic_min) / range * 100).clamp(0, 100).round(1)
+                        avg_pct_bar  = ((item[:comm_rate] - ic_min) / range * 100).clamp(0, 100).round(1)
+                        good         = item[:user_v] <= item[:comm_rate]
+                      %>
+                      <div data-ex-col="community">
+                        <div class="relative h-1.5 bg-gray-200 rounded-full mt-1.5">
+                          <div class="absolute -top-1 -bottom-1 w-0.5 bg-gray-400 rounded-full" style="left: <%= avg_pct_bar %>%"></div>
+                          <div class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full border-2 border-white shadow-sm <%= good ? 'bg-green-500' : 'bg-red-500' %>" style="left: <%= user_pct_bar %>%"></div>
+                        </div>
+                        <div class="relative h-4 text-[10px] text-gray-400 mt-0.5">
+                          <span class="absolute left-0"><%= ic_min %>%</span>
+                          <span class="absolute -translate-x-1/2 whitespace-nowrap" style="left: <%= avg_pct_bar %>%">avg <%= item[:comm_rate] %>%</span>
+                          <span class="absolute right-0"><%= ic_max %>%</span>
+                        </div>
+                      </div>
+                      <% end %>
+                    <% end %>
+                    <% [
+                      { col: 'self-overall', cmp: item[:overall] },
+                      { col: 'same-cost',    cmp: item[:same_cost] }
+                    ].each do |s| %>
+                      <% next unless @user_overall_avg && (s[:col] == 'self-overall' || @user_same_cost_avg) %>
+                      <div data-ex-col="<%= s[:col] %>" class="hidden">
+                        <% bar = ex_self_bar.call(item[:user_v], s[:cmp], true) %>
+                        <% if bar %>
+                          <div class="relative h-1.5 bg-gray-200 rounded-full mt-1.5">
+                            <div class="absolute -top-1 -bottom-1 w-0.5 bg-gray-400 rounded-full" style="left: <%= bar[:cmp_pct] %>%"></div>
+                            <div class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full border-2 border-white shadow-sm <%= bar[:good] ? 'bg-green-500' : 'bg-red-500' %>" style="left: <%= bar[:user_pct] %>%"></div>
+                          </div>
+                          <div class="flex justify-between text-[10px] text-gray-400 mt-0.5">
+                            <span><%= bar[:dyn_min] %>%</span>
+                            <span><%= bar[:dyn_max] %>%</span>
+                          </div>
+                        <% elsif s[:cmp] %>
+                          <div class="text-[10px] text-gray-400 mt-1">差分なし</div>
+                        <% else %>
+                          <div class="text-[10px] text-gray-300 mt-1">データなし</div>
+                        <% end %>
+                      </div>
+                    <% end %>
                   </div>
-                  <% if @community_last_death_ex_rate && @community_last_death_ex_min != @community_last_death_ex_max %>
-                    <%
-                      range        = (@community_last_death_ex_max - @community_last_death_ex_min).to_f
-                      user_pct_bar = ((last_pct - @community_last_death_ex_min) / range * 100).clamp(0, 100).round(1)
-                      avg_pct_bar  = ((@community_last_death_ex_rate - @community_last_death_ex_min) / range * 100).clamp(0, 100).round(1)
-                      good         = last_pct <= @community_last_death_ex_rate
-                    %>
-                    <div class="relative h-1.5 bg-gray-200 rounded-full mt-1.5">
-                      <div class="absolute -top-1 -bottom-1 w-0.5 bg-gray-400 rounded-full" style="left: <%= avg_pct_bar %>%"></div>
-                      <div class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full border-2 border-white shadow-sm <%= good ? 'bg-green-500' : 'bg-red-500' %>" style="left: <%= user_pct_bar %>%"></div>
-                    </div>
-                    <div class="relative h-4 text-[10px] text-gray-400 mt-0.5">
-                      <span class="absolute left-0"><%= @community_last_death_ex_min %>%</span>
-                      <span class="absolute -translate-x-1/2 whitespace-nowrap" style="left: <%= avg_pct_bar %>%">avg <%= @community_last_death_ex_rate %>%</span>
-                      <span class="absolute right-0"><%= @community_last_death_ex_max %>%</span>
-                    </div>
-                  <% end %>
-                </div>
-                <!-- パートナー機が被撃墜 -->
-                <div>
-                  <div class="flex items-center justify-between">
-                    <span class="text-sm text-gray-600">パートナー機が被撃墜</span>
-                    <div class="text-right">
-                      <span class="text-sm font-semibold text-gray-700"><%= survive_pct %>%</span>
-                      <span class="text-xs text-gray-400 ml-1">(<%= @survive_loss_ex_on_loss %>/<%= @stats_losses %>回)</span>
-                    </div>
-                  </div>
-                  <% if @community_survive_ex_rate && @community_survive_ex_min != @community_survive_ex_max %>
-                    <%
-                      range        = (@community_survive_ex_max - @community_survive_ex_min).to_f
-                      user_pct_bar = ((survive_pct - @community_survive_ex_min) / range * 100).clamp(0, 100).round(1)
-                      avg_pct_bar  = ((@community_survive_ex_rate - @community_survive_ex_min) / range * 100).clamp(0, 100).round(1)
-                      good         = survive_pct <= @community_survive_ex_rate
-                    %>
-                    <div class="relative h-1.5 bg-gray-200 rounded-full mt-1.5">
-                      <div class="absolute -top-1 -bottom-1 w-0.5 bg-gray-400 rounded-full" style="left: <%= avg_pct_bar %>%"></div>
-                      <div class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full border-2 border-white shadow-sm <%= good ? 'bg-green-500' : 'bg-red-500' %>" style="left: <%= user_pct_bar %>%"></div>
-                    </div>
-                    <div class="relative h-4 text-[10px] text-gray-400 mt-0.5">
-                      <span class="absolute left-0"><%= @community_survive_ex_min %>%</span>
-                      <span class="absolute -translate-x-1/2 whitespace-nowrap" style="left: <%= avg_pct_bar %>%">avg <%= @community_survive_ex_rate %>%</span>
-                      <span class="absolute right-0"><%= @community_survive_ex_max %>%</span>
-                    </div>
-                  <% end %>
-                </div>
+                <% end %>
               </div>
             <% else %>
               <p class="text-gray-500 text-center py-8">統計データのある敗北試合がありません</p>
@@ -1368,16 +1520,36 @@
         </div>
 
         <!-- セクション2: EXオーバーリミット分析 -->
-        <div class="bg-white rounded-lg shadow">
-          <div class="px-6 py-5 border-b border-gray-200">
-            <h3 class="text-lg font-semibold text-gray-900">EXオーバーリミット分析</h3>
-            <p class="mt-1 text-sm text-gray-500">全試合のEXオーバーリミット発動状況を確認できます</p>
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+          <div class="px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-sky-50 to-white">
+            <div class="flex items-center gap-2">
+              <span class="w-1 h-5 bg-sky-500 rounded-full shrink-0"></span>
+              <h3 class="text-base font-bold text-gray-900">EXオーバーリミット分析</h3>
+            </div>
+            <p class="mt-0.5 text-xs text-gray-500 pl-3">全試合のEXオーバーリミット発動状況を確認できます</p>
           </div>
           <div class="px-6 py-5 space-y-5">
             <% if @has_ol_data %>
             <%
               no_ol_pct     = @total_losses.to_i > 0   ? (@my_team_no_ol_losses * 100.0 / @total_losses).round(1)   : 0.0
               opp_no_ol_pct = @total_wins_all.to_i > 0 ? (@opponent_no_ol_wins  * 100.0 / @total_wins_all).round(1) : 0.0
+            %>
+            <%
+              ol_self_bar = ->(user_v, cmp_v, higher_is_better) {
+                next nil if cmp_v.nil?
+                lo    = [user_v, cmp_v].min
+                hi    = [user_v, cmp_v].max
+                span  = hi - lo
+                next nil if span < 0.1
+                pad       = span * 0.5
+                dyn_min   = [[(lo - pad).round(1), 0].max, lo].min
+                dyn_max   = [[(hi + pad).round(1), 100].min, hi].max
+                dyn_range = dyn_max - dyn_min
+                { dyn_min: dyn_min, dyn_max: dyn_max,
+                  user_pct: ((user_v - dyn_min) / dyn_range * 100).clamp(0, 100).round(1),
+                  cmp_pct:  ((cmp_v  - dyn_min) / dyn_range * 100).clamp(0, 100).round(1),
+                  good:     higher_is_better ? user_v >= cmp_v : user_v <= cmp_v }
+              }
             %>
             <!-- 相手チーム勝利 -->
             <div class="pb-5 border-b border-gray-100">
@@ -1390,25 +1562,75 @@
                   <div class="text-xs text-gray-400 mt-1"><%= @opponent_no_ol_wins %> / <%= @total_wins_all %> 回</div>
                 </div>
                 <% if @community_opp_no_ol_win_rate %>
-                  <div class="w-px bg-gray-200 self-stretch"></div>
-                  <div class="flex-1 pl-4">
-                    <div class="text-xs text-gray-400 mb-1">コミュニティ平均・分布</div>
+                  <div class="w-px bg-gray-200 self-stretch" data-ex-col="community"></div>
+                  <div class="flex-1 pl-4" data-ex-col="community">
+                    <div class="text-xs text-gray-400 mb-1 inline-flex items-center gap-1">
+                      コミュニティ平均・分布
+                      <%= render 'statistics/ex_comparison_tooltip', kind: :community %>
+                    </div>
                     <div class="text-2xl font-semibold text-gray-500"><%= @community_opp_no_ol_win_rate %><span class="text-sm font-normal">%</span></div>
-                    <% if @community_opp_no_ol_win_min && @community_opp_no_ol_win_max && @community_opp_no_ol_win_min != @community_opp_no_ol_win_max %>
+                    <% if @community_opp_no_ol_win_min && @community_opp_no_ol_win_max %>
                       <%
-                        range    = (@community_opp_no_ol_win_max - @community_opp_no_ol_win_min).to_f
-                        user_pct = ((opp_no_ol_pct - @community_opp_no_ol_win_min) / range * 100).clamp(0, 100).round(1)
-                        avg_pct  = ((@community_opp_no_ol_win_rate - @community_opp_no_ol_win_min) / range * 100).clamp(0, 100).round(1)
-                        good     = opp_no_ol_pct >= @community_opp_no_ol_win_rate
+                        c_min = [@community_opp_no_ol_win_min, opp_no_ol_pct].min
+                        c_max = [@community_opp_no_ol_win_max, opp_no_ol_pct].max
                       %>
-                      <div class="relative h-1.5 bg-gray-200 rounded-full mt-2">
-                        <div class="absolute -top-1 -bottom-1 w-0.5 bg-gray-400 rounded-full" style="left: <%= avg_pct %>%"></div>
-                        <div class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full border-2 border-white shadow-sm <%= good ? 'bg-green-500' : 'bg-red-500' %>" style="left: <%= user_pct %>%"></div>
-                      </div>
-                      <div class="flex justify-between text-[10px] text-gray-400 mt-1">
-                        <span><%= @community_opp_no_ol_win_min %>%</span>
-                        <span><%= @community_opp_no_ol_win_max %>%</span>
-                      </div>
+                      <% if c_min != c_max %>
+                        <%
+                          range    = (c_max - c_min).to_f
+                          u_pct    = ((opp_no_ol_pct - c_min) / range * 100).clamp(0, 100).round(1)
+                          a_pct    = ((@community_opp_no_ol_win_rate - c_min) / range * 100).clamp(0, 100).round(1)
+                          good     = opp_no_ol_pct >= @community_opp_no_ol_win_rate
+                        %>
+                        <div class="relative h-1.5 bg-gray-200 rounded-full mt-2">
+                          <div class="absolute -top-1 -bottom-1 w-0.5 bg-gray-400 rounded-full" style="left: <%= a_pct %>%"></div>
+                          <div class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full border-2 border-white shadow-sm <%= good ? 'bg-green-500' : 'bg-red-500' %>" style="left: <%= u_pct %>%"></div>
+                        </div>
+                        <div class="flex justify-between text-[10px] text-gray-400 mt-1">
+                          <span><%= c_min %>%</span>
+                          <span><%= c_max %>%</span>
+                        </div>
+                        <% c_diff = (opp_no_ol_pct - @community_opp_no_ol_win_rate).round(1) %>
+                        <% unless c_diff.abs < 0.05 %>
+                          <span class="inline-block mt-1 px-1.5 py-0.5 rounded text-xs font-semibold <%= good ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' %>">
+                            <%= c_diff >= 0 ? '+' : '' %><%= c_diff %>%
+                          </span>
+                        <% end %>
+                      <% end %>
+                    <% end %>
+                  </div>
+                <% end %>
+                <% [
+                  { col: 'self-overall', label: '自分の全体平均', cmp: @user_overall_opp_no_ol_win_rate },
+                  { col: 'same-cost',    label: "#{@same_cost_label}平均", cmp: @user_same_cost_opp_no_ol_win_rate }
+                ].each do |s| %>
+                  <% next unless @user_overall_avg && (s[:col] == 'self-overall' || @user_same_cost_avg) %>
+                  <div class="w-px bg-gray-200 self-stretch hidden" data-ex-col="<%= s[:col] %>"></div>
+                  <div class="flex-1 pl-4 hidden" data-ex-col="<%= s[:col] %>">
+                    <div class="text-xs text-gray-400 mb-1 inline-flex items-center gap-1">
+                      <%= s[:label] %>
+                      <%= render 'statistics/ex_comparison_tooltip', kind: :self %>
+                    </div>
+                    <% if s[:cmp] %>
+                      <div class="text-2xl font-semibold text-gray-500"><%= s[:cmp] %><span class="text-sm font-normal">%</span></div>
+                      <% bar = ol_self_bar.call(opp_no_ol_pct, s[:cmp], true) %>
+                      <% if bar %>
+                        <div class="relative h-1.5 bg-gray-200 rounded-full mt-2">
+                          <div class="absolute -top-1 -bottom-1 w-0.5 bg-gray-400 rounded-full" style="left: <%= bar[:cmp_pct] %>%"></div>
+                          <div class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full border-2 border-white shadow-sm <%= bar[:good] ? 'bg-green-500' : 'bg-red-500' %>" style="left: <%= bar[:user_pct] %>%"></div>
+                        </div>
+                        <div class="flex justify-between text-[10px] text-gray-400 mt-1">
+                          <span><%= bar[:dyn_min] %>%</span>
+                          <span><%= bar[:dyn_max] %>%</span>
+                        </div>
+                      <% end %>
+                      <% s_diff = (opp_no_ol_pct - s[:cmp]).round(1) %>
+                      <% unless s_diff.abs < 0.05 %>
+                        <span class="inline-block mt-1 px-1.5 py-0.5 rounded text-xs font-semibold <%= bar&.dig(:good) ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' %>">
+                          <%= s_diff >= 0 ? '+' : '' %><%= s_diff %>%
+                        </span>
+                      <% end %>
+                    <% else %>
+                      <span class="text-gray-300 text-sm">-</span>
                     <% end %>
                   </div>
                 <% end %>
@@ -1425,25 +1647,75 @@
                   <div class="text-xs text-gray-400 mt-1"><%= @my_team_no_ol_losses %> / <%= @total_losses %> 回</div>
                 </div>
                 <% if @community_no_ol_loss_rate %>
-                  <div class="w-px bg-gray-200 self-stretch"></div>
-                  <div class="flex-1 pl-4">
-                    <div class="text-xs text-gray-400 mb-1">コミュニティ平均・分布</div>
+                  <div class="w-px bg-gray-200 self-stretch" data-ex-col="community"></div>
+                  <div class="flex-1 pl-4" data-ex-col="community">
+                    <div class="text-xs text-gray-400 mb-1 inline-flex items-center gap-1">
+                      コミュニティ平均・分布
+                      <%= render 'statistics/ex_comparison_tooltip', kind: :community %>
+                    </div>
                     <div class="text-2xl font-semibold text-gray-500"><%= @community_no_ol_loss_rate %><span class="text-sm font-normal">%</span></div>
-                    <% if @community_no_ol_loss_min && @community_no_ol_loss_max && @community_no_ol_loss_min != @community_no_ol_loss_max %>
+                    <% if @community_no_ol_loss_min && @community_no_ol_loss_max %>
                       <%
-                        range    = (@community_no_ol_loss_max - @community_no_ol_loss_min).to_f
-                        user_pct = ((no_ol_pct - @community_no_ol_loss_min) / range * 100).clamp(0, 100).round(1)
-                        avg_pct  = ((@community_no_ol_loss_rate - @community_no_ol_loss_min) / range * 100).clamp(0, 100).round(1)
-                        good     = no_ol_pct <= @community_no_ol_loss_rate
+                        c_min = [@community_no_ol_loss_min, no_ol_pct].min
+                        c_max = [@community_no_ol_loss_max, no_ol_pct].max
                       %>
-                      <div class="relative h-1.5 bg-gray-200 rounded-full mt-2">
-                        <div class="absolute -top-1 -bottom-1 w-0.5 bg-gray-400 rounded-full" style="left: <%= avg_pct %>%"></div>
-                        <div class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full border-2 border-white shadow-sm <%= good ? 'bg-green-500' : 'bg-red-500' %>" style="left: <%= user_pct %>%"></div>
-                      </div>
-                      <div class="flex justify-between text-[10px] text-gray-400 mt-1">
-                        <span><%= @community_no_ol_loss_min %>%</span>
-                        <span><%= @community_no_ol_loss_max %>%</span>
-                      </div>
+                      <% if c_min != c_max %>
+                        <%
+                          range    = (c_max - c_min).to_f
+                          u_pct    = ((no_ol_pct - c_min) / range * 100).clamp(0, 100).round(1)
+                          a_pct    = ((@community_no_ol_loss_rate - c_min) / range * 100).clamp(0, 100).round(1)
+                          good     = no_ol_pct <= @community_no_ol_loss_rate
+                        %>
+                        <div class="relative h-1.5 bg-gray-200 rounded-full mt-2">
+                          <div class="absolute -top-1 -bottom-1 w-0.5 bg-gray-400 rounded-full" style="left: <%= a_pct %>%"></div>
+                          <div class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full border-2 border-white shadow-sm <%= good ? 'bg-green-500' : 'bg-red-500' %>" style="left: <%= u_pct %>%"></div>
+                        </div>
+                        <div class="flex justify-between text-[10px] text-gray-400 mt-1">
+                          <span><%= c_min %>%</span>
+                          <span><%= c_max %>%</span>
+                        </div>
+                        <% c_diff = (no_ol_pct - @community_no_ol_loss_rate).round(1) %>
+                        <% unless c_diff.abs < 0.05 %>
+                          <span class="inline-block mt-1 px-1.5 py-0.5 rounded text-xs font-semibold <%= good ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' %>">
+                            <%= c_diff >= 0 ? '+' : '' %><%= c_diff %>%
+                          </span>
+                        <% end %>
+                      <% end %>
+                    <% end %>
+                  </div>
+                <% end %>
+                <% [
+                  { col: 'self-overall', label: '自分の全体平均', cmp: @user_overall_no_ol_loss_rate },
+                  { col: 'same-cost',    label: "#{@same_cost_label}平均", cmp: @user_same_cost_no_ol_loss_rate }
+                ].each do |s| %>
+                  <% next unless @user_overall_avg && (s[:col] == 'self-overall' || @user_same_cost_avg) %>
+                  <div class="w-px bg-gray-200 self-stretch hidden" data-ex-col="<%= s[:col] %>"></div>
+                  <div class="flex-1 pl-4 hidden" data-ex-col="<%= s[:col] %>">
+                    <div class="text-xs text-gray-400 mb-1 inline-flex items-center gap-1">
+                      <%= s[:label] %>
+                      <%= render 'statistics/ex_comparison_tooltip', kind: :self %>
+                    </div>
+                    <% if s[:cmp] %>
+                      <div class="text-2xl font-semibold text-gray-500"><%= s[:cmp] %><span class="text-sm font-normal">%</span></div>
+                      <% bar = ol_self_bar.call(no_ol_pct, s[:cmp], false) %>
+                      <% if bar %>
+                        <div class="relative h-1.5 bg-gray-200 rounded-full mt-2">
+                          <div class="absolute -top-1 -bottom-1 w-0.5 bg-gray-400 rounded-full" style="left: <%= bar[:cmp_pct] %>%"></div>
+                          <div class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full border-2 border-white shadow-sm <%= bar[:good] ? 'bg-green-500' : 'bg-red-500' %>" style="left: <%= bar[:user_pct] %>%"></div>
+                        </div>
+                        <div class="flex justify-between text-[10px] text-gray-400 mt-1">
+                          <span><%= bar[:dyn_min] %>%</span>
+                          <span><%= bar[:dyn_max] %>%</span>
+                        </div>
+                      <% end %>
+                      <% s_diff = (no_ol_pct - s[:cmp]).round(1) %>
+                      <% unless s_diff.abs < 0.05 %>
+                        <span class="inline-block mt-1 px-1.5 py-0.5 rounded text-xs font-semibold <%= bar&.dig(:good) ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' %>">
+                          <%= s_diff >= 0 ? '+' : '' %><%= s_diff %>%
+                        </span>
+                      <% end %>
+                    <% else %>
+                      <span class="text-gray-300 text-sm">-</span>
                     <% end %>
                   </div>
                 <% end %>
@@ -1456,34 +1728,30 @@
         </div>
 
       </div>
+      </div><!-- /ex-analysis-section -->
 
       <!-- セクション3: 基本パフォーマンス統計 -->
-      <div class="bg-white rounded-lg shadow" id="perf-stats-section">
-        <div class="px-6 py-5 border-b border-gray-200 flex items-start justify-between gap-4 flex-wrap">
+      <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden" id="perf-stats-section">
+        <div class="px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-slate-50 to-white flex items-center justify-between gap-4 flex-wrap">
           <div>
-            <span class="inline-flex items-center gap-1.5">
-              <h3 class="text-lg font-semibold text-gray-900">基本パフォーマンス統計</h3>
+            <span class="inline-flex items-center gap-2">
+              <span class="w-1 h-5 bg-slate-400 rounded-full shrink-0"></span>
+              <h3 class="text-base font-bold text-gray-900">基本パフォーマンス統計</h3>
               <span data-controller="tooltip"
                     data-action="mouseenter->tooltip#show mouseleave->tooltip#hide">
-                <button type="button"
-                        class="text-gray-400 hover:text-gray-600 focus:outline-none cursor-help"
-                        data-action="click->tooltip#toggle"
-                        aria-label="各列の説明">
-                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
-                  </svg>
-                </button>
+                <%= render 'shared/tooltip_icon', aria_label: '各列の説明' %>
                 <div data-tooltip-target="content"
                      class="hidden z-50 w-80 bg-gray-900 text-white text-xs rounded-lg shadow-xl p-3
-                            text-left font-normal normal-case tracking-normal pointer-events-none">
-                  <p class="font-semibold text-white mb-2">各列について</p>
+                            text-left font-normal normal-case tracking-normal whitespace-normal pointer-events-none">
+                  <p class="font-semibold text-white mb-2">各列の見方</p>
                   <ul class="text-gray-300 space-y-2">
-                    <li><span class="text-white font-semibold">あなたの値：</span>現在のフィルター条件を適用した自分の試合の平均</li>
-                    <li><span class="text-white font-semibold">コミュニティ比較：</span>フィルターに関係なく、コミュニティ全員の全試合の平均・分布</li>
-                    <li><span class="text-white font-semibold">自分の全体平均：</span>フィルターに関係なく、自分の全試合の平均</li>
-                    <li><span class="text-white font-semibold">同コスト帯平均：</span>フィルターに関係なく、自分が同コスト帯の機体を使った試合の平均</li>
+                    <li><span class="text-white font-semibold">あなたの値：</span>現在の絞り込み条件を適用した自分の試合の平均</li>
+                    <li><span class="text-white font-semibold">コミュニティ全体：</span>絞り込みに関係なく、コミュニティ全員・全試合の平均</li>
+                    <li><span class="text-white font-semibold">自分（全コスト）：</span>絞り込みに関係なく、自分の全試合の平均</li>
+                    <li><span class="text-white font-semibold">自分（同コスト帯）：</span>絞り込みに関係なく、自分が同コスト帯の機体を使った試合の平均</li>
                   </ul>
-                  <p class="text-gray-400 mt-2 text-[10px]">※ 機体またはコストフィルター適用時に全体平均・同コスト帯平均との比較が表示されます</p>
+                  <p class="font-semibold text-white mt-2.5 mb-1">数直線の見方</p>
+                  <p class="text-gray-300 text-[10px]"><span class="text-white">縦線</span> ＝ 比較基準値　<span class="text-white">●</span> ＝ あなたの値（絞り込み後）<br><span class="text-white">コミュニティ全体</span>：全体の最小〜最大スケール<br><span class="text-white">自分との比較</span>：2点の差を基準に動的スケール</p>
                   <div class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
                 </div>
               </span>
@@ -1491,43 +1759,76 @@
             <p class="mt-1 text-sm text-gray-500">試合ごとのスコアやダメージ等の平均値を確認できます</p>
           </div>
           <% if @user_overall_avg %>
-            <div class="flex items-center gap-1 bg-gray-100 rounded-lg p-1 text-sm shrink-0 flex-wrap">
-              <button type="button" id="perf-community-btn"
-                      onclick="setPerfComparisonMode('community')"
-                      class="px-3 py-1.5 rounded-md font-medium transition-colors bg-white text-gray-700 shadow-sm">
-                コミュニティ比較
-              </button>
-              <button type="button" id="perf-self-btn"
-                      onclick="setPerfComparisonMode('self-overall')"
-                      class="px-3 py-1.5 rounded-md font-medium transition-colors text-gray-400">
-                自分の全体平均
-              </button>
+            <div class="flex flex-col items-end gap-1.5 shrink-0">
+              <!-- 軸1: 比較対象 -->
+              <div class="flex items-center gap-2">
+                <span class="text-[11px] font-medium text-gray-400">比較対象</span>
+                <div class="flex rounded-xl bg-gray-100 p-0.5 gap-0.5">
+                  <button type="button" id="perf-community-btn"
+                          onclick="setPerfComparisonMode('community')"
+                          class="px-3.5 py-1.5 rounded-lg text-sm font-semibold transition-all bg-white text-gray-800 shadow-sm">
+                    コミュニティ全体
+                  </button>
+                  <button type="button" id="perf-self-group-btn"
+                          onclick="setPerfComparisonMode('self-overall')"
+                          class="px-3.5 py-1.5 rounded-lg text-sm font-semibold transition-all text-gray-400 hover:text-gray-600">
+                    自分
+                  </button>
+                </div>
+              </div>
+              <!-- 軸2: コスト範囲（"自分" 選択時のみ表示） -->
               <% if @user_same_cost_avg %>
-                <button type="button" id="perf-same-cost-btn"
-                        onclick="setPerfComparisonMode('same-cost')"
-                        class="px-3 py-1.5 rounded-md font-medium transition-colors text-gray-400">
-                  自分の<%= @same_cost_label %>平均
-                </button>
+                <div id="perf-cost-range-row" class="flex items-center gap-2" style="display:none">
+                  <span class="text-[11px] font-medium text-gray-400">コスト範囲</span>
+                  <div class="flex rounded-xl bg-gray-100 p-0.5 gap-0.5">
+                    <button type="button" id="perf-self-btn"
+                            onclick="setPerfComparisonMode('self-overall')"
+                            class="px-3.5 py-1.5 rounded-lg text-sm font-semibold transition-all bg-white text-gray-800 shadow-sm">
+                      全コスト
+                    </button>
+                    <button type="button" id="perf-same-cost-btn"
+                            onclick="setPerfComparisonMode('same-cost')"
+                            class="px-3.5 py-1.5 rounded-lg text-sm font-semibold transition-all text-gray-400 hover:text-gray-600">
+                      <%= @same_cost_label %>
+                    </button>
+                  </div>
+                </div>
               <% end %>
             </div>
             <script>
               function setPerfComparisonMode(mode) {
                 const section = document.getElementById('perf-stats-section');
+                const ACTIVE   = 'px-3.5 py-1.5 rounded-lg text-sm font-semibold transition-all bg-white text-gray-800 shadow-sm';
+                const INACTIVE = 'px-3.5 py-1.5 rounded-lg text-sm font-semibold transition-all text-gray-400 hover:text-gray-600';
+
+                // 比較列の表示切り替え
                 ['community', 'self-overall', 'same-cost'].forEach(function(col) {
                   section.querySelectorAll("[data-perf-col='" + col + "']").forEach(function(el) {
                     el.classList.toggle('hidden', mode !== col);
                   });
                 });
-                const btnIds = { 'community': 'perf-community-btn', 'self-overall': 'perf-self-btn', 'same-cost': 'perf-same-cost-btn' };
-                Object.values(btnIds).forEach(function(id) {
-                  const btn = document.getElementById(id);
-                  if (btn) btn.className = 'px-3 py-1.5 rounded-md font-medium transition-colors text-gray-400';
-                });
-                const activeId = btnIds[mode];
-                const activeBtn = activeId ? document.getElementById(activeId) : null;
-                if (activeBtn) activeBtn.className = 'px-3 py-1.5 rounded-md font-medium transition-colors bg-white text-gray-700 shadow-sm';
+
+                const isSelf = mode === 'self-overall' || mode === 'same-cost';
+
+                // 軸1: 比較対象ボタン
+                const communityBtn   = document.getElementById('perf-community-btn');
+                const selfGroupBtn   = document.getElementById('perf-self-group-btn');
+                if (communityBtn)  communityBtn.className  = isSelf ? INACTIVE : ACTIVE;
+                if (selfGroupBtn)  selfGroupBtn.className  = isSelf ? ACTIVE   : INACTIVE;
+
+                // 軸2: コスト範囲行の表示
+                const costRow = document.getElementById('perf-cost-range-row');
+                if (costRow) costRow.style.display = isSelf ? 'flex' : 'none';
+
+                // 軸2: コスト範囲ボタン
+                const selfBtn     = document.getElementById('perf-self-btn');
+                const sameCostBtn = document.getElementById('perf-same-cost-btn');
+                if (selfBtn)     selfBtn.className     = mode === 'self-overall' ? ACTIVE : INACTIVE;
+                if (sameCostBtn) sameCostBtn.className = mode === 'same-cost'    ? ACTIVE : INACTIVE;
               }
             </script>
+          <% else %>
+            <p class="text-xs text-gray-400 self-center">コストまたは機体で絞り込むと比較列を追加できます</p>
           <% end %>
         </div>
         <% if @stats_total.to_i > 0 %>
@@ -1557,20 +1858,20 @@
                     値<br><span class="font-normal text-gray-400"><%= @stats_total %>試合</span>
                   </th>
                   <th data-perf-col="community" class="px-6 py-2 text-center text-xs font-medium text-gray-400 whitespace-nowrap"><%= render "statistics/community_distribution_header" %></th>
-                  <% if @user_overall_avg %><th data-perf-col="self-overall" class="hidden px-6 py-2 text-center text-xs font-medium text-gray-400 whitespace-nowrap">自分の全体平均</th><% end %>
-                  <% if @user_same_cost_avg %><th data-perf-col="same-cost" class="hidden px-6 py-2 text-center text-xs font-medium text-gray-400 whitespace-nowrap"><%= @same_cost_label %>平均</th><% end %>
+                  <% if @user_overall_avg %><th data-perf-col="self-overall" class="hidden px-6 py-2 text-center text-xs font-medium text-gray-400 whitespace-nowrap"><%= render "statistics/self_comparison_header", label: "自分の全体平均", description: "フィルターに関わらず、自分の全試合の平均値" %></th><% end %>
+                  <% if @user_same_cost_avg %><th data-perf-col="same-cost" class="hidden px-6 py-2 text-center text-xs font-medium text-gray-400 whitespace-nowrap"><%= render "statistics/self_comparison_header", label: "#{@same_cost_label}平均", description: "フィルターに関わらず、自分が#{@same_cost_label}の機体を使った試合の平均値" %></th><% end %>
                   <th class="px-6 py-2 text-center text-xs font-medium text-gray-500 whitespace-nowrap border-l-2 border-green-300">
                     値<br><span class="font-normal text-gray-400"><%= @stats_wins %>試合</span>
                   </th>
                   <th data-perf-col="community" class="px-6 py-2 text-center text-xs font-medium text-gray-400 whitespace-nowrap"><%= render "statistics/community_distribution_header" %></th>
-                  <% if @user_overall_avg %><th data-perf-col="self-overall" class="hidden px-6 py-2 text-center text-xs font-medium text-gray-400 whitespace-nowrap">自分の全体平均</th><% end %>
-                  <% if @user_same_cost_avg %><th data-perf-col="same-cost" class="hidden px-6 py-2 text-center text-xs font-medium text-gray-400 whitespace-nowrap"><%= @same_cost_label %>平均</th><% end %>
+                  <% if @user_overall_avg %><th data-perf-col="self-overall" class="hidden px-6 py-2 text-center text-xs font-medium text-gray-400 whitespace-nowrap"><%= render "statistics/self_comparison_header", label: "自分の全体平均", description: "フィルターに関わらず、自分の全試合の平均値" %></th><% end %>
+                  <% if @user_same_cost_avg %><th data-perf-col="same-cost" class="hidden px-6 py-2 text-center text-xs font-medium text-gray-400 whitespace-nowrap"><%= render "statistics/self_comparison_header", label: "#{@same_cost_label}平均", description: "フィルターに関わらず、自分が#{@same_cost_label}の機体を使った試合の平均値" %></th><% end %>
                   <th class="px-6 py-2 text-center text-xs font-medium text-gray-500 whitespace-nowrap border-l-2 border-red-300">
                     値<br><span class="font-normal text-gray-400"><%= @stats_losses %>試合</span>
                   </th>
                   <th data-perf-col="community" class="px-6 py-2 text-center text-xs font-medium text-gray-400 whitespace-nowrap"><%= render "statistics/community_distribution_header" %></th>
-                  <% if @user_overall_avg %><th data-perf-col="self-overall" class="hidden px-6 py-2 text-center text-xs font-medium text-gray-400 whitespace-nowrap">自分の全体平均</th><% end %>
-                  <% if @user_same_cost_avg %><th data-perf-col="same-cost" class="hidden px-6 py-2 text-center text-xs font-medium text-gray-400 whitespace-nowrap"><%= @same_cost_label %>平均</th><% end %>
+                  <% if @user_overall_avg %><th data-perf-col="self-overall" class="hidden px-6 py-2 text-center text-xs font-medium text-gray-400 whitespace-nowrap"><%= render "statistics/self_comparison_header", label: "自分の全体平均", description: "フィルターに関わらず、自分の全試合の平均値" %></th><% end %>
+                  <% if @user_same_cost_avg %><th data-perf-col="same-cost" class="hidden px-6 py-2 text-center text-xs font-medium text-gray-400 whitespace-nowrap"><%= render "statistics/self_comparison_header", label: "#{@same_cost_label}平均", description: "フィルターに関わらず、自分が#{@same_cost_label}の機体を使った試合の平均値" %></th><% end %>
                 </tr>
               </thead>
               <tbody class="bg-white divide-y divide-gray-100">
@@ -1624,8 +1925,13 @@
                   perf_col_count = 1 + (perf_columns.size * (2 + extra_cols))
                 %>
                 <% perf_groups.each do |group| %>
-                  <tr class="bg-gray-50">
-                    <td colspan="<%= perf_col_count %>" class="px-6 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider"><%= group[:label] %></td>
+                  <tr class="border-t border-gray-200 bg-gradient-to-r from-slate-100 to-gray-50">
+                    <td colspan="<%= perf_col_count %>" class="px-6 py-2.5">
+                      <span class="inline-flex items-center gap-1.5 text-xs font-bold text-gray-600 uppercase tracking-wider">
+                        <span class="w-1 h-3.5 bg-indigo-400 rounded-full"></span>
+                        <%= group[:label] %>
+                      </span>
+                    </td>
                   </tr>
                   <% group[:rows].each do |row| %>
                     <tr class="hover:bg-gray-50">
@@ -1643,7 +1949,7 @@
                         </td>
                         <%# コミュニティ比較セル %>
                         <td data-perf-col="community" class="px-6 py-4 text-center">
-                          <% if col[:c_avg].nil? %>
+                          <% if col[:c_avg].nil? || col[:perf].nil? %>
                             <span class="text-gray-300">-</span>
                           <% else %>
                             <%
@@ -1652,27 +1958,44 @@
                               max_val  = col[:c_max]&.[](row[:key])
                               user_val = col[:perf]&.[](row[:key])
                             %>
-                            <% if row[:na_if_nil] && avg_val.nil? %>
+                            <% if row[:na_if_nil] && (avg_val.nil? || user_val.nil?) %>
                               <span class="text-gray-400 text-xs">N/A</span>
                             <% elsif avg_val.nil? %>
                               <span class="text-gray-300">-</span>
                             <% else %>
                               <div class="text-sm text-gray-600 font-medium"><%= "#{avg_val}#{row[:suffix]}" %></div>
-                              <% if min_val && max_val && user_val && min_val != max_val %>
+                              <% if min_val && max_val && user_val %>
                                 <%
-                                  range    = (max_val - min_val).to_f
-                                  user_pct = ((user_val.to_f - min_val) / range * 100).clamp(0, 100).round(1)
-                                  avg_pct  = ((avg_val.to_f  - min_val) / range * 100).clamp(0, 100).round(1)
-                                  good     = row[:higher_is_better] ? user_val.to_f >= avg_val.to_f : user_val.to_f <= avg_val.to_f
+                                  c_min = [min_val, user_val.to_f].min
+                                  c_max = [max_val, user_val.to_f].max
                                 %>
-                                <div class="relative h-1.5 bg-gray-200 rounded-full mt-2 max-w-[100px] mx-auto">
-                                  <div class="absolute -top-1 -bottom-1 w-0.5 bg-gray-400 rounded-full" style="left: <%= avg_pct %>%"></div>
-                                  <div class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full border-2 border-white shadow-sm <%= good ? 'bg-green-500' : 'bg-red-500' %>" style="left: <%= user_pct %>%"></div>
-                                </div>
-                                <div class="flex justify-between text-[10px] text-gray-400 mt-1 max-w-[100px] mx-auto">
-                                  <span><%= min_val %><%= row[:suffix] %></span>
-                                  <span><%= max_val %><%= row[:suffix] %></span>
-                                </div>
+                                <% if c_min != c_max %>
+                                  <%
+                                    range    = (c_max - c_min).to_f
+                                    user_pct = ((user_val.to_f - c_min) / range * 100).clamp(0, 100).round(1)
+                                    avg_pct  = ((avg_val.to_f  - c_min) / range * 100).clamp(0, 100).round(1)
+                                    good     = row[:higher_is_better] ? user_val.to_f >= avg_val.to_f : user_val.to_f <= avg_val.to_f
+                                  %>
+                                  <div class="relative h-1.5 bg-gray-200 rounded-full mt-2 max-w-[100px] mx-auto">
+                                    <div class="absolute -top-1 -bottom-1 w-0.5 bg-gray-400 rounded-full" style="left: <%= avg_pct %>%"></div>
+                                    <div class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full border-2 border-white shadow-sm <%= good ? 'bg-green-500' : 'bg-red-500' %>" style="left: <%= user_pct %>%"></div>
+                                  </div>
+                                  <div class="flex justify-between text-[10px] text-gray-400 mt-1 max-w-[100px] mx-auto">
+                                    <span><%= c_min %><%= row[:suffix] %></span>
+                                    <span><%= c_max %><%= row[:suffix] %></span>
+                                  </div>
+                                <% end %>
+                              <% end %>
+                              <% if user_val %>
+                                <%
+                                  c_diff = (user_val.to_f - avg_val.to_f).round(2)
+                                  c_good = row[:higher_is_better] ? c_diff >= 0 : c_diff <= 0
+                                %>
+                                <% unless c_diff.abs < 0.005 %>
+                                  <span class="inline-block mt-1 px-1.5 py-0.5 rounded text-xs font-semibold <%= c_good ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' %>">
+                                    <%= c_diff >= 0 ? '+' : '' %><%= c_diff %><%= row[:suffix] %>
+                                  </span>
+                                <% end %>
                               <% end %>
                             <% end %>
                           <% end %>
@@ -1688,22 +2011,41 @@
                             user_val = col[:perf]&.[](row[:key])
                           %>
                           <td data-perf-col="<%= cmp[:col_id] %>" class="hidden px-6 py-4 text-center">
-                            <% if cmp_val.nil? %>
+                            <% if cmp_val.nil? || col[:perf].nil? %>
                               <span class="text-gray-300">-</span>
-                            <% elsif row[:na_if_nil] && cmp_val.nil? %>
+                            <% elsif row[:na_if_nil] && user_val.nil? %>
                               <span class="text-gray-400 text-xs">N/A</span>
                             <% else %>
                               <div class="text-sm text-gray-600 font-medium"><%= "#{cmp_val}#{row[:suffix]}" %></div>
                               <% if user_val %>
                                 <%
-                                  diff = (user_val.to_f - cmp_val.to_f).round(2)
-                                  good = row[:higher_is_better] ? diff >= 0 : diff <= 0
-                                  sign = diff >= 0 ? "+" : ""
-                                  diff_label = "#{sign}#{diff}"
+                                  diff  = (user_val.to_f - cmp_val.to_f).round(2)
+                                  good  = row[:higher_is_better] ? diff >= 0 : diff <= 0
+                                  lo    = [user_val.to_f, cmp_val.to_f].min
+                                  hi    = [user_val.to_f, cmp_val.to_f].max
+                                  span  = hi - lo
                                 %>
+                                <% if span >= 0.001 %>
+                                  <%
+                                    pad      = span * 0.5
+                                    dyn_min  = [[(lo - pad).round(2), 0].max, lo].min
+                                    dyn_max  = [(hi + pad).round(2), hi].max
+                                    dyn_range = dyn_max - dyn_min
+                                    user_pct = ((user_val.to_f - dyn_min) / dyn_range * 100).clamp(0, 100).round(1)
+                                    avg_pct  = ((cmp_val.to_f  - dyn_min) / dyn_range * 100).clamp(0, 100).round(1)
+                                  %>
+                                  <div class="relative h-1.5 bg-gray-200 rounded-full mt-2 max-w-[100px] mx-auto">
+                                    <div class="absolute -top-1 -bottom-1 w-0.5 bg-gray-400 rounded-full" style="left: <%= avg_pct %>%"></div>
+                                    <div class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full border-2 border-white shadow-sm <%= good ? 'bg-green-500' : 'bg-red-500' %>" style="left: <%= user_pct %>%"></div>
+                                  </div>
+                                  <div class="flex justify-between text-[10px] text-gray-400 mt-1 max-w-[100px] mx-auto">
+                                    <span><%= dyn_min %><%= row[:suffix] %></span>
+                                    <span><%= dyn_max %><%= row[:suffix] %></span>
+                                  </div>
+                                <% end %>
                                 <% unless diff.abs < 0.005 %>
                                   <span class="inline-block mt-1 px-1.5 py-0.5 rounded text-xs font-semibold <%= good ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' %>">
-                                    <%= diff_label %><%= row[:suffix] %>
+                                    <%= diff >= 0 ? '+' : '' %><%= diff %><%= row[:suffix] %>
                                   </span>
                                 <% end %>
                               <% end %>
@@ -1717,20 +2059,14 @@
 
                 <%# 生存時間グループ — 動的行数のため perf_groups とは別に描画 %>
                 <% if @survival_time_stats.present? %>
-                  <tr class="bg-gray-50">
-                    <td colspan="<%= perf_col_count %>" class="px-6 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                      <span class="inline-flex items-center gap-1.5">
+                  <tr class="border-t border-gray-200 bg-gradient-to-r from-slate-100 to-gray-50">
+                    <td colspan="<%= perf_col_count %>" class="px-6 py-2.5">
+                      <span class="inline-flex items-center gap-1.5 text-xs font-bold text-gray-600 uppercase tracking-wider">
+                        <span class="w-1 h-3.5 bg-indigo-400 rounded-full"></span>
                         生存時間
                         <span data-controller="tooltip"
                               data-action="mouseenter->tooltip#show mouseleave->tooltip#hide">
-                          <button type="button"
-                                  class="text-gray-400 hover:text-gray-600 focus:outline-none cursor-help"
-                                  data-action="click->tooltip#toggle"
-                                  aria-label="生存時間の集計方法について">
-                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
-                            </svg>
-                          </button>
+                          <%= render 'shared/tooltip_icon', aria_label: '生存時間の集計方法について' %>
                           <div data-tooltip-target="content"
                                class="hidden z-50 w-64 bg-gray-900 text-white text-xs rounded-lg shadow-xl p-3
                                       text-left font-normal normal-case tracking-normal pointer-events-none">
