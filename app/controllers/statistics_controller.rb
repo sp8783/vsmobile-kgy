@@ -555,10 +555,38 @@ class StatisticsController < ApplicationController
                                 .includes(:match, :mobile_suit, :user, match: { rotation_match: :rotation })
       all_user_mps = all_user_mps.where(matches: { event_id: @filter_events }) if @filter_events.any?
 
-      all_stats = all_user_mps.to_a.select(&:has_stats?)
+      all_user_records = all_user_mps.to_a
+      all_stats = all_user_records.select(&:has_stats?)
       @user_overall_avg    = calc_perf_stats(all_stats)
       @user_overall_wins   = calc_perf_stats(all_stats.select { |mp| mp.match.winning_team == mp.team_number })
       @user_overall_losses = calc_perf_stats(all_stats.reject { |mp| mp.match.winning_team == mp.team_number })
+
+      # EXバースト活用分析の自己比較用データ（フィルターなし全体）
+      all_loss_stats = all_stats.reject { |mp| mp.match.winning_team == mp.team_number }
+      if all_loss_stats.any?
+        n = all_loss_stats.size
+        @user_overall_ex_remaining_rate  = (all_loss_stats.count { |mp| mp.last_death_ex_available || mp.survive_loss_ex_available } * 100.0 / n).round(1)
+        @user_overall_last_death_ex_rate = (all_loss_stats.count { |mp| mp.last_death_ex_available } * 100.0 / n).round(1)
+        @user_overall_survive_ex_rate    = (all_loss_stats.count { |mp| mp.survive_loss_ex_available } * 100.0 / n).round(1)
+      end
+
+      # OL分析の自己比較用データ（フィルターなし全体）
+      all_user_losses_ol = all_user_records.reject { |mp| mp.match.winning_team == mp.team_number }
+      all_user_wins_ol   = all_user_records.select { |mp| mp.match.winning_team == mp.team_number }
+      if all_user_losses_ol.any?
+        no_ol = all_user_losses_ol.count { |mp|
+          flag = mp.team_number == 1 ? mp.match.team1_ex_overlimit_before_end : mp.match.team2_ex_overlimit_before_end
+          flag == true
+        }
+        @user_overall_no_ol_loss_rate = (no_ol * 100.0 / all_user_losses_ol.size).round(1)
+      end
+      if all_user_wins_ol.any?
+        opp_no_ol = all_user_wins_ol.count { |mp|
+          flag = mp.team_number == 1 ? mp.match.team2_ex_overlimit_before_end : mp.match.team1_ex_overlimit_before_end
+          flag == true
+        }
+        @user_overall_opp_no_ol_win_rate = (opp_no_ol * 100.0 / all_user_wins_ol.size).round(1)
+      end
 
       # 同コスト帯平均: 機体フィルター時は絞った機体のコストを使用、コストフィルター時はそのコストを使用
       same_costs = if @filter_mobile_suits.any?
@@ -566,13 +594,41 @@ class StatisticsController < ApplicationController
       else
         @filter_costs
       end
-      same_cost_stats = all_stats.select { |mp| same_costs.include?(mp.mobile_suit.cost) }
+      same_cost_stats   = all_stats.select { |mp| same_costs.include?(mp.mobile_suit.cost) }
+      same_cost_records = all_user_records.select { |mp| same_costs.include?(mp.mobile_suit.cost) }
       # 絞り込み済みデータと実質同一になる場合（例: コストのみフィルター）は表示しない
       if same_cost_stats.size != stats_mps.select(&:has_stats?).size
         @user_same_cost_avg    = calc_perf_stats(same_cost_stats)
         @user_same_cost_wins   = calc_perf_stats(same_cost_stats.select { |mp| mp.match.winning_team == mp.team_number })
         @user_same_cost_losses = calc_perf_stats(same_cost_stats.reject { |mp| mp.match.winning_team == mp.team_number })
         @same_cost_label = same_costs.sort.reverse.map { |c| "#{c}" }.join("・") + "コスト"
+
+        # EXバースト - 同コスト帯
+        sc_loss_stats = same_cost_stats.reject { |mp| mp.match.winning_team == mp.team_number }
+        if sc_loss_stats.any?
+          n = sc_loss_stats.size
+          @user_same_cost_ex_remaining_rate  = (sc_loss_stats.count { |mp| mp.last_death_ex_available || mp.survive_loss_ex_available } * 100.0 / n).round(1)
+          @user_same_cost_last_death_ex_rate = (sc_loss_stats.count { |mp| mp.last_death_ex_available } * 100.0 / n).round(1)
+          @user_same_cost_survive_ex_rate    = (sc_loss_stats.count { |mp| mp.survive_loss_ex_available } * 100.0 / n).round(1)
+        end
+
+        # OL分析 - 同コスト帯
+        sc_losses_ol = same_cost_records.reject { |mp| mp.match.winning_team == mp.team_number }
+        sc_wins_ol   = same_cost_records.select { |mp| mp.match.winning_team == mp.team_number }
+        if sc_losses_ol.any?
+          no_ol = sc_losses_ol.count { |mp|
+            flag = mp.team_number == 1 ? mp.match.team1_ex_overlimit_before_end : mp.match.team2_ex_overlimit_before_end
+            flag == true
+          }
+          @user_same_cost_no_ol_loss_rate = (no_ol * 100.0 / sc_losses_ol.size).round(1)
+        end
+        if sc_wins_ol.any?
+          opp_no_ol = sc_wins_ol.count { |mp|
+            flag = mp.team_number == 1 ? mp.match.team2_ex_overlimit_before_end : mp.match.team1_ex_overlimit_before_end
+            flag == true
+          }
+          @user_same_cost_opp_no_ol_win_rate = (opp_no_ol * 100.0 / sc_wins_ol.size).round(1)
+        end
       end
     end
 
