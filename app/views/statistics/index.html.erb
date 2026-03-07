@@ -84,35 +84,35 @@
         <span class="whitespace-nowrap py-4 px-1 border-b-2 border-transparent text-gray-300 font-medium text-sm ml-4 cursor-not-allowed" title="個人統計を見るには管理者にアカウント発行を依頼してください">パートナー別戦績</span>
         <span class="whitespace-nowrap py-4 px-1 border-b-2 border-transparent text-gray-300 font-medium text-sm ml-4 cursor-not-allowed" title="個人統計を見るには管理者にアカウント発行を依頼してください">対戦相手別戦績</span>
       <% else %>
-        <%= link_to statistics_path(tab: 'overview', events: params[:events], mobile_suits: params[:mobile_suits], partners: params[:partners]),
+        <%= link_to statistics_path(tab: 'overview', events: params[:events], mobile_suits: params[:mobile_suits], partners: params[:partners], costs: params[:costs]),
             class: "#{@active_tab == 'overview' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm" do %>
           総合戦績
         <% end %>
-        <%= link_to statistics_path(tab: 'performance', events: params[:events], mobile_suits: params[:mobile_suits], partners: params[:partners]),
+        <%= link_to statistics_path(tab: 'performance', events: params[:events], mobile_suits: params[:mobile_suits], partners: params[:partners], costs: params[:costs]),
             class: "#{@active_tab == 'performance' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ml-4" do %>
           プレイ分析
         <% end %>
-        <%= link_to statistics_path(tab: 'events', events: params[:events], mobile_suits: params[:mobile_suits], partners: params[:partners]),
+        <%= link_to statistics_path(tab: 'events', events: params[:events], mobile_suits: params[:mobile_suits], partners: params[:partners], costs: params[:costs]),
             class: "#{@active_tab == 'events' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ml-4" do %>
           イベント別戦績
         <% end %>
-        <%= link_to statistics_path(tab: 'event_progression', events: params[:events], mobile_suits: params[:mobile_suits], partners: params[:partners]),
+        <%= link_to statistics_path(tab: 'event_progression', events: params[:events], mobile_suits: params[:mobile_suits], partners: params[:partners], costs: params[:costs]),
             class: "#{@active_tab == 'event_progression' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ml-4" do %>
           イベント内期間別戦績
         <% end %>
-        <%= link_to statistics_path(tab: 'mobile_suits', events: params[:events], mobile_suits: params[:mobile_suits], partners: params[:partners]),
+        <%= link_to statistics_path(tab: 'mobile_suits', events: params[:events], mobile_suits: params[:mobile_suits], partners: params[:partners], costs: params[:costs]),
             class: "#{@active_tab == 'mobile_suits' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ml-4" do %>
           使用機体別戦績
         <% end %>
-        <%= link_to statistics_path(tab: 'opponent_suits', events: params[:events], mobile_suits: params[:mobile_suits], partners: params[:partners]),
+        <%= link_to statistics_path(tab: 'opponent_suits', events: params[:events], mobile_suits: params[:mobile_suits], partners: params[:partners], costs: params[:costs]),
             class: "#{@active_tab == 'opponent_suits' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ml-4" do %>
           対戦機体別戦績
         <% end %>
-        <%= link_to statistics_path(tab: 'partners', events: params[:events], mobile_suits: params[:mobile_suits], partners: params[:partners]),
+        <%= link_to statistics_path(tab: 'partners', events: params[:events], mobile_suits: params[:mobile_suits], partners: params[:partners], costs: params[:costs]),
             class: "#{@active_tab == 'partners' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ml-4" do %>
           パートナー別戦績
         <% end %>
-        <%= link_to statistics_path(tab: 'opponents', events: params[:events], mobile_suits: params[:mobile_suits], partners: params[:partners]),
+        <%= link_to statistics_path(tab: 'opponents', events: params[:events], mobile_suits: params[:mobile_suits], partners: params[:partners], costs: params[:costs]),
             class: "#{@active_tab == 'opponents' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ml-4" do %>
           対戦相手別戦績
         <% end %>
@@ -175,6 +175,23 @@
                 </option>
               <% end %>
             </select>
+          </div>
+        </div>
+
+        <!-- Cost Filter -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">コスト</label>
+          <div class="flex flex-wrap gap-2">
+            <% [3000, 2500, 2000, 1500].each do |cost| %>
+              <label class="cursor-pointer select-none">
+                <input type="checkbox" name="costs[]" value="<%= cost %>"
+                       <%= 'checked' if @filter_costs.include?(cost) %>
+                       class="sr-only">
+                <span class="cost-pill cost-pill-<%= cost %> inline-flex items-center px-3 py-1.5 rounded-full border text-sm font-medium transition-all">
+                  <%= cost %>
+                </span>
+              </label>
+            <% end %>
           </div>
         </div>
 
@@ -1919,4 +1936,13 @@
       gap: 1.5rem;
     }
   }
+  /* コストフィルターピル */
+  .cost-pill-3000 { background: #FEE2E2; color: #991B1B; border-color: #FCA5A5; }
+  .cost-pill-2500 { background: #FFEDD5; color: #C2410C; border-color: #FDBA74; }
+  .cost-pill-2000 { background: #FEF9C3; color: #A16207; border-color: #FDE047; }
+  .cost-pill-1500 { background: #DCFCE7; color: #166534; border-color: #86EFAC; }
+  input:checked + .cost-pill-3000 { background: #DC2626; color: white; border-color: #DC2626; }
+  input:checked + .cost-pill-2500 { background: #EA580C; color: white; border-color: #EA580C; }
+  input:checked + .cost-pill-2000 { background: #CA8A04; color: white; border-color: #CA8A04; }
+  input:checked + .cost-pill-1500 { background: #16A34A; color: white; border-color: #16A34A; }
 </style>

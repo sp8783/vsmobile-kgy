@@ -48,6 +48,7 @@ class StatisticsController < ApplicationController
     @filter_events = params[:events].present? ? params[:events].map(&:to_i) : []
     @filter_mobile_suits = params[:mobile_suits].present? ? params[:mobile_suits].map(&:to_i) : []
     @filter_partners = params[:partners].present? ? params[:partners].map(&:to_i) : []
+    @filter_costs = params[:costs].present? ? params[:costs].map(&:to_i) : []
   end
 
   def apply_filters
@@ -64,6 +65,11 @@ class StatisticsController < ApplicationController
     # 機体フィルター（ログインユーザーが使用した機体）
     if @filter_mobile_suits.any?
       @filtered_matches = @filtered_matches.where(mobile_suit_id: @filter_mobile_suits)
+    end
+
+    # コストフィルター（ログインユーザーが使用した機体のコスト）
+    if @filter_costs.any?
+      @filtered_matches = @filtered_matches.where(mobile_suit_id: MobileSuit.where(cost: @filter_costs))
     end
 
     # パートナーフィルター
