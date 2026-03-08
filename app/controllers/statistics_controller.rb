@@ -839,17 +839,21 @@ class StatisticsController < ApplicationController
     n = mps.size
     return nil if n == 0
 
-    sum_field = ->(field) { mps.sum { |mp| mp.send(field).to_f } }
+    # nil フィールドを除外して平均を計算する（nil.to_f = 0 による不正な平均を防ぐ）
+    avg_field = ->(field) {
+      valid = mps.select { |mp| mp.send(field).present? }
+      valid.any? ? (valid.sum { |mp| mp.send(field).to_f } / valid.size) : nil
+    }
     {
       count:           n,
-      score:           (sum_field.call(:score)          / n).round(1),
-      kills:           (sum_field.call(:kills)           / n).round(2),
-      deaths:          (sum_field.call(:deaths)          / n).round(2),
-      damage_dealt:    (sum_field.call(:damage_dealt)    / n).round(0),
-      damage_received: (sum_field.call(:damage_received) / n).round(0),
-      exburst_damage:  (sum_field.call(:exburst_damage)  / n).round(0),
-      exburst_count:   (sum_field.call(:exburst_count)   / n).round(2),
-      exburst_deaths:  (sum_field.call(:exburst_deaths)  / n).round(2),
+      score:           avg_field.call(:score)&.round(1),
+      kills:           avg_field.call(:kills)&.round(2),
+      deaths:          avg_field.call(:deaths)&.round(2),
+      damage_dealt:    avg_field.call(:damage_dealt)&.round(0),
+      damage_received: avg_field.call(:damage_received)&.round(0),
+      exburst_damage:  avg_field.call(:exburst_damage)&.round(0),
+      exburst_count:   avg_field.call(:exburst_count)&.round(2),
+      exburst_deaths:  avg_field.call(:exburst_deaths)&.round(2),
       exburst_death_rate: begin
                             total_count  = mps.sum { |mp| mp.exburst_count.to_i }
                             total_deaths = mps.sum { |mp| mp.exburst_deaths.to_i }
