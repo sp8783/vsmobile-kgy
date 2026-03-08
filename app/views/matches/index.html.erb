@@ -290,7 +290,7 @@
           <div class="px-6 py-4">
             <div class="flex items-center justify-between mb-3">
               <div class="flex items-center space-x-3">
-                <%= link_to match_path(match), class: "text-sm text-gray-500 hover:text-blue-600" do %>
+                <%= link_to match_path(match), class: "text-sm text-gray-500 hover:text-blue-600", data: { turbo_frame: "_top" } do %>
                   <%= match.played_at.strftime('%Y年%m月%d日') %>
                 <% end %>
                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
@@ -305,7 +305,7 @@
               </div>
             </div>
 
-            <%= link_to match_path(match), class: "block" do %>
+            <%= link_to match_path(match), class: "block", data: { turbo_frame: "_top" } do %>
               <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
                 <% team1_players = match.match_players.where(team_number: 1).order(:position) %>
                 <% team2_players = match.match_players.where(team_number: 2).order(:position) %>
