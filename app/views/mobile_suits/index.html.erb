@@ -1,7 +1,7 @@
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
   <div class="mb-6">
     <h1 class="text-2xl font-bold text-gray-900">機体一覧</h1>
-    <p class="mt-1 text-sm text-gray-500">全 <%= @suits_by_series.values.sum { |h| h.values.sum(&:size) } %> 機体</p>
+    <p class="mt-1 text-sm text-gray-500">全 <%= @total_count %> 機体</p>
   </div>
 
   <%# コスト凡例 %>
@@ -13,5 +13,14 @@
     <% end %>
   </div>
 
-  <%= render "suit_grid", suits_by_series: @suits_by_series, costs: @costs %>
+  <% @series_by_category.each do |category, suits_by_series| %>
+    <%# カテゴリヘッダー %>
+    <div class="mt-8 mb-2">
+      <h2 class="text-base font-bold text-gray-700 bg-gray-100 px-3 py-1.5 rounded">
+        <%= category %>
+      </h2>
+    </div>
+
+    <%= render "suit_grid", suits_by_series: suits_by_series, costs: @costs %>
+  <% end %>
 </div>
