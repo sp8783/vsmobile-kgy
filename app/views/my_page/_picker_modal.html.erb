@@ -1,0 +1,168 @@
+<%#
+  locals:
+    suits:          MobileSuit collection
+    costs:          Array of cost integers
+    counts_by_cost: Hash { cost => count }
+%>
+<style>
+  /* SortableJS ドラッグスタイル */
+  .tray-ghost   { opacity: 0.3; }
+  .tray-chosen  { cursor: grabbing !important; }
+  .tray-dragging { opacity: 0.95; transform: scale(1.05); box-shadow: 0 8px 24px rgba(0,0,0,0.18); }
+  /* ドラッグ中は削除ボタンを非表示 */
+  .tray-chosen .delete-btn { opacity: 0 !important; }
+</style>
+<%
+  cost_styles = {
+    ""     => { active: "bg-white shadow text-gray-900",          inactive: "text-gray-500 hover:text-gray-700" },
+    "3000" => { active: "bg-red-500 text-white shadow-sm",        inactive: "text-red-500 hover:bg-red-100/80" },
+    "2500" => { active: "bg-orange-500 text-white shadow-sm",     inactive: "text-orange-500 hover:bg-orange-100/80" },
+    "2000" => { active: "bg-yellow-400 text-gray-900 shadow-sm",  inactive: "text-yellow-600 hover:bg-yellow-100/80" },
+    "1500" => { active: "bg-green-500 text-white shadow-sm",      inactive: "text-green-600 hover:bg-green-100/80" },
+  }
+  cost_tabs = [["", "すべて", counts_by_cost.values.sum]] + costs.map { |c| [c.to_s, c.to_s, counts_by_cost[c] || 0] }
+%>
+
+<div class="fixed inset-0 z-50 hidden"
+     data-favorite-picker-target="modal">
+
+  <%# バックドロップ %>
+  <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"
+       data-action="click->favorite-picker#close"></div>
+
+  <%# パネル: モバイルは下から、デスクトップは中央 %>
+  <div class="absolute inset-x-0 bottom-0 sm:inset-6 md:inset-10 flex flex-col bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl overflow-hidden max-h-[95vh] sm:max-h-full">
+
+    <%# ── ヘッダー ── %>
+    <div class="flex-shrink-0 flex items-center justify-between px-5 py-4 border-b border-gray-100">
+      <div class="flex items-center gap-3">
+        <h2 class="text-base font-bold text-gray-900">お気に入り機体を選択</h2>
+        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full bg-indigo-100 text-indigo-700 text-xs font-bold tabular-nums"
+              data-favorite-picker-target="countBadge">0 / 9</span>
+      </div>
+      <button type="button"
+              class="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+              data-action="click->favorite-picker#close">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+
+    <%# ── 選択中トレイ ── %>
+    <div class="flex-shrink-0 bg-gray-50/80 border-b border-gray-100 px-4 pt-3 pb-2">
+      <div class="flex items-start gap-2">
+        <div class="flex-1 grid grid-cols-6 gap-2"
+             data-favorite-picker-target="tray">
+          <p class="col-span-6 text-sm text-gray-400 italic py-4 text-center self-center">機体をクリックして追加…</p>
+        </div>
+        <button type="button"
+                class="flex-shrink-0 text-xs text-gray-400 hover:text-red-500 font-medium transition-colors px-2 py-1 rounded-lg hover:bg-red-50 mt-1"
+                data-action="click->favorite-picker#clearAll">
+          クリア
+        </button>
+      </div>
+      <p class="mt-1.5 text-[11px] text-indigo-400/80 flex items-center gap-1.5">
+        <svg class="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4"/>
+        </svg>
+        ドラッグで順番を変えられます　　× で削除
+      </p>
+    </div>
+
+    <%# ── フィルターバー ── %>
+    <div class="flex-shrink-0 flex flex-wrap items-center gap-2 px-4 py-3 border-b border-gray-100 bg-white">
+      <div class="flex gap-0.5 flex-wrap p-1 bg-gray-100 rounded-xl">
+        <% cost_tabs.each do |val, label, count| %>
+          <% is_all = val.empty? %>
+          <% s = cost_styles[val] %>
+          <button type="button"
+                  class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-semibold text-sm transition-all whitespace-nowrap <%= is_all ? s[:active] : s[:inactive] %>"
+                  data-cost-btn
+                  data-cost="<%= val %>"
+                  data-active="<%= is_all ? 'true' : 'false' %>"
+                  data-action="click->favorite-picker#filterCost">
+            <%= label %>
+            <span class="text-xs font-medium"><%= count %></span>
+          </button>
+        <% end %>
+      </div>
+
+      <div class="relative flex-1 min-w-36">
+        <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+          <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/>
+          </svg>
+        </div>
+        <input type="text"
+               placeholder="機体名で検索…"
+               class="w-full rounded-xl border border-gray-200 bg-white py-2 pl-9 pr-3 text-sm text-gray-800 placeholder-gray-400 shadow-sm focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-200 transition"
+               data-favorite-picker-target="searchInput"
+               data-action="input->favorite-picker#search">
+      </div>
+    </div>
+
+    <%# ── 機体グリッド ── %>
+    <div class="flex-1 overflow-y-auto px-3 py-3">
+      <div class="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-7 gap-1.5">
+        <% suits.each do |suit| %>
+          <div data-suit-wrapper
+               data-suit-name="<%= suit.name %>"
+               data-suit-cost="<%= suit.cost %>">
+            <div class="suit-picker-card relative flex flex-col rounded-lg overflow-hidden bg-white border border-gray-200 cursor-pointer select-none transition-all duration-150 hover:border-indigo-300 hover:shadow-sm active:scale-95"
+                 data-suit-id="<%= suit.id %>"
+                 data-suit-name="<%= suit.name %>"
+                 data-suit-image="<%= suit.image_filename.to_s %>"
+                 data-action="click->favorite-picker#toggleSuit">
+
+              <%# スロットバッジ（選択時に JS で表示） %>
+              <span class="absolute top-1 left-1 z-10 min-w-[20px] h-5 px-1 bg-indigo-600 text-white text-[9px] font-bold rounded items-center justify-center shadow hidden"
+                    data-slot-badge></span>
+
+              <%# 機体画像 %>
+              <div class="bg-gradient-to-b from-gray-50 to-gray-100 flex items-center justify-center h-14 pointer-events-none">
+                <% if suit.image_filename.present? %>
+                  <%= image_tag "/mobile_suits/#{suit.image_filename}", alt: suit.name,
+                      class: "h-full w-full object-contain p-0.5",
+                      loading: "lazy" %>
+                <% else %>
+                  <svg class="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                  </svg>
+                <% end %>
+              </div>
+
+              <%# 機体名 %>
+              <p class="text-[12px] font-medium text-gray-600 leading-tight truncate text-center px-1 py-1 pointer-events-none">
+                <%= suit.name %>
+              </p>
+
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <%# ── フッター ── %>
+    <div class="flex-shrink-0 flex items-center justify-end gap-3 px-5 py-4 border-t border-gray-100 bg-white">
+      <button type="button"
+              class="px-5 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
+              data-action="click->favorite-picker#close">
+        キャンセル
+      </button>
+      <button type="button"
+              class="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold shadow-sm transition-all duration-150 active:scale-95"
+              data-favorite-picker-target="saveBtn"
+              data-action="click->favorite-picker#save">
+        保存
+      </button>
+    </div>
+
+    <%# 非表示フォーム %>
+    <%= form_with url: bulk_update_user_favorite_suits_path, method: :post,
+                  data: { favorite_picker_target: "form" } do |f| %>
+    <% end %>
+
+  </div>
+</div>

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_08_083502) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_08_140859) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -178,6 +178,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_08_083502) do
     t.index ["user_id"], name: "index_user_announcement_reads_on_user_id"
   end
 
+  create_table "user_favorite_suits", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "mobile_suit_id", null: false
+    t.integer "slot", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["mobile_suit_id"], name: "index_user_favorite_suits_on_mobile_suit_id"
+    t.index ["user_id", "slot"], name: "index_user_favorite_suits_on_user_id_and_slot", unique: true
+    t.index ["user_id"], name: "index_user_favorite_suits_on_user_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "encrypted_password", default: "", null: false
@@ -211,4 +222,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_08_083502) do
   add_foreign_key "rotations", "rotations", column: "base_rotation_id"
   add_foreign_key "user_announcement_reads", "announcements"
   add_foreign_key "user_announcement_reads", "users"
+  add_foreign_key "user_favorite_suits", "mobile_suits"
+  add_foreign_key "user_favorite_suits", "users"
 end

@@ -104,8 +104,11 @@
             </div>
           <% end %>
 
-          <!-- 設定・ログアウト -->
+          <!-- マイページ・設定・ログアウト -->
           <div class="space-y-1">
+            <% unless current_user.is_guest? %>
+              <%= link_to "マイページ", my_page_path, class: "sidebar-nav-item-small #{current_page?(my_page_path) ? 'active' : ''}" %>
+            <% end %>
             <% unless current_user.username == 'guest' %>
               <%= link_to "設定", edit_profile_path, class: "sidebar-nav-item-small" %>
             <% end %>
@@ -347,6 +350,9 @@
                     <% end %>
                   </select>
                 </div>
+              <% end %>
+              <% unless current_user.is_guest? %>
+                <%= link_to "マイページ", my_page_path, class: "mobile-menu-item-small #{current_page?(my_page_path) ? 'active' : ''}" %>
               <% end %>
               <% unless current_user.username == 'guest' %>
                 <%= link_to "設定", edit_profile_path, class: "mobile-menu-item-small" %>
