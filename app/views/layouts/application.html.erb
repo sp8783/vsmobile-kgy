@@ -52,6 +52,7 @@
             <%= link_to "ローテーション", rotations_path, class: "sidebar-nav-item #{current_page?(rotations_path) ? 'active' : ''}" %>
             <%= link_to "対戦履歴", matches_path, class: "sidebar-nav-item #{current_page?(matches_path) ? 'active' : ''}" %>
             <%= link_to "統計", statistics_path, class: "sidebar-nav-item #{current_page?(statistics_path) ? 'active' : ''}" %>
+            <%= link_to "機体一覧", mobile_suits_path, class: "sidebar-nav-item #{current_page?(mobile_suits_path) ? 'active' : ''}" %>
 
             <% if current_user.is_admin? %>
               <!-- 管理者メニューセパレーター -->
@@ -304,6 +305,7 @@
             <%= link_to "ローテーション", rotations_path, class: "mobile-menu-item #{current_page?(rotations_path) ? 'active' : ''}" %>
             <%= link_to "対戦履歴", matches_path, class: "mobile-menu-item #{current_page?(matches_path) ? 'active' : ''}" %>
             <%= link_to "統計", statistics_path, class: "mobile-menu-item #{current_page?(statistics_path) ? 'active' : ''}" %>
+            <%= link_to "機体一覧", mobile_suits_path, class: "mobile-menu-item #{current_page?(mobile_suits_path) ? 'active' : ''}" %>
             <% if current_user.is_admin? %>
               <div class="border-t border-indigo-400 mt-3 pt-3">
                 <div class="px-4 py-2 text-xs font-semibold text-indigo-200 uppercase tracking-wider">管理者メニュー</div>

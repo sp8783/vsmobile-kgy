@@ -37,6 +37,9 @@ Rails.application.routes.draw do
   # Statistics
   get "statistics", to: "statistics#index", as: :statistics
 
+  # Mobile Suits (public)
+  resources :mobile_suits, only: [ :index ]
+
   # API
   namespace :api do
     resources :events, only: [] do

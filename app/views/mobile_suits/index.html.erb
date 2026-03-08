@@ -1,0 +1,17 @@
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <div class="mb-6">
+    <h1 class="text-2xl font-bold text-gray-900">機体一覧</h1>
+    <p class="mt-1 text-sm text-gray-500">全 <%= @suits_by_series.values.sum { |h| h.values.sum(&:size) %> 機体</p>
+  </div>
+
+  <%# コスト凡例 %>
+  <div class="flex flex-wrap gap-2 mb-6">
+    <% { 3000 => %w[bg-red-100 text-red-700], 2500 => %w[bg-orange-100 text-orange-700], 2000 => %w[bg-yellow-100 text-yellow-700], 1500 => %w[bg-green-100 text-green-700] }.each do |cost, classes| %>
+      <span class="inline-flex items-center gap-1 text-sm">
+        <span class="inline-block text-xs font-bold px-2 py-0.5 rounded <%= classes.join(' ') %>"><%= cost %></span>
+      </span>
+    <% end %>
+  </div>
+
+  <%= render "suit_grid", suits_by_series: @suits_by_series, costs: @costs %>
+</div>
