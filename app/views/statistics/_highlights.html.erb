@@ -1,0 +1,78 @@
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+
+  <%# Row 1: ダメージ系 %>
+  <%= render 'highlights_card',
+      label:  '最多ダメージ',
+      icon:   '💥',
+      metric: @highlight_most_damage ? number_with_delimiter(@highlight_most_damage.damage_dealt) : nil,
+      unit:   'dmg',
+      mp:     @highlight_most_damage,
+      match:  @highlight_most_damage&.match %>
+
+  <%= render 'highlights_card',
+      label:  '最多 EX バーストダメージ',
+      icon:   '⚡',
+      metric: @highlight_most_exburst_damage ? number_with_delimiter(@highlight_most_exburst_damage.exburst_damage) : nil,
+      unit:   'dmg',
+      mp:     @highlight_most_exburst_damage,
+      match:  @highlight_most_exburst_damage&.match %>
+
+  <%= render 'highlights_card',
+      label:  '最も激しい試合',
+      icon:   '🔥',
+      metric: @highlight_most_intense_total ? number_with_delimiter(@highlight_most_intense_total) : nil,
+      unit:   'total dmg',
+      mp:     nil,
+      match:  @highlight_most_intense_match %>
+
+  <%# Row 2: スコア + 被ダメ + 生存時間 %>
+  <%= render 'highlights_card',
+      label:  '最高スコア',
+      icon:   '🏆',
+      metric: @highlight_top_score ? number_with_delimiter(@highlight_top_score.score) : nil,
+      unit:   'pts',
+      mp:     @highlight_top_score,
+      match:  @highlight_top_score&.match %>
+
+  <%= render 'highlights_card',
+      label:  '最少被ダメージ（勝利）',
+      icon:   '🛡️',
+      metric: @highlight_min_damage_received ? number_with_delimiter(@highlight_min_damage_received.damage_received) : nil,
+      unit:   'dmg received',
+      mp:     @highlight_min_damage_received,
+      match:  @highlight_min_damage_received&.match %>
+
+  <%= render 'highlights_card',
+      label:  '最長 1 機体目生存時間',
+      icon:   '⏳',
+      metric: @highlight_longest_first_life_cs ? format_survival_cs(@highlight_longest_first_life_cs) : nil,
+      unit:   'M:SS',
+      mp:     @highlight_longest_first_life,
+      match:  @highlight_longest_first_life&.match %>
+
+  <%# Row 3: 生存時間（短） + 試合時間 %>
+  <%= render 'highlights_card',
+      label:  '最短 1 機体目生存時間',
+      icon:   '💨',
+      metric: @highlight_shortest_first_life_cs ? format_survival_cs(@highlight_shortest_first_life_cs) : nil,
+      unit:   'M:SS',
+      mp:     @highlight_shortest_first_life,
+      match:  @highlight_shortest_first_life&.match %>
+
+  <%= render 'highlights_card',
+      label:  '最長試合時間',
+      icon:   '⏱️',
+      metric: @highlight_longest_match_cs ? format_survival_cs(@highlight_longest_match_cs) : nil,
+      unit:   'M:SS',
+      mp:     nil,
+      match:  @highlight_longest_match %>
+
+  <%= render 'highlights_card',
+      label:  '最短試合時間',
+      icon:   '🏁',
+      metric: @highlight_shortest_match_cs ? format_survival_cs(@highlight_shortest_match_cs) : nil,
+      unit:   'M:SS',
+      mp:     nil,
+      match:  @highlight_shortest_match %>
+
+</div>

@@ -51,6 +51,22 @@ class MatchesController < ApplicationController
       end
     end
 
+    # フィルター: 使用機体（複数選択対応）
+    if params[:mobile_suits].present?
+      mobile_suit_ids = params[:mobile_suits].reject(&:blank?).map(&:to_i)
+      if mobile_suit_ids.any?
+        @matches = @matches.joins(:match_players).where(match_players: { mobile_suit_id: mobile_suit_ids }).distinct
+      end
+    end
+
+    # フィルター: コスト（複数選択対応）
+    if params[:costs].present?
+      cost_values = params[:costs].reject(&:blank?).map(&:to_i)
+      if cost_values.any?
+        @matches = @matches.joins(match_players: :mobile_suit).where(mobile_suits: { cost: cost_values }).distinct
+      end
+    end
+
     # 統計条件フィルター共通: 対象プレイヤー
     stat_player_id = params[:stat_player_id].present? ? params[:stat_player_id].to_i : nil
 
@@ -91,6 +107,7 @@ class MatchesController < ApplicationController
 
     # フィルター: EX条件（チェックボックス）
     stat_filters = Array(params[:stat_filters]).reject(&:blank?)
+
     if stat_filters.include?("ex_leftover_loss")
       scope = @matches.joins(:match_players).where(
         "match_players.team_number != matches.winning_team AND " \
@@ -100,15 +117,41 @@ class MatchesController < ApplicationController
       @matches = scope.distinct
     end
 
+    if stat_filters.include?("ex_leftover_win")
+      # 敗北チームにEXバースト残しプレイヤーがいる試合（= 勝利チームがEXを残させた試合）
+      scope = @matches.where(
+        "EXISTS (SELECT 1 FROM match_players mp WHERE mp.match_id = matches.id " \
+        "AND mp.team_number != matches.winning_team " \
+        "AND (mp.last_death_ex_available = TRUE OR mp.survive_loss_ex_available = TRUE))"
+      )
+      if stat_player_id
+        scope = scope.joins(:match_players).where(
+          "match_players.user_id = ? AND match_players.team_number = matches.winning_team",
+          stat_player_id
+        )
+        @matches = scope.distinct
+      else
+        @matches = scope
+      end
+    end
+
+    if stat_filters.include?("exburst_death")
+      scope = @matches.joins(:match_players).where("match_players.exburst_deaths > 0")
+      scope = scope.where(match_players: { user_id: stat_player_id }) if stat_player_id
+      @matches = scope.distinct
+    end
+
     # フィルター: ダメージ閾値（以上/以下切り替え対応）
-    if params[:damage_dealt_val].present? && (dealt_val = params[:damage_dealt_val].to_i) > 0
+    if params[:damage_dealt_val].present?
+      dealt_val = params[:damage_dealt_val].to_i
       dealt_op = params[:damage_dealt_dir] == "lte" ? "<=" : ">="
       scope = @matches.joins(:match_players).where("match_players.damage_dealt #{dealt_op} ?", dealt_val)
       scope = scope.where(match_players: { user_id: stat_player_id }) if stat_player_id
       @matches = scope.distinct
     end
 
-    if params[:damage_received_val].present? && (received_val = params[:damage_received_val].to_i) > 0
+    if params[:damage_received_val].present?
+      received_val = params[:damage_received_val].to_i
       received_op = params[:damage_received_dir] == "lte" ? "<=" : ">="
       scope = @matches.joins(:match_players).where("match_players.damage_received #{received_op} ?", received_val)
       scope = scope.where(match_players: { user_id: stat_player_id }) if stat_player_id
@@ -123,6 +166,7 @@ class MatchesController < ApplicationController
     # フィルター用のデータ
     @all_events = Event.order(held_on: :desc)
     @all_users = User.regular_users.order(:nickname)
+    @all_mobile_suits = MobileSuit.all.order(Arel.sql("position IS NULL, position ASC, cost DESC, name ASC"))
 
     # 選択されたフィルター値
     @filter_events = params[:events].present? ? params[:events].reject(&:blank?).map(&:to_i) : []
@@ -130,6 +174,8 @@ class MatchesController < ApplicationController
     @filter_users_mode = params[:users_mode].presence_in(%w[or and]) || "or"
     @filter_streaming_users = params[:streaming_users].present? ? params[:streaming_users].reject(&:blank?).map(&:to_i) : []
     @filter_streaming_users_mode = params[:streaming_users_mode].presence_in(%w[or and]) || "or"
+    @filter_mobile_suits = params[:mobile_suits].present? ? params[:mobile_suits].reject(&:blank?).map(&:to_i) : []
+    @filter_costs = params[:costs].present? ? params[:costs].reject(&:blank?).map(&:to_i) : []
     @filter_stat_player_id = stat_player_id
     @filter_ol_filter = ol_filter
     @filter_stat_filters = stat_filters

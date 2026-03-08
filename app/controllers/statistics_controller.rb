@@ -32,12 +32,23 @@ class StatisticsController < ApplicationController
       calculate_opponent_stats
     when "performance"
       calculate_performance_stats
+    when "highlights"
+      calculate_highlights
     end
 
     # フィルター用のデータ
     @all_events = Event.order(held_on: :desc)
     @all_mobile_suits = MobileSuit.order(:name)
-    @all_partners = User.regular_users.where.not(id: viewing_as_user.id).order(:nickname)
+    all_partners = User.regular_users.where.not(id: viewing_as_user.id).order(:nickname)
+    if @filter_events.any?
+      partner_ids_in_events = MatchPlayer.joins(:match)
+                                         .where(matches: { event_id: @filter_events })
+                                         .where.not(user_id: viewing_as_user.id)
+                                         .distinct
+                                         .pluck(:user_id)
+      all_partners = all_partners.where(id: partner_ids_in_events)
+    end
+    @all_partners = all_partners
   end
 
   private
@@ -46,6 +57,7 @@ class StatisticsController < ApplicationController
     @filter_events = params[:events].present? ? params[:events].map(&:to_i) : []
     @filter_mobile_suits = params[:mobile_suits].present? ? params[:mobile_suits].map(&:to_i) : []
     @filter_partners = params[:partners].present? ? params[:partners].map(&:to_i) : []
+    @filter_costs = params[:costs].present? ? params[:costs].map(&:to_i) : []
   end
 
   def apply_filters
@@ -62,6 +74,11 @@ class StatisticsController < ApplicationController
     # 機体フィルター（ログインユーザーが使用した機体）
     if @filter_mobile_suits.any?
       @filtered_matches = @filtered_matches.where(mobile_suit_id: @filter_mobile_suits)
+    end
+
+    # コストフィルター（ログインユーザーが使用した機体のコスト）
+    if @filter_costs.any?
+      @filtered_matches = @filtered_matches.where(mobile_suit_id: MobileSuit.where(cost: @filter_costs))
     end
 
     # パートナーフィルター
@@ -540,6 +557,94 @@ class StatisticsController < ApplicationController
     win_mps  = stats_mps.select { |mp| mp.match.winning_team == mp.team_number }
     loss_mps = stats_mps.reject { |mp| mp.match.winning_team == mp.team_number }
 
+    # 機体/コストフィルター適用時: フィルターなしの自分の全体平均・同コスト帯平均を算出（比較用）
+    if @filter_mobile_suits.any? || @filter_costs.any?
+      all_user_mps = MatchPlayer.where(user_id: viewing_as_user.id)
+                                .joins(:match)
+                                .includes(:match, :mobile_suit, :user, match: { rotation_match: :rotation })
+      all_user_mps = all_user_mps.where(matches: { event_id: @filter_events }) if @filter_events.any?
+
+      all_user_records = all_user_mps.to_a
+      all_stats = all_user_records.select(&:has_stats?)
+      @user_overall_avg    = calc_perf_stats(all_stats)
+      @user_overall_wins   = calc_perf_stats(all_stats.select { |mp| mp.match.winning_team == mp.team_number })
+      @user_overall_losses = calc_perf_stats(all_stats.reject { |mp| mp.match.winning_team == mp.team_number })
+
+      # EXバースト活用分析の自己比較用データ（フィルターなし全体）
+      all_loss_stats = all_stats.reject { |mp| mp.match.winning_team == mp.team_number }
+      if all_loss_stats.any?
+        n = all_loss_stats.size
+        @user_overall_ex_remaining_rate  = (all_loss_stats.count { |mp| mp.last_death_ex_available || mp.survive_loss_ex_available } * 100.0 / n).round(1)
+        @user_overall_last_death_ex_rate = (all_loss_stats.count { |mp| mp.last_death_ex_available } * 100.0 / n).round(1)
+        @user_overall_survive_ex_rate    = (all_loss_stats.count { |mp| mp.survive_loss_ex_available } * 100.0 / n).round(1)
+      end
+
+      # OL分析の自己比較用データ（フィルターなし全体）
+      all_user_losses_ol = all_user_records.reject { |mp| mp.match.winning_team == mp.team_number }
+      all_user_wins_ol   = all_user_records.select { |mp| mp.match.winning_team == mp.team_number }
+      if all_user_losses_ol.any?
+        no_ol = all_user_losses_ol.count { |mp|
+          flag = mp.team_number == 1 ? mp.match.team1_ex_overlimit_before_end : mp.match.team2_ex_overlimit_before_end
+          flag == true
+        }
+        @user_overall_no_ol_loss_rate = (no_ol * 100.0 / all_user_losses_ol.size).round(1)
+      end
+      if all_user_wins_ol.any?
+        opp_no_ol = all_user_wins_ol.count { |mp|
+          flag = mp.team_number == 1 ? mp.match.team2_ex_overlimit_before_end : mp.match.team1_ex_overlimit_before_end
+          flag == true
+        }
+        @user_overall_opp_no_ol_win_rate = (opp_no_ol * 100.0 / all_user_wins_ol.size).round(1)
+      end
+
+      # 同コスト帯平均: 機体フィルター時は絞った機体のコストを使用、コストフィルター時はそのコストを使用
+      same_costs = if @filter_mobile_suits.any?
+        MobileSuit.where(id: @filter_mobile_suits).pluck(:cost).uniq
+      else
+        @filter_costs
+      end
+      same_cost_stats   = all_stats.select { |mp| same_costs.include?(mp.mobile_suit.cost) }
+      same_cost_records = all_user_records.select { |mp| same_costs.include?(mp.mobile_suit.cost) }
+      # 絞り込み済みデータと実質同一になる場合（例: コストのみフィルター）は表示しない
+      if same_cost_stats.size != stats_mps.select(&:has_stats?).size
+        @user_same_cost_avg    = calc_perf_stats(same_cost_stats)
+        @user_same_cost_wins   = calc_perf_stats(same_cost_stats.select { |mp| mp.match.winning_team == mp.team_number })
+        @user_same_cost_losses = calc_perf_stats(same_cost_stats.reject { |mp| mp.match.winning_team == mp.team_number })
+        @same_cost_label = same_costs.sort.reverse.map { |c| "#{c}" }.join("・") + "コスト"
+
+        # EXバースト - 同コスト帯
+        sc_loss_stats = same_cost_stats.reject { |mp| mp.match.winning_team == mp.team_number }
+        if sc_loss_stats.any?
+          n = sc_loss_stats.size
+          @user_same_cost_ex_remaining_rate  = (sc_loss_stats.count { |mp| mp.last_death_ex_available || mp.survive_loss_ex_available } * 100.0 / n).round(1)
+          @user_same_cost_last_death_ex_rate = (sc_loss_stats.count { |mp| mp.last_death_ex_available } * 100.0 / n).round(1)
+          @user_same_cost_survive_ex_rate    = (sc_loss_stats.count { |mp| mp.survive_loss_ex_available } * 100.0 / n).round(1)
+        end
+
+        # OL分析 - 同コスト帯
+        sc_losses_ol = same_cost_records.reject { |mp| mp.match.winning_team == mp.team_number }
+        sc_wins_ol   = same_cost_records.select { |mp| mp.match.winning_team == mp.team_number }
+        if sc_losses_ol.any?
+          no_ol = sc_losses_ol.count { |mp|
+            flag = mp.team_number == 1 ? mp.match.team1_ex_overlimit_before_end : mp.match.team2_ex_overlimit_before_end
+            flag == true
+          }
+          @user_same_cost_no_ol_loss_rate = (no_ol * 100.0 / sc_losses_ol.size).round(1)
+        end
+        if sc_wins_ol.any?
+          opp_no_ol = sc_wins_ol.count { |mp|
+            flag = mp.team_number == 1 ? mp.match.team2_ex_overlimit_before_end : mp.match.team1_ex_overlimit_before_end
+            flag == true
+          }
+          @user_same_cost_opp_no_ol_win_rate = (opp_no_ol * 100.0 / sc_wins_ol.size).round(1)
+        end
+      end
+    end
+
+    # by_user.each ループ内で win_mps/loss_mps が上書きされるため先に退避する
+    user_win_mps  = win_mps
+    user_loss_mps = loss_mps
+
     @stats_total  = stats_mps.size
     @stats_wins   = win_mps.size
     @stats_losses = loss_mps.size
@@ -646,79 +751,109 @@ class StatisticsController < ApplicationController
       .where(has_stats_sql).where(users: { is_guest: false }).to_a
     if all_stats_mps.any?
       by_user = all_stats_mps.group_by(&:user_id)
-      user_perf_list = by_user.map do |_uid, mps|
-        n  = mps.size
-        sf = ->(f) { mps.sum { |mp| mp.send(f).to_f } }
-        total_ex   = mps.sum { |mp| mp.exburst_count.to_i }
-        total_ex_d = mps.sum { |mp| mp.exburst_deaths.to_i }
-        ol_count   = mps.count { |mp|
-          flag = mp.team_number == 1 ? mp.match.team1_ex_overlimit_before_end : mp.match.team2_ex_overlimit_before_end
-          flag == false
-        }
-        loss_mps   = mps.select { |mp| mp.match.winning_team && mp.match.winning_team != mp.team_number }
-        ol_loss_count = loss_mps.count { |mp|
+
+      build_perf = lambda do |subset|
+        m = subset.size
+        next nil if m == 0
+        sf = ->(f) { subset.sum { |mp| mp.send(f).to_f } }
+        total_ex   = subset.sum { |mp| mp.exburst_count.to_i }
+        total_ex_d = subset.sum { |mp| mp.exburst_deaths.to_i }
+        ol_count = subset.count { |mp|
           flag = mp.team_number == 1 ? mp.match.team1_ex_overlimit_before_end : mp.match.team2_ex_overlimit_before_end
           flag == false
         }
         {
-          score:              (sf.call(:score)          / n).round(1),
-          kills:              (sf.call(:kills)           / n).round(2),
-          deaths:             (sf.call(:deaths)          / n).round(2),
-          damage_dealt:       (sf.call(:damage_dealt)    / n).round(0),
-          damage_received:    (sf.call(:damage_received) / n).round(0),
-          exburst_damage:     (sf.call(:exburst_damage)  / n).round(0),
-          exburst_count:      (sf.call(:exburst_count)   / n).round(2),
-          exburst_deaths:     (sf.call(:exburst_deaths)  / n).round(2),
+          score:              (sf.call(:score)          / m).round(1),
+          kills:              (sf.call(:kills)           / m).round(2),
+          deaths:             (sf.call(:deaths)          / m).round(2),
+          damage_dealt:       (sf.call(:damage_dealt)    / m).round(0),
+          damage_received:    (sf.call(:damage_received) / m).round(0),
+          exburst_damage:     (sf.call(:exburst_damage)  / m).round(0),
+          exburst_count:      (sf.call(:exburst_count)   / m).round(2),
+          exburst_deaths:     (sf.call(:exburst_deaths)  / m).round(2),
           exburst_death_rate: total_ex > 0 ? (total_ex_d * 100.0 / total_ex).round(1) : nil,
-          ol_rate:            (ol_count * 100.0 / n).round(1),
-          ol_rate_losses:     loss_mps.any? ? (ol_loss_count * 100.0 / loss_mps.size).round(1) : nil
+          ol_rate:            (ol_count * 100.0 / m).round(1)
         }
       end
-      nu = user_perf_list.size
-      valid_dr = user_perf_list.map { |u| u[:exburst_death_rate] }.compact
-      @community_avg = {
-        score:              (user_perf_list.sum { |u| u[:score] }          / nu).round(1),
-        kills:              (user_perf_list.sum { |u| u[:kills] }           / nu).round(2),
-        deaths:             (user_perf_list.sum { |u| u[:deaths] }          / nu).round(2),
-        damage_dealt:       (user_perf_list.sum { |u| u[:damage_dealt] }    / nu).round(0),
-        damage_received:    (user_perf_list.sum { |u| u[:damage_received] } / nu).round(0),
-        exburst_damage:     (user_perf_list.sum { |u| u[:exburst_damage] }  / nu).round(0),
-        exburst_count:      (user_perf_list.sum { |u| u[:exburst_count] }   / nu).round(2),
-        exburst_deaths:     (user_perf_list.sum { |u| u[:exburst_deaths] }  / nu).round(2),
-        exburst_death_rate: valid_dr.any? ? (valid_dr.sum / valid_dr.size).round(1) : nil,
-        ol_rate:            (user_perf_list.sum { |u| u[:ol_rate] }         / nu).round(1)
-      }
-      stat_keys = %i[score kills deaths damage_dealt damage_received exburst_damage exburst_count exburst_deaths ol_rate]
-      @community_min = stat_keys.to_h { |k| [ k, user_perf_list.map { |u| u[k] }.compact.min ] }
-      @community_max = stat_keys.to_h { |k| [ k, user_perf_list.map { |u| u[k] }.compact.max ] }
-      if valid_dr.any?
-        @community_min[:exburst_death_rate] = valid_dr.min
-        @community_max[:exburst_death_rate] = valid_dr.max
+
+      build_community = lambda do |list|
+        next nil unless list.any?
+        n = list.size
+        valid_dr = list.map { |u| u[:exburst_death_rate] }.compact
+        avg = {
+          score:              (list.sum { |u| u[:score] }          / n).round(1),
+          kills:              (list.sum { |u| u[:kills] }           / n).round(2),
+          deaths:             (list.sum { |u| u[:deaths] }          / n).round(2),
+          damage_dealt:       (list.sum { |u| u[:damage_dealt] }    / n).round(0),
+          damage_received:    (list.sum { |u| u[:damage_received] } / n).round(0),
+          exburst_damage:     (list.sum { |u| u[:exburst_damage] }  / n).round(0),
+          exburst_count:      (list.sum { |u| u[:exburst_count] }   / n).round(2),
+          exburst_deaths:     (list.sum { |u| u[:exburst_deaths] }  / n).round(2),
+          exburst_death_rate: valid_dr.any? ? (valid_dr.sum / valid_dr.size).round(1) : nil,
+          ol_rate:            (list.sum { |u| u[:ol_rate] }         / n).round(1)
+        }
+        stat_keys = %i[score kills deaths damage_dealt damage_received exburst_damage exburst_count exburst_deaths ol_rate]
+        min_h = stat_keys.to_h { |k| [ k, list.map { |u| u[k] }.compact.min ] }
+        max_h = stat_keys.to_h { |k| [ k, list.map { |u| u[k] }.compact.max ] }
+        if valid_dr.any?
+          min_h[:exburst_death_rate] = valid_dr.min
+          max_h[:exburst_death_rate] = valid_dr.max
+        end
+        [ avg, min_h, max_h ]
       end
-      valid_ol_losses = user_perf_list.map { |u| u[:ol_rate_losses] }.compact
-      if valid_ol_losses.any?
-        @community_avg[:ol_rate_losses]  = (valid_ol_losses.sum / valid_ol_losses.size).round(1)
-        @community_min[:ol_rate_losses]  = valid_ol_losses.min
-        @community_max[:ol_rate_losses]  = valid_ol_losses.max
+
+      user_perf_list   = []
+      user_wins_list   = []
+      user_losses_list = []
+      by_user.each do |_uid, mps|
+        overall  = build_perf.call(mps)
+        win_mps  = mps.select { |mp| mp.match.winning_team == mp.team_number }
+        loss_mps = mps.select { |mp| mp.match.winning_team && mp.match.winning_team != mp.team_number }
+        user_perf_list   << overall                    if overall
+        user_wins_list   << build_perf.call(win_mps)   if win_mps.any?
+        user_losses_list << build_perf.call(loss_mps)  if loss_mps.any?
+      end
+
+      if user_perf_list.any?
+        result = build_community.call(user_perf_list)
+        @community_avg, @community_min, @community_max = result if result
+      end
+      if user_wins_list.any?
+        result = build_community.call(user_wins_list)
+        @community_wins_avg, @community_wins_min, @community_wins_max = result if result
+      end
+      if user_losses_list.any?
+        result = build_community.call(user_losses_list)
+        @community_losses_avg, @community_losses_min, @community_losses_max = result if result
       end
     end
+
+    # 生存時間統計（全体・勝利時・敗北時）
+    # 注意: by_user.each ループ内で win_mps/loss_mps が上書きされるため、事前に退避した変数を使う
+    @survival_time_stats         = calculate_survival_time_stats(stats_mps,       community_scope: :all)
+    @survival_time_stats_wins    = calculate_survival_time_stats(user_win_mps,    community_scope: :wins)
+    @survival_time_stats_losses  = calculate_survival_time_stats(user_loss_mps,   community_scope: :losses)
   end
 
   def calc_perf_stats(mps)
     n = mps.size
     return nil if n == 0
 
-    sum_field = ->(field) { mps.sum { |mp| mp.send(field).to_f } }
+    # nil フィールドを除外して平均を計算する（nil.to_f = 0 による不正な平均を防ぐ）
+    avg_field = ->(field) {
+      valid = mps.select { |mp| mp.send(field).present? }
+      valid.any? ? (valid.sum { |mp| mp.send(field).to_f } / valid.size) : nil
+    }
     {
       count:           n,
-      score:           (sum_field.call(:score)          / n).round(1),
-      kills:           (sum_field.call(:kills)           / n).round(2),
-      deaths:          (sum_field.call(:deaths)          / n).round(2),
-      damage_dealt:    (sum_field.call(:damage_dealt)    / n).round(0),
-      damage_received: (sum_field.call(:damage_received) / n).round(0),
-      exburst_damage:  (sum_field.call(:exburst_damage)  / n).round(0),
-      exburst_count:   (sum_field.call(:exburst_count)   / n).round(2),
-      exburst_deaths:  (sum_field.call(:exburst_deaths)  / n).round(2),
+      score:           avg_field.call(:score)&.round(1),
+      kills:           avg_field.call(:kills)&.round(2),
+      deaths:          avg_field.call(:deaths)&.round(2),
+      damage_dealt:    avg_field.call(:damage_dealt)&.round(0),
+      damage_received: avg_field.call(:damage_received)&.round(0),
+      exburst_damage:  avg_field.call(:exburst_damage)&.round(0),
+      exburst_count:   avg_field.call(:exburst_count)&.round(2),
+      exburst_deaths:  avg_field.call(:exburst_deaths)&.round(2),
       exburst_death_rate: begin
                             total_count  = mps.sum { |mp| mp.exburst_count.to_i }
                             total_deaths = mps.sum { |mp| mp.exburst_deaths.to_i }
@@ -729,6 +864,165 @@ class StatisticsController < ApplicationController
                          flag == false
                        } * 100.0 / n).round(1)
     }
+  end
+
+  # 生存時間統計を計算する
+  # @param user_mps [Array<MatchPlayer>] フィルター済みのユーザー match_player 一覧
+  # @param community_scope [Symbol] :all / :wins / :losses — コミュニティ側の勝敗絞り込み
+  # @return [Array<Hash>] ライフ番号ごとの統計配列。survival_times データがない場合は []
+  def calculate_survival_time_stats(user_mps, community_scope: :all)
+    # survival_times が存在するものだけ対象
+    user_st_mps = user_mps.select { |mp| mp.survival_times.present? }
+    return [] if user_st_mps.empty?
+
+    # コミュニティデータ（非ゲストかつ survival_times 存在）
+    community_q = MatchPlayer.joins(:match, :user)
+      .where(users: { is_guest: false })
+      .where("survival_times IS NOT NULL AND jsonb_array_length(survival_times) > 0")
+    community_q = case community_scope
+    when :wins   then community_q.where("matches.winning_team = match_players.team_number")
+    when :losses then community_q.where("matches.winning_team != match_players.team_number")
+    else community_q
+    end
+    community_mps = community_q.to_a
+
+    # 最大ライフ数を決定（ユーザーとコミュニティ両方から）
+    max_lives = [ user_st_mps, community_mps ].flat_map { |mps|
+      mps.map { |mp| (mp.survival_times || []).size }
+    }.max.to_i
+    return [] if max_lives == 0
+
+    max_lives.times.map do |n|
+      mps_with_life  = user_st_mps.select    { |mp| (mp.survival_times || []).size > n }
+      comm_with_life = community_mps.select  { |mp| (mp.survival_times || []).size > n }
+
+      # 死亡・生存を分離（survival_times.size > deaths なら最終ライフは生存）
+      survived_life = ->(mp, idx) {
+        st = mp.survival_times || []
+        idx == st.size - 1 && st.size > mp.deaths.to_i
+      }
+      user_died_mps     = mps_with_life.reject  { |mp| survived_life.(mp, n) }
+      user_survived_mps = mps_with_life.select  { |mp| survived_life.(mp, n) }
+      comm_died_mps     = comm_with_life.reject  { |mp| survived_life.(mp, n) }
+      comm_survived_mps = comm_with_life.select  { |mp| survived_life.(mp, n) }
+
+      # 死亡統計
+      died_values    = user_died_mps.map { |mp| mp.survival_times[n] }
+      died_avg_cs    = died_values.any? ? (died_values.sum.to_f / died_values.size).round : nil
+      died_comm_avgs = comm_died_mps.group_by(&:user_id).filter_map do |_uid, mps|
+        vals = mps.map { |mp| (mp.survival_times || [])[n] }.compact
+        next unless vals.any?
+        (vals.sum.to_f / vals.size).round
+      end
+
+      # 生存統計（全ライフ実時間あり）
+      survived_values    = user_survived_mps.map { |mp| mp.survival_times[n] }
+      survived_avg_cs    = survived_values.any? ? (survived_values.sum.to_f / survived_values.size).round : nil
+      survived_comm_avgs = comm_survived_mps.group_by(&:user_id).filter_map do |_uid, mps|
+        vals = mps.map { |mp| (mp.survival_times || [])[n] }.compact
+        next unless vals.any?
+        (vals.sum.to_f / vals.size).round
+      end
+
+      {
+        n: n + 1,
+        died: {
+          user_count:       user_died_mps.size,
+          user_avg_cs:      died_avg_cs,
+          community_avg_cs: died_comm_avgs.any? ? (died_comm_avgs.sum.to_f / died_comm_avgs.size).round : nil,
+          community_min_cs: died_comm_avgs.min,
+          community_max_cs: died_comm_avgs.max
+        },
+        survived: {
+          user_count:       user_survived_mps.size,
+          user_avg_cs:      survived_avg_cs,
+          community_avg_cs: survived_comm_avgs.any? ? (survived_comm_avgs.sum.to_f / survived_comm_avgs.size).round : nil,
+          community_min_cs: survived_comm_avgs.min,
+          community_max_cs: survived_comm_avgs.max
+        }
+      }
+    end
+  end
+
+  def calculate_highlights
+    base_mps = MatchPlayer.joins(:match, :mobile_suit, :user)
+                          .includes(:match, :mobile_suit, :user, match: :event)
+    base_mps = base_mps.where(matches: { event_id: @filter_events }) if @filter_events.any?
+
+    stats_mps = base_mps.where.not(damage_dealt: nil)
+
+    # 最多ダメージ
+    @highlight_most_damage = stats_mps.order(damage_dealt: :desc).first
+
+    # 最多 EX バーストダメージ
+    @highlight_most_exburst_damage = base_mps.where.not(exburst_damage: nil)
+                                             .order(exburst_damage: :desc).first
+
+    # 最少被ダメージ（勝利プレイヤー単位）
+    @highlight_min_damage_received = MatchPlayer
+      .joins(:match, :mobile_suit, :user)
+      .includes(:match, :mobile_suit, :user, match: :event)
+      .where.not(damage_received: nil)
+      .where("matches.winning_team = match_players.team_number")
+      .then { |q| @filter_events.any? ? q.where(matches: { event_id: @filter_events }) : q }
+      .order(damage_received: :asc)
+      .first
+
+    # 最高スコア
+    @highlight_top_score = base_mps.where.not(score: nil).order(score: :desc).first
+
+    # 最も激しい試合（全プレイヤーの damage_dealt 合計が最大の試合）
+    intense_mps = MatchPlayer.joins(:match)
+      .includes(match: :event)
+      .where.not(damage_dealt: nil)
+    intense_mps = intense_mps.where(matches: { event_id: @filter_events }) if @filter_events.any?
+
+    best_intense = intense_mps.to_a
+      .group_by(&:match_id)
+      .filter_map do |_mid, mps|
+        next if mps.any? { |mp| mp.damage_dealt.nil? }
+        [ mps.sum(&:damage_dealt), mps.first.match ]
+      end
+      .max_by { |total, _| total }
+
+    if best_intense
+      @highlight_most_intense_total = best_intense[0]
+      @highlight_most_intense_match = best_intense[1]
+    end
+
+    # 生存時間: survival_times[0] があるものだけ対象
+    survival_mps = base_mps.where("survival_times IS NOT NULL AND jsonb_array_length(survival_times) > 0")
+
+    loaded_survival = survival_mps.to_a
+
+    # 最長 1 機体目生存時間（死亡・生存問わず）
+    longest_life_mp = loaded_survival.max_by { |mp| (mp.survival_times || [])[0].to_i }
+    @highlight_longest_first_life    = longest_life_mp
+    @highlight_longest_first_life_cs = longest_life_mp ? (longest_life_mp.survival_times || [])[0].to_i : nil
+
+    # 最短 1 機体目生存時間（死亡のみ = survival_times が 2 個以上 OR deaths >= 1）
+    died_on_first = loaded_survival.select do |mp|
+      st = mp.survival_times || []
+      st.size >= 2 || mp.deaths.to_i >= 1
+    end
+    shortest_life_mp = died_on_first.min_by { |mp| (mp.survival_times || [])[0].to_i }
+    @highlight_shortest_first_life    = shortest_life_mp
+    @highlight_shortest_first_life_cs = shortest_life_mp ? (shortest_life_mp.survival_times || [])[0].to_i : nil
+
+    # 試合時間: match_timelines.game_end_cs を使用
+    timelines_q = MatchTimeline.joins(:match)
+                               .includes(match: :event)
+                               .where.not(game_end_cs: nil)
+    timelines_q = timelines_q.where(matches: { event_id: @filter_events }) if @filter_events.any?
+
+    longest_tl  = timelines_q.order(game_end_cs: :desc).first
+    shortest_tl = timelines_q.order(game_end_cs: :asc).first
+
+    @highlight_longest_match    = longest_tl&.match
+    @highlight_longest_match_cs = longest_tl&.game_end_cs
+
+    @highlight_shortest_match    = shortest_tl&.match
+    @highlight_shortest_match_cs = shortest_tl&.game_end_cs
   end
 
   def calculate_overall_stats

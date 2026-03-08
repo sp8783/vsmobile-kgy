@@ -1,0 +1,35 @@
+<span class="inline-flex items-center justify-center gap-1">
+  <%= label %>
+  <span data-controller="tooltip"
+        data-action="mouseenter->tooltip#show mouseleave->tooltip#hide">
+    <%= render 'shared/tooltip_icon', aria_label: "#{label}の見方" %>
+    <div data-tooltip-target="content"
+         class="hidden z-50 w-64 bg-gray-900 text-white text-xs rounded-lg shadow-xl p-3
+                text-left font-normal normal-case tracking-normal whitespace-normal pointer-events-none">
+      <p class="font-semibold text-white mb-2"><%= label %>の見方</p>
+      <p class="text-gray-300 mb-2"><%= description %></p>
+      <p class="font-semibold text-white mb-1">数直線の見方</p>
+      <div class="bg-gray-800 rounded p-2 mb-2">
+        <div class="flex items-center gap-0.5 text-[10px] text-gray-400 mb-1">
+          <span>小</span>
+          <span class="flex-1 border-t border-gray-500 mx-0.5"></span>
+          <span class="inline-block w-px h-3 bg-gray-300 mx-0.5 shrink-0"></span>
+          <span class="flex-1 border-t border-gray-500 mx-0.5"></span>
+          <span class="inline-block w-2.5 h-2.5 rounded-full bg-green-400 border border-gray-900 shrink-0"></span>
+          <span class="flex-1 border-t border-gray-500 mx-0.5"></span>
+          <span>大</span>
+        </div>
+        <div class="flex text-[9px] text-gray-500 justify-center gap-4">
+          <span>↑ 比較基準値（縦線）</span>
+          <span>↑ あなた（●）</span>
+        </div>
+      </div>
+      <p class="text-gray-400 text-[10px] mb-2">スケールは2点の差を基準に動的に調整されます</p>
+      <ul class="text-gray-300 space-y-0.5 text-[10px]">
+        <li><span class="inline-block w-2 h-2 rounded-full bg-green-500 mr-1 align-middle"></span>緑ドット: 比較値より良好</li>
+        <li><span class="inline-block w-2 h-2 rounded-full bg-red-500 mr-1 align-middle"></span>赤ドット: 比較値より低い</li>
+      </ul>
+      <div class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+    </div>
+  </span>
+</span>
