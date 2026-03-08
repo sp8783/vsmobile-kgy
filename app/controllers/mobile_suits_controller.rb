@@ -76,9 +76,9 @@ class MobileSuitsController < ApplicationController
   }.freeze
 
   def index
-    suits = MobileSuit.all
+    suits = MobileSuit.all.order(:id)
 
-    # 全機体をシリーズ→コスト別にグルーピング
+    # 全機体をシリーズ→コスト別にグルーピング（ID順を維持）
     all_by_series = suits.group_by(&:series).transform_values do |series_suits|
       series_suits.group_by(&:cost)
     end
