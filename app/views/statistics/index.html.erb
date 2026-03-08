@@ -1925,6 +1925,8 @@
                             <span class="text-gray-300 font-normal">-</span>
                           <% elsif row[:na_if_nil] && col[:perf][row[:key]].nil? %>
                             <span class="text-gray-400 text-xs font-normal">N/A</span>
+                          <% elsif col[:perf][row[:key]].nil? %>
+                            <span class="text-gray-300 font-normal">-</span>
                           <% else %>
                             <%= "#{col[:perf][row[:key]]}#{row[:suffix]}" %>
                           <% end %>
@@ -2007,23 +2009,25 @@
                                   hi    = [user_val.to_f, cmp_val.to_f].max
                                   span  = hi - lo
                                 %>
-                                <% if span >= 0.001 %>
-                                  <%
-                                    pad      = span * 0.5
-                                    dyn_min  = [[(lo - pad).round(2), 0].max, lo].min
-                                    dyn_max  = [(hi + pad).round(2), hi].max
-                                    dyn_range = dyn_max - dyn_min
-                                    user_pct = ((user_val.to_f - dyn_min) / dyn_range * 100).clamp(0, 100).round(1)
-                                    avg_pct  = ((cmp_val.to_f  - dyn_min) / dyn_range * 100).clamp(0, 100).round(1)
-                                  %>
-                                  <div class="relative h-1.5 bg-gray-200 rounded-full mt-2 max-w-[100px] mx-auto">
-                                    <div class="absolute -top-1 -bottom-1 w-0.5 bg-gray-400 rounded-full" style="left: <%= avg_pct %>%"></div>
-                                    <div class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full border-2 border-white shadow-sm <%= good ? 'bg-green-500' : 'bg-red-500' %>" style="left: <%= user_pct %>%"></div>
-                                  </div>
-                                  <div class="flex justify-between text-[10px] text-gray-400 mt-1 max-w-[100px] mx-auto">
-                                    <span><%= dyn_min %><%= row[:suffix] %></span>
-                                    <span><%= dyn_max %><%= row[:suffix] %></span>
-                                  </div>
+                                <%
+                                  pad       = span >= 0.001 ? span * 0.5 : [user_val.to_f * 0.1, 0.5].max
+                                  dyn_min   = [[(lo - pad).round(2), 0].max, lo].min
+                                  dyn_max   = [(hi + pad).round(2), hi].max
+                                  dyn_range = dyn_max - dyn_min
+                                  user_pct  = (dyn_range > 0 ? (user_val.to_f - dyn_min) / dyn_range * 100 : 50).clamp(0, 100).round(1)
+                                  avg_pct   = (dyn_range > 0 ? (cmp_val.to_f  - dyn_min) / dyn_range * 100 : 50).clamp(0, 100).round(1)
+                                  dot_color = span >= 0.001 ? (good ? 'bg-green-500' : 'bg-red-500') : 'bg-gray-400'
+                                %>
+                                <div class="relative h-1.5 bg-gray-200 rounded-full mt-2 max-w-[100px] mx-auto">
+                                  <div class="absolute -top-1 -bottom-1 w-0.5 bg-gray-400 rounded-full" style="left: <%= avg_pct %>%"></div>
+                                  <div class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full border-2 border-white shadow-sm <%= dot_color %>" style="left: <%= user_pct %>%"></div>
+                                </div>
+                                <div class="flex justify-between text-[10px] text-gray-400 mt-1 max-w-[100px] mx-auto">
+                                  <span><%= dyn_min %><%= row[:suffix] %></span>
+                                  <span><%= dyn_max %><%= row[:suffix] %></span>
+                                </div>
+                                <% if span < 0.001 %>
+                                  <span class="text-xs text-gray-400">差分なし</span>
                                 <% end %>
                                 <% unless diff.abs < 0.005 %>
                                   <span class="inline-block mt-1 px-1.5 py-0.5 rounded text-xs font-semibold <%= good ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' %>">
