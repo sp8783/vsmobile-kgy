@@ -1,106 +1,83 @@
-<div class="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
   <%# ページヘッダー %>
-  <div class="mb-5 flex items-baseline gap-3">
+  <div class="mb-6">
     <h1 class="text-2xl font-extrabold text-gray-900 tracking-tight">機体一覧</h1>
-    <span class="text-sm text-gray-400 font-medium"><%= @total_count %> 機体</span>
+    <p class="mt-1 text-sm text-gray-400">全 <%= @counts_by_cost.values.sum %> 機体 — コストを選んで絞り込み</p>
   </div>
 
-  <div class="overflow-x-auto rounded-xl shadow-sm border border-gray-200">
-    <table class="border-collapse text-xs w-full">
-      <%# ヘッダー行 %>
-      <thead>
-        <tr class="bg-gray-900 text-white">
-          <th class="py-2.5 px-3 text-left font-semibold text-gray-300 text-[11px] uppercase tracking-widest w-16 border-r border-gray-700">区分</th>
-          <th class="py-2.5 px-3 text-left font-semibold text-gray-300 text-[11px] uppercase tracking-widest w-40 border-r border-gray-700">シリーズ</th>
-          <% [
-            [3000, "from-red-500 to-rose-600"],
-            [2500, "from-orange-400 to-amber-500"],
-            [2000, "from-yellow-400 to-yellow-500"],
-            [1500, "from-emerald-400 to-green-500"],
-          ].each do |cost, gradient| %>
-            <th class="py-2.5 px-3 text-center w-1/4">
-              <span class="inline-block bg-gradient-to-r <%= gradient %> text-white text-xs font-bold px-3 py-0.5 rounded-full shadow-sm">
-                <%= cost %>
-              </span>
-            </th>
+  <%# コストタブ %>
+  <%
+    tab_styles = {
+      3000 => { active: "bg-rose-600 text-white shadow-rose-200",   inactive: "text-rose-600 border border-rose-200 hover:bg-rose-50",   count_cls: "bg-rose-500/20 text-rose-100",   count_inactive: "bg-rose-100 text-rose-500" },
+      2500 => { active: "bg-orange-500 text-white shadow-orange-200", inactive: "text-orange-600 border border-orange-200 hover:bg-orange-50", count_cls: "bg-orange-400/20 text-orange-100", count_inactive: "bg-orange-100 text-orange-600" },
+      2000 => { active: "bg-amber-400 text-gray-900 shadow-amber-200", inactive: "text-amber-600 border border-amber-200 hover:bg-amber-50",  count_cls: "bg-amber-300/30 text-amber-900",  count_inactive: "bg-amber-100 text-amber-700" },
+      1500 => { active: "bg-emerald-500 text-white shadow-emerald-200", inactive: "text-emerald-700 border border-emerald-200 hover:bg-emerald-50", count_cls: "bg-emerald-400/20 text-emerald-100", count_inactive: "bg-emerald-100 text-emerald-700" },
+    }
+  %>
+  <div class="flex gap-2 mb-8">
+    <% MobileSuitsController::COSTS.each do |cost| %>
+      <% active = @selected_cost == cost %>
+      <% s = tab_styles[cost] %>
+      <%= link_to mobile_suits_path(cost: cost),
+          class: "flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition-all duration-150 shadow-sm #{active ? s[:active] + ' shadow-md' : s[:inactive]}" do %>
+        <span><%= cost %></span>
+        <span class="text-xs font-semibold px-1.5 py-0.5 rounded-full <%= active ? s[:count_cls] : s[:count_inactive] %>">
+          <%= @counts_by_cost[cost] || 0 %>
+        </span>
+      <% end %>
+    <% end %>
+  </div>
+
+  <%# 機体グリッド %>
+  <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-3">
+    <% @suits.each do |suit| %>
+      <div class="group relative flex flex-col rounded-xl overflow-hidden bg-white border border-gray-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 hover:border-indigo-300 transition-all duration-150">
+
+        <%# 画像エリア %>
+        <div class="bg-gradient-to-b from-gray-50 to-gray-100 flex items-center justify-center p-1">
+          <% if suit.wiki_url.present? %>
+            <%= link_to suit.wiki_url, target: "_blank", rel: "noopener noreferrer", title: "#{suit.name} — Wiki", class: "block" do %>
+              <% if suit.image_filename.present? %>
+                <%= image_tag "/mobile_suits/#{suit.image_filename}", alt: suit.name,
+                    class: "w-24 h-24 object-contain group-hover:scale-105 transition-transform duration-150",
+                    loading: "lazy" %>
+              <% else %>
+                <div class="w-24 h-24 flex items-center justify-center text-gray-300">
+                  <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                  </svg>
+                </div>
+              <% end %>
+            <% end %>
+          <% elsif suit.image_filename.present? %>
+            <%= image_tag "/mobile_suits/#{suit.image_filename}", alt: suit.name,
+                class: "w-24 h-24 object-contain",
+                loading: "lazy" %>
           <% end %>
-        </tr>
-      </thead>
+        </div>
 
-      <tbody>
-        <% @series_by_category.each_with_index do |(category, suits_by_series), cat_idx| %>
-          <% series_list = suits_by_series.to_a %>
-          <% series_list.each_with_index do |(series, suits_by_cost), ser_idx| %>
-            <% row_bg = cat_idx.even? ? "bg-white" : "bg-slate-50/60" %>
-            <tr class="<%= row_bg %> border-b border-gray-100 hover:bg-indigo-50/40 transition-colors duration-100">
+        <%# テキストエリア %>
+        <div class="px-2 py-1.5 flex-1 flex flex-col gap-0.5">
+          <p class="text-[11px] font-semibold text-gray-800 leading-tight line-clamp-2 group-hover:text-indigo-700 transition-colors">
+            <%= suit.name %>
+          </p>
+          <p class="text-[9px] text-gray-400 leading-tight line-clamp-1">
+            <%= suit.series %>
+          </p>
+        </div>
 
-              <%# カテゴリ列（先頭行のみ rowspan） %>
-              <% if ser_idx == 0 %>
-                <td rowspan="<%= series_list.size %>"
-                    class="py-2 px-2 align-middle text-center border-r border-gray-200 w-16">
-                  <div class="inline-flex items-center justify-center">
-                    <span class="text-[10px] font-bold text-indigo-600 leading-snug whitespace-normal text-center">
-                      <%= category.gsub("シリーズ ", "シリーズ\n").gsub(" OVA", "\nOVA").gsub(" ゲーム", "・ゲーム") %>
-                    </span>
-                  </div>
-                </td>
-              <% end %>
-
-              <%# シリーズ列 %>
-              <td class="py-2 px-3 align-top text-[11px] font-medium text-gray-600 leading-snug w-40 border-r border-gray-100">
-                <%= series %>
-              </td>
-
-              <%# コスト別機体セル %>
-              <% @costs.each do |cost| %>
-                <td class="py-2 px-2 align-top">
-                  <div class="flex flex-wrap gap-2 items-start content-start">
-                    <% (suits_by_cost[cost] || []).each do |suit| %>
-                      <div class="group flex flex-col items-center w-24 gap-0.5">
-                        <%# 画像（Wikiリンク） %>
-                        <% if suit.wiki_url.present? %>
-                          <%= link_to suit.wiki_url, target: "_blank", rel: "noopener noreferrer",
-                              title: suit.name,
-                              class: "block rounded-lg overflow-hidden ring-1 ring-transparent group-hover:ring-indigo-400 group-hover:shadow-md transition-all duration-150" do %>
-                            <% if suit.image_filename.present? %>
-                              <%= image_tag "/mobile_suits/#{suit.image_filename}", alt: suit.name,
-                                  class: "w-24 h-24 object-contain bg-gray-900/5 group-hover:scale-105 transition-transform duration-150",
-                                  loading: "lazy" %>
-                            <% else %>
-                              <div class="w-24 h-24 flex items-center justify-center bg-gray-100">
-                                <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                                </svg>
-                              </div>
-                            <% end %>
-                          <% end %>
-                        <% elsif suit.image_filename.present? %>
-                          <div class="rounded-lg overflow-hidden ring-1 ring-gray-200">
-                            <%= image_tag "/mobile_suits/#{suit.image_filename}", alt: suit.name,
-                                class: "w-24 h-24 object-contain bg-gray-900/5",
-                                loading: "lazy" %>
-                          </div>
-                        <% else %>
-                          <div class="w-24 h-24 flex items-center justify-center bg-gray-100 rounded-lg ring-1 ring-gray-200">
-                            <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                            </svg>
-                          </div>
-                        <% end %>
-
-                        <%# 機体名 %>
-                        <p class="text-[10px] font-medium text-gray-700 leading-tight line-clamp-2 w-full text-center group-hover:text-indigo-700 transition-colors duration-100">
-                          <%= suit.name %>
-                        </p>
-                      </div>
-                    <% end %>
-                  </div>
-                </td>
-              <% end %>
-            </tr>
+        <%# Wikiリンクアイコン（右上オーバーレイ） %>
+        <% if suit.wiki_url.present? %>
+          <%= link_to suit.wiki_url, target: "_blank", rel: "noopener noreferrer",
+              class: "absolute top-1.5 right-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-150 bg-white/90 rounded-md p-0.5 shadow-sm" do %>
+            <svg class="w-3.5 h-3.5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+            </svg>
           <% end %>
         <% end %>
-      </tbody>
-    </table>
+      </div>
+    <% end %>
   </div>
+
 </div>
