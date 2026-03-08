@@ -31,6 +31,14 @@ Rails.application.routes.draw do
   # Dashboard
   get "dashboard", to: "dashboard#index", as: :dashboard
 
+  # My Page
+  get "my_page", to: "my_page#show", as: :my_page
+  resources :user_favorite_suits, only: [] do
+    collection do
+      post :bulk_update
+    end
+  end
+
   # Profile (User settings)
   resource :profile, only: [ :edit, :update ]
 
