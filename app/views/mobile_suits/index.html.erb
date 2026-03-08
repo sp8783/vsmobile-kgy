@@ -3,7 +3,7 @@
   <%# ページヘッダー %>
   <div class="mb-6">
     <h1 class="text-2xl font-extrabold text-gray-900 tracking-tight">機体一覧</h1>
-    <p class="mt-1 text-sm text-gray-400">全 <%= @counts_by_cost.values.sum %> 機体 — コストを選んで絞り込み</p>
+    <p class="mt-1 text-sm text-gray-400">全 <%= @counts_by_cost.values.sum %> 機体</p>
   </div>
 
   <%# コストタブ + 検索ボックス %>
@@ -17,7 +17,17 @@
   %>
   <div class="flex flex-wrap items-center gap-3 mb-6">
     <%# コストタブ %>
-    <div class="flex gap-2">
+    <div class="flex gap-2 flex-wrap">
+      <%# 全機体タブ %>
+      <% all_active = @selected_cost.nil? %>
+      <%= link_to mobile_suits_path,
+          class: "flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition-all duration-150 shadow-sm #{all_active ? 'bg-indigo-600 text-white shadow-indigo-200 shadow-md' : 'text-indigo-600 border border-indigo-200 hover:bg-indigo-50'}" do %>
+        <span>全機体</span>
+        <span class="text-xs font-semibold px-1.5 py-0.5 rounded-full <%= all_active ? 'bg-indigo-500/20 text-indigo-100' : 'bg-indigo-100 text-indigo-600' %>">
+          <%= @counts_by_cost.values.sum %>
+        </span>
+      <% end %>
+
       <% MobileSuitsController::COSTS.each do |cost| %>
         <% active = @selected_cost == cost %>
         <% s = tab_styles[cost] %>
