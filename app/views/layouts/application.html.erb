@@ -221,6 +221,26 @@
         .sidebar-nav > div.overflow-y-auto {
           overscroll-behavior: contain; /* スクロールがメイン画面に伝播しない */
           -webkit-overflow-scrolling: touch; /* iOS用スムーススクロール */
+          scrollbar-width: thin; /* Firefox: 細いスクロールバー */
+          scrollbar-color: rgba(255, 255, 255, 0.25) transparent; /* Firefox: 半透明白 */
+        }
+
+        /* Webkit系（Chrome / Safari / Edge）: 細くて目立たないスクロールバー */
+        .sidebar-nav > div.overflow-y-auto::-webkit-scrollbar {
+          width: 4px;
+        }
+
+        .sidebar-nav > div.overflow-y-auto::-webkit-scrollbar-track {
+          background: transparent;
+        }
+
+        .sidebar-nav > div.overflow-y-auto::-webkit-scrollbar-thumb {
+          background: rgba(255, 255, 255, 0.25);
+          border-radius: 9999px;
+        }
+
+        .sidebar-nav > div.overflow-y-auto::-webkit-scrollbar-thumb:hover {
+          background: rgba(255, 255, 255, 0.4);
         }
 
         /* === サイドバーナビアイテムのスタイル（インディゴ背景用） === */
@@ -418,5 +438,6 @@
     <% if @unread_announcement %>
       <%= render "announcements/modal", announcement: @unread_announcement %>
     <% end %>
+
   </body>
 </html>
