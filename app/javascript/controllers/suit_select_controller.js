@@ -15,6 +15,7 @@ export default class extends Controller {
       onChange: (value) => {
         const url = new URL(window.location.href)
         url.searchParams.delete('mobile_suits[]')
+        url.searchParams.delete('my_mobile_suits')
         if (value) url.searchParams.set('mobile_suits[]', value)
         window.location.href = url.toString()
       }

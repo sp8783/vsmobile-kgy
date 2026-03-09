@@ -55,7 +55,13 @@ class MatchesController < ApplicationController
     if params[:mobile_suits].present?
       mobile_suit_ids = params[:mobile_suits].reject(&:blank?).map(&:to_i)
       if mobile_suit_ids.any?
-        @matches = @matches.joins(:match_players).where(match_players: { mobile_suit_id: mobile_suit_ids }).distinct
+        if params[:my_mobile_suits] == "1"
+          @matches = @matches.joins(:match_players).where(
+            match_players: { mobile_suit_id: mobile_suit_ids, user_id: viewing_as_user.id }
+          ).distinct
+        else
+          @matches = @matches.joins(:match_players).where(match_players: { mobile_suit_id: mobile_suit_ids }).distinct
+        end
       end
     end
 
@@ -176,6 +182,7 @@ class MatchesController < ApplicationController
     @filter_streaming_users_mode = params[:streaming_users_mode].presence_in(%w[or and]) || "or"
     @filter_mobile_suits = params[:mobile_suits].present? ? params[:mobile_suits].reject(&:blank?).map(&:to_i) : []
     @filter_costs = params[:costs].present? ? params[:costs].reject(&:blank?).map(&:to_i) : []
+    @filter_my_mobile_suits = params[:my_mobile_suits] == "1"
     @filter_stat_player_id = stat_player_id
     @filter_ol_filter = ol_filter
     @filter_stat_filters = stat_filters
