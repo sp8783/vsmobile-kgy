@@ -182,14 +182,10 @@
         <% end %>
       </div>
       <div class="flex-1 min-w-[180px] max-w-xs">
-        <select id="stat-suit-select" class="w-full">
+        <select id="stat-suit-select" class="w-full" data-has-favorites="<%= viewing_as_user&.user_favorite_suits&.any? %>">
           <option value="">機体を検索...</option>
           <% visible_suits = @filter_costs.any? ? @all_mobile_suits.select { |s| @filter_costs.include?(s.cost) } : @all_mobile_suits %>
-          <% visible_suits.each do |suit| %>
-            <option value="<%= suit.id %>" <%= 'selected' if @filter_mobile_suits.include?(suit.id) %>>
-              <%= suit.name %> (<%= suit.cost %>)
-            </option>
-          <% end %>
+          <%= mobile_suit_options_with_favorites(visible_suits, viewing_as_user, @filter_mobile_suits) %>
         </select>
       </div>
       <% unless no_suit_cost %>
@@ -2187,10 +2183,15 @@
     function initStatSuitSelect() {
       const el = document.querySelector('#stat-suit-select');
       if (!el || el.tomselect) return;
+      const statSuitOptgroups = el.dataset.hasFavorites === 'true'
+        ? [{ value: 'favorites', label: '★ お気に入り機体' }, { value: 'others', label: '── その他の機体 ──' }]
+        : [];
       new TomSelect('#stat-suit-select', {
         placeholder: '機体を検索...',
         maxOptions: null,
         dropdownParent: 'body',
+        optgroupField: 'optgroup',
+        optgroups: statSuitOptgroups,
         onChange: function(value) {
           navigateStatSuit(value);
         }
