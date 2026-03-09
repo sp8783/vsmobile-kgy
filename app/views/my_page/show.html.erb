@@ -5,6 +5,16 @@
 
   <div class="max-w-4xl mx-auto px-4 py-8">
 
+    <%# ── view-as バナー ── %>
+    <% if viewing_as_someone_else? %>
+      <div class="mb-6 flex items-center gap-2 px-4 py-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-sm font-medium">
+        <svg class="w-4 h-4 shrink-0 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        <span>管理者として <span class="font-bold"><%= viewing_as_user.nickname %></span> さんのマイページを編集中</span>
+      </div>
+    <% end %>
+
     <%# ── プロフィールヘッダー ── %>
     <div class="mb-8 flex items-center gap-4">
       <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg select-none">
