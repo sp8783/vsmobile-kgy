@@ -6,7 +6,7 @@ class MobileSuitsController < ApplicationController
   def index
     @counts_by_cost = MobileSuit.group(:cost).count
     @selected_cost = params[:cost].to_i.in?(COSTS) ? params[:cost].to_i : nil
-    @suits = @selected_cost ? MobileSuit.where(cost: @selected_cost).order(:id) : MobileSuit.all.order(:id)
+    @suits = @selected_cost ? MobileSuit.where(cost: @selected_cost).order(:position) : MobileSuit.all.order(:position)
     @search_query = params[:q].to_s.strip
   end
 end
