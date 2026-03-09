@@ -86,14 +86,10 @@
         <% end %>
       </div>
       <div class="flex-1 min-w-[180px] max-w-xs">
-        <select id="match-suit-select" class="w-full" data-controller="suit-select">
+        <select id="match-suit-select" class="w-full" data-controller="suit-select" data-has-favorites="<%= viewing_as_user&.user_favorite_suits&.any? %>">
           <option value="">機体を検索...</option>
           <% _visible_suits = @filter_costs.any? ? @all_mobile_suits.select { |s| @filter_costs.include?(s.cost) } : @all_mobile_suits %>
-          <% _visible_suits.each do |suit| %>
-            <option value="<%= suit.id %>" <%= 'selected' if @filter_mobile_suits.include?(suit.id) %>>
-              <%= suit.name %> (<%= suit.cost %>)
-            </option>
-          <% end %>
+          <%= mobile_suit_options_with_favorites(_visible_suits, viewing_as_user, @filter_mobile_suits) %>
         </select>
       </div>
       <% unless @filter_costs.empty? && @filter_mobile_suits.empty? %>
