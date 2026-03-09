@@ -42,6 +42,33 @@ module ApplicationHelper
     "#{total_sec / 60}:#{format('%02d', total_sec % 60)}"
   end
 
+  # お気に入り機体を先頭にした <option> タグ群を返す
+  # お気に入りがある場合は favorites / others の2グループに分けて TomSelect に渡す
+  def mobile_suit_options_with_favorites(suits, user, selected_ids = [])
+    selected_ids = Array(selected_ids)
+    fav_ids = user&.user_favorite_suits&.order(:slot)&.pluck(:mobile_suit_id) || []
+
+    favorites = suits.select { |s| fav_ids.include?(s.id) }.sort_by { |s| fav_ids.index(s.id) }
+    others    = suits.reject { |s| fav_ids.include?(s.id) }
+
+    if favorites.any?
+      safe_join(favorites.map { |s|
+        content_tag(:option, "#{s.name} (#{s.cost})", value: s.id,
+                    data: { optgroup: "favorites" },
+                    selected: selected_ids.include?(s.id))
+      }) + safe_join(others.map { |s|
+        content_tag(:option, "#{s.name} (#{s.cost})", value: s.id,
+                    data: { optgroup: "others" },
+                    selected: selected_ids.include?(s.id))
+      })
+    else
+      safe_join(others.map { |s|
+        content_tag(:option, "#{s.name} (#{s.cost})", value: s.id,
+                    selected: selected_ids.include?(s.id))
+      })
+    end
+  end
+
   # コスト帯の組み合わせ（例："3000+2500"）を2つのバッジで表示
   def cost_combo_badges(cost_combo)
     costs = cost_combo.split("+").map(&:strip)
