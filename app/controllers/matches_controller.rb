@@ -171,11 +171,20 @@ class MatchesController < ApplicationController
 
     # フィルター用のデータ
     @all_events = Event.order(held_on: :desc)
-    @all_users = User.regular_users.order(:nickname)
     @all_mobile_suits = MobileSuit.all.order(Arel.sql("position IS NULL, position ASC, cost DESC, name ASC"))
 
     # 選択されたフィルター値
     @filter_events = params[:events].present? ? params[:events].reject(&:blank?).map(&:to_i) : []
+
+    all_users = User.regular_users.order(:nickname)
+    if @filter_events.any?
+      user_ids_in_events = MatchPlayer.joins(:match)
+                                      .where(matches: { event_id: @filter_events })
+                                      .distinct
+                                      .pluck(:user_id)
+      all_users = all_users.where(id: user_ids_in_events)
+    end
+    @all_users = all_users
     @filter_users = params[:users].present? ? params[:users].reject(&:blank?).map(&:to_i) : []
     @filter_users_mode = params[:users_mode].presence_in(%w[or and]) || "or"
     @filter_streaming_users = params[:streaming_users].present? ? params[:streaming_users].reject(&:blank?).map(&:to_i) : []
