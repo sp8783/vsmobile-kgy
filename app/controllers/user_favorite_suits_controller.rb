@@ -7,9 +7,9 @@ class UserFavoriteSuitsController < ApplicationController
     ordered_ids = ids.select { |id| valid_ids.include?(id) }
 
     ActiveRecord::Base.transaction do
-      current_user.user_favorite_suits.delete_all
+      viewing_as_user.user_favorite_suits.delete_all
       ordered_ids.each_with_index do |suit_id, slot|
-        current_user.user_favorite_suits.create!(mobile_suit_id: suit_id, slot: slot)
+        viewing_as_user.user_favorite_suits.create!(mobile_suit_id: suit_id, slot: slot)
       end
     end
 
