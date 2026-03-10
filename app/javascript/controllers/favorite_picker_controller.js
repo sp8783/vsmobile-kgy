@@ -187,7 +187,7 @@ export default class extends Controller {
       return `
         <div class="tray-item flex flex-col items-center gap-1.5 cursor-grab active:cursor-grabbing select-none"
              data-tray-suit-id="${id}">
-          <div class="relative w-full h-14 rounded-xl overflow-hidden bg-gradient-to-b from-gray-50 to-gray-100
+          <div class="relative w-full h-12 rounded-xl overflow-hidden bg-gradient-to-b from-gray-50 to-gray-100
                       border-2 border-indigo-300 transition-all duration-150 shadow-sm">
             ${img}
             <span class="absolute top-1 left-1 px-1.5 h-5 min-w-[20px] ${badgeColor} text-white
