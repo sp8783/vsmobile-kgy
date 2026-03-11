@@ -27,55 +27,56 @@
       </div>
 
       <%# テキスト情報 %>
-      <div class="flex-1 min-w-0 p-6 sm:p-8 flex flex-col gap-4">
+      <div class="flex-1 min-w-0 p-6 sm:p-8 flex items-start gap-6">
 
-        <%# コスト・シリーズ %>
-        <div class="flex flex-wrap items-center gap-2">
-          <span class="text-xs font-bold px-3 py-1 rounded-full <%= cost_badge_classes(@suit.cost) %>">
-            Cost <%= @suit.cost %>
-          </span>
-          <span class="text-sm text-gray-500"><%= @suit.series %></span>
+        <%# 左: コスト・名前・Wiki %>
+        <div class="flex-1 min-w-0 flex flex-col gap-4">
+
+          <%# コスト・シリーズ %>
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="text-xs font-bold px-3 py-1 rounded-full <%= cost_badge_classes(@suit.cost) %>">
+              Cost <%= @suit.cost %>
+            </span>
+            <span class="text-sm text-gray-500"><%= @suit.series %></span>
+          </div>
+
+          <%# 機体名 %>
+          <h1 class="text-2xl sm:text-3xl font-black text-gray-900 leading-tight"><%= @suit.name %></h1>
+
+          <%# Wiki リンク %>
+          <% if @suit.wiki_url.present? %>
+            <%= link_to @suit.wiki_url, target: "_blank", rel: "noopener noreferrer",
+                class: "self-start inline-flex items-center gap-1.5 text-sm font-semibold text-indigo-600 hover:text-indigo-800 hover:underline transition-colors" do %>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+              </svg>
+              Wiki を開く
+              <svg class="w-3.5 h-3.5 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+              </svg>
+            <% end %>
+          <% end %>
+
         </div>
 
-        <%# 機体名 %>
-        <h1 class="text-2xl sm:text-3xl font-black text-gray-900 leading-tight"><%= @suit.name %></h1>
-
-        <%# スペック %>
+        <%# 右: スペックパネル %>
         <% if @suit.durability.present? || @suit.bd_count.present? || @suit.red_lock_range.present? %>
-          <div class="flex flex-wrap gap-4 text-sm">
-            <% if @suit.durability.present? %>
-              <div>
-                <span class="text-gray-400 text-sm font-medium block mb-0.5">耐久値</span>
-                <span class="font-bold text-gray-800 text-lg"><%= @suit.durability %></span>
-              </div>
-            <% end %>
-            <% if @suit.bd_count.present? %>
-              <div>
-                <span class="text-gray-400 text-sm font-medium block mb-0.5">BD回数</span>
-                <span class="font-bold text-gray-800 text-lg"><%= @suit.bd_count %></span>
-              </div>
-            <% end %>
-            <% if @suit.red_lock_range.present? %>
-              <div>
-                <span class="text-gray-400 text-sm font-medium block mb-0.5">赤ロック距離</span>
-                <span class="font-bold text-gray-800 text-lg"><%= @suit.red_lock_range %></span>
-              </div>
-            <% end %>
+          <div class="flex-shrink-0 self-start bg-gray-50 rounded-xl border border-gray-100 overflow-hidden">
+            <%
+              specs = []
+              specs << { label: "耐久値",      value: @suit.durability      } if @suit.durability.present?
+              specs << { label: "BD回数",       value: @suit.bd_count        } if @suit.bd_count.present?
+              specs << { label: "赤ロック距離", value: @suit.red_lock_range  } if @suit.red_lock_range.present?
+            %>
+            <dl class="divide-y divide-gray-100">
+              <% specs.each do |spec| %>
+                <div class="flex items-center justify-between gap-8 px-4 py-2.5">
+                  <dt class="text-xs font-medium text-gray-400 whitespace-nowrap"><%= spec[:label] %></dt>
+                  <dd class="text-base font-bold text-gray-800 tabular-nums"><%= spec[:value] %></dd>
+                </div>
+              <% end %>
+            </dl>
           </div>
-        <% end %>
-
-        <%# Wiki リンク %>
-        <% if @suit.wiki_url.present? %>
-          <%= link_to @suit.wiki_url, target: "_blank", rel: "noopener noreferrer",
-              class: "self-start inline-flex items-center gap-1.5 text-sm font-semibold text-indigo-600 hover:text-indigo-800 hover:underline transition-colors" do %>
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
-            </svg>
-            Wiki を開く
-            <svg class="w-3.5 h-3.5 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
-            </svg>
-          <% end %>
         <% end %>
 
       </div>
