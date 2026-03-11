@@ -10,7 +10,7 @@
 
   <%# ── 機体カード（白） %>
   <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-    <div class="flex flex-col sm:flex-row items-center sm:items-start gap-0">
+    <div class="flex flex-col sm:flex-row items-center gap-0">
 
       <%# 画像 %>
       <div class="flex-shrink-0 flex items-center justify-center bg-gray-50 sm:w-48 w-full py-8 px-6 border-b sm:border-b-0 sm:border-r border-gray-100">
@@ -27,7 +27,7 @@
       </div>
 
       <%# テキスト情報 %>
-      <div class="flex-1 min-w-0 p-6 sm:p-8 flex items-start gap-6">
+      <div class="flex-1 min-w-0 p-6 sm:p-8 flex items-center gap-6">
 
         <%# 左: コスト・名前・Wiki %>
         <div class="flex-1 min-w-0 flex flex-col gap-4">
@@ -46,12 +46,12 @@
           <%# Wiki リンク %>
           <% if @suit.wiki_url.present? %>
             <%= link_to @suit.wiki_url, target: "_blank", rel: "noopener noreferrer",
-                class: "self-start inline-flex items-center gap-1.5 text-sm font-semibold text-indigo-600 hover:text-indigo-800 hover:underline transition-colors" do %>
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                class: "self-start inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg transition-colors" do %>
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
               </svg>
               Wiki を開く
-              <svg class="w-3.5 h-3.5 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="w-3 h-3 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
               </svg>
             <% end %>
@@ -72,13 +72,13 @@
               <% specs.each do |spec| %>
                 <% parsed = parse_spec_field(spec[:value].to_s) %>
                 <div class="flex items-center justify-between gap-8 px-4 py-2.5">
-                  <dt class="text-xs font-medium text-gray-400 whitespace-nowrap"><%= spec[:label] %></dt>
+                  <dt class="text-sm font-medium text-gray-400 whitespace-nowrap"><%= spec[:label] %></dt>
                   <% if parsed.size == 1 && parsed[0][:label].nil? %>
                     <dd class="text-base font-bold text-gray-800 tabular-nums"><%= parsed[0][:value] %></dd>
                   <% else %>
-                    <dd class="text-right text-xs font-bold text-gray-800 leading-snug">
+                    <dd class="text-right text-base leading-snug">
                       <% parsed.each_with_index do |item, idx| %>
-                        <span class="tabular-nums"><%= item[:value] %></span><span class="font-normal text-gray-400 ml-0.5"><%= item[:label] %></span><% unless idx == parsed.size - 1 %><span class="text-gray-200 mx-1">/</span><% end %>
+                        <span class="font-normal text-gray-400"><%= item[:label] %>:</span> <span class="font-bold text-gray-800 tabular-nums"><%= item[:value] %></span><% unless idx == parsed.size - 1 %><span class="text-gray-200 mx-1.5">/</span><% end %>
                       <% end %>
                     </dd>
                   <% end %>
