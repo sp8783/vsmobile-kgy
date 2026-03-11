@@ -44,7 +44,7 @@ module Admin
     end
 
     def mobile_suit_params
-      params.require(:mobile_suit).permit(:name, :series, :cost, :wiki_url)
+      params.require(:mobile_suit).permit(:name, :series, :cost, :wiki_url, :durability, :bd_count, :red_lock_range)
     end
   end
 end
