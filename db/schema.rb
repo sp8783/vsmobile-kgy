@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_09_150445) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_10_120712) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -101,11 +101,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_09_150445) do
   end
 
   create_table "mobile_suits", force: :cascade do |t|
+    t.integer "bd_count"
     t.integer "cost", null: false
     t.datetime "created_at", null: false
+    t.integer "durability"
     t.string "image_filename"
     t.string "name", null: false
     t.integer "position"
+    t.decimal "red_lock_range", precision: 5, scale: 2
     t.string "series", null: false
     t.datetime "updated_at", null: false
     t.string "wiki_url"
