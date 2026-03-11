@@ -25,7 +25,14 @@ namespace :vsmobile do
       end
 
       image_filename = File.basename(unit["imageLocalPath"])
-      suit.update!(wiki_url: unit["wikiUrl"], image_filename: image_filename)
+      metadata = unit["metadata"] || {}
+      suit.update!(
+        wiki_url:       unit["wikiUrl"],
+        image_filename: image_filename,
+        durability:     metadata["durability"]&.to_i.presence,
+        bd_count:       metadata["bdCount"].presence,
+        red_lock_range: metadata["redLockRange"].presence
+      )
       updated += 1
     end
 
