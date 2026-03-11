@@ -70,9 +70,23 @@
             %>
             <dl class="divide-y divide-gray-100">
               <% specs.each do |spec| %>
-                <div class="flex items-center justify-between gap-8 px-4 py-2.5">
-                  <dt class="text-xs font-medium text-gray-400 whitespace-nowrap"><%= spec[:label] %></dt>
-                  <dd class="text-base font-bold text-gray-800 tabular-nums"><%= spec[:value] %></dd>
+                <% parsed = parse_spec_field(spec[:value].to_s) %>
+                <div class="px-4 py-2.5">
+                  <dt class="text-xs font-medium text-gray-400 whitespace-nowrap mb-1"><%= spec[:label] %></dt>
+                  <% if parsed.size == 1 && parsed[0][:label].nil? %>
+                    <%# 単純値 %>
+                    <dd class="text-base font-bold text-gray-800 tabular-nums"><%= parsed[0][:value] %></dd>
+                  <% else %>
+                    <%# 形態別リスト %>
+                    <dd class="space-y-0.5">
+                      <% parsed.each do |item| %>
+                        <div class="flex items-center justify-between gap-6">
+                          <span class="text-xs text-gray-400 whitespace-nowrap"><%= item[:label] %></span>
+                          <span class="text-sm font-bold text-gray-800 tabular-nums"><%= item[:value] %></span>
+                        </div>
+                      <% end %>
+                    </dd>
+                  <% end %>
                 </div>
               <% end %>
             </dl>
