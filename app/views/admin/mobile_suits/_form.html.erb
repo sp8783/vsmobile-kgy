@@ -25,6 +25,29 @@
     <%= form.select :cost, [3000, 2500, 2000, 1500], {}, class: "w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" %>
   </div>
 
+  <div>
+    <%= form.label :wiki_url, "Wiki URL", class: "block text-sm font-medium text-gray-700 mb-1" %>
+    <%= form.url_field :wiki_url, class: "w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500", placeholder: "https://w.atwiki.jp/..." %>
+  </div>
+
+  <hr class="border-gray-200">
+  <p class="text-sm font-semibold text-gray-600">スペック情報</p>
+
+  <div class="grid grid-cols-3 gap-4">
+    <div>
+      <%= form.label :durability, "耐久値", class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <%= form.number_field :durability, class: "w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500", placeholder: "例: 620" %>
+    </div>
+    <div>
+      <%= form.label :bd_count, "BD回数", class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <%= form.text_field :bd_count, class: "w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500", placeholder: "例: 8" %>
+    </div>
+    <div>
+      <%= form.label :red_lock_range, "赤ロック距離", class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <%= form.text_field :red_lock_range, class: "w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500", placeholder: "例: A" %>
+    </div>
+  </div>
+
   <div class="flex justify-end space-x-3">
     <%= link_to "キャンセル", admin_mobile_suits_path, class: "px-4 py-2 bg-gray-600 text-white font-semibold rounded-md hover:bg-gray-700" %>
     <%= form.submit mobile_suit.new_record? ? "登録" : "更新", class: "px-4 py-2 bg-indigo-600 text-white font-semibold rounded-md hover:bg-indigo-700" %>

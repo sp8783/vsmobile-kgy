@@ -6,6 +6,7 @@ class User < ApplicationRecord
 
   # Associations
   has_many :match_players, dependent: :destroy
+  has_many :user_favorite_suits, dependent: :destroy
   has_many :push_subscriptions, dependent: :destroy
   has_many :reactions, dependent: :destroy
   has_many :user_announcement_reads, dependent: :destroy

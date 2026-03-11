@@ -14,6 +14,14 @@ class RotationsController < ApplicationController
                                   .order(:match_index)
     @current_match = @rotation_matches[@rotation.current_match_index]
     @player_statistics = @rotation.player_statistics
+    @all_mobile_suits = MobileSuit.order(:name).to_a
+
+    # プレイヤーのお気に入り機体を N+1 を起こさずまとめてロード
+    if @current_match
+      players = [ @current_match.team1_player1, @current_match.team1_player2,
+                  @current_match.team2_player1, @current_match.team2_player2 ].compact
+      ActiveRecord::Associations::Preloader.new(records: players, associations: :user_favorite_suits).call
+    end
 
     # Check if we should show completion modal
     if session[:show_completion_modal] == @rotation.id

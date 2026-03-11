@@ -280,14 +280,12 @@ mobile_suits_data = [
   { name: 'N-EXTREMEガンダム スプレマシー', series: 'Project N-EXTREME', cost: 1500, position: 246 }
 ]
 
-mobile_suits_data.each do |suit_data|
-  suit = MobileSuit.find_or_create_by!(name: suit_data[:name]) do |suit|
-    suit.series = suit_data[:series]
-    suit.cost = suit_data[:cost]
-    suit.position = suit_data[:position]
-  end
-  puts "  Created mobile suit: #{suit.name} (#{suit.cost}コスト)"
-end
+MobileSuit.upsert_all(
+  mobile_suits_data,
+  unique_by: :name,
+  update_only: [ :series, :cost, :position ]
+)
+puts "  Upserted #{mobile_suits_data.size} mobile suits"
 
 puts "\nCreating master emojis..."
 

@@ -1,0 +1,396 @@
+<div class="max-w-5xl mx-auto px-4 sm:px-6 py-8 space-y-6">
+
+  <%# ── 戻るリンク（上） %>
+  <%= link_to mobile_suits_path, class: "inline-flex items-center gap-1.5 text-sm text-gray-400 hover:text-gray-700 transition-colors" do %>
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+    </svg>
+    機体一覧に戻る
+  <% end %>
+
+  <%# ── 機体カード（白） %>
+  <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+    <div class="flex flex-col sm:flex-row items-center gap-0">
+
+      <%# 画像 %>
+      <div class="flex-shrink-0 flex items-center justify-center bg-gray-50 sm:w-48 w-full py-8 px-6 border-b sm:border-b-0 sm:border-r border-gray-100">
+        <% if @suit.image_filename.present? %>
+          <%= image_tag "/mobile_suits/#{@suit.image_filename}", alt: @suit.name,
+              class: "w-36 h-36 object-contain" %>
+        <% else %>
+          <div class="w-36 h-36 flex items-center justify-center bg-gray-100 rounded-xl">
+            <svg class="w-12 h-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+            </svg>
+          </div>
+        <% end %>
+      </div>
+
+      <%# テキスト情報 %>
+      <div class="flex-1 min-w-0 p-6 sm:p-8 flex items-center gap-6">
+
+        <%# 左: コスト・名前・Wiki %>
+        <div class="flex-1 min-w-0 flex flex-col gap-4">
+
+          <%# コスト・シリーズ %>
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="text-xs font-bold px-3 py-1 rounded-full <%= cost_badge_classes(@suit.cost) %>">
+              Cost <%= @suit.cost %>
+            </span>
+            <span class="text-sm text-gray-500"><%= @suit.series %></span>
+          </div>
+
+          <%# 機体名 %>
+          <h1 class="text-2xl sm:text-3xl font-black text-gray-900 leading-tight"><%= @suit.name %></h1>
+
+          <%# Wiki リンク %>
+          <% if @suit.wiki_url.present? %>
+            <%= link_to safe_external_url(@suit.wiki_url), target: "_blank", rel: "noopener noreferrer",
+                class: "self-start inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg transition-colors" do %>
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+              </svg>
+              Wiki を開く
+              <svg class="w-3 h-3 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+              </svg>
+            <% end %>
+          <% end %>
+
+        </div>
+
+        <%# 右: スペックパネル %>
+        <% if @suit.durability.present? || @suit.bd_count.present? || @suit.red_lock_range.present? %>
+          <div class="flex-shrink-0 self-start bg-gray-50 rounded-xl border border-gray-100 overflow-hidden">
+            <%
+              specs = []
+              specs << { label: "耐久値",      value: @suit.durability      } if @suit.durability.present?
+              specs << { label: "BD回数",       value: @suit.bd_count        } if @suit.bd_count.present?
+              specs << { label: "赤ロック距離", value: @suit.red_lock_range  } if @suit.red_lock_range.present?
+            %>
+            <dl class="divide-y divide-gray-100">
+              <% specs.each do |spec| %>
+                <% parsed = parse_spec_field(spec[:value].to_s) %>
+                <div class="flex items-center justify-between gap-8 px-4 py-2.5">
+                  <dt class="text-sm font-medium text-gray-400 whitespace-nowrap"><%= spec[:label] %></dt>
+                  <% if parsed.size == 1 && parsed[0][:label].nil? %>
+                    <dd class="text-base font-bold text-gray-800 tabular-nums"><%= parsed[0][:value] %></dd>
+                  <% else %>
+                    <dd class="text-right text-base leading-snug">
+                      <% parsed.each_with_index do |item, idx| %>
+                        <span class="font-normal text-gray-400"><%= item[:label] %>:</span> <span class="font-bold text-gray-800 tabular-nums"><%= item[:value] %></span><% unless idx == parsed.size - 1 %><span class="text-gray-200 mx-1.5">/</span><% end %>
+                      <% end %>
+                    </dd>
+                  <% end %>
+                </div>
+              <% end %>
+            </dl>
+          </div>
+        <% end %>
+
+      </div>
+    </div>
+  </div>
+
+  <% if @total_uses > 0 %>
+
+    <%# ── 統計サマリー %>
+    <div class="grid grid-cols-3 gap-3 sm:gap-4">
+
+      <%# 使用回数 %>
+      <div class="relative overflow-hidden bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-2xl p-5 text-white shadow-md flex flex-col">
+        <div class="absolute -right-4 -top-4 w-24 h-24 bg-white/10 rounded-full"></div>
+        <div class="absolute -right-2 -bottom-6 w-16 h-16 bg-white/5 rounded-full"></div>
+        <p class="relative text-indigo-100 text-sm font-medium">使用回数</p>
+        <p class="relative mt-1 text-5xl font-black tabular-nums leading-none"><%= @total_uses %><span class="text-xl font-semibold ml-1 text-indigo-200">回</span></p>
+        <div class="relative mt-auto pt-3">
+          <% if @rank_uses %>
+            <span class="inline-block text-xs font-bold bg-white/20 px-2.5 py-1 rounded-full">#<%= @rank_uses %> / <%= @total_suits %></span>
+          <% end %>
+        </div>
+      </div>
+
+      <%# 勝率 %>
+      <div class="relative overflow-hidden bg-gradient-to-br from-violet-500 to-purple-600 rounded-2xl p-5 text-white shadow-md flex flex-col">
+        <div class="absolute -right-4 -top-4 w-24 h-24 bg-white/10 rounded-full"></div>
+        <div class="absolute -right-2 -bottom-6 w-16 h-16 bg-white/5 rounded-full"></div>
+        <p class="relative text-purple-100 text-sm font-medium">勝率</p>
+        <p class="relative mt-1 text-5xl font-black tabular-nums leading-none"><%= @win_rate %><span class="text-xl font-semibold ml-0.5 text-purple-200">%</span></p>
+        <div class="relative mt-auto pt-3">
+          <p class="text-xs text-purple-200 mb-1.5">使用実績あり機体内</p>
+          <% if @rank_win_rate %>
+            <span class="inline-block text-xs font-bold bg-white/20 px-2.5 py-1 rounded-full">#<%= @rank_win_rate %> / <%= @total_suits_with_uses %></span>
+          <% end %>
+        </div>
+      </div>
+
+      <%# 環境支配度 %>
+      <div class="relative overflow-hidden bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl p-5 text-white shadow-md flex flex-col">
+        <div class="absolute -right-4 -top-4 w-24 h-24 bg-white/10 rounded-full"></div>
+        <div class="absolute -right-2 -bottom-6 w-16 h-16 bg-white/5 rounded-full"></div>
+        <div class="relative flex items-baseline gap-2">
+          <p class="text-amber-100 text-sm font-medium">環境支配度</p>
+          <p class="text-amber-200 text-xs">勝率 × 使用回数</p>
+        </div>
+        <p class="relative mt-1 text-5xl font-black tabular-nums leading-none"><%= @dominance %></p>
+        <div class="relative mt-auto pt-3">
+          <% if @rank_dominance %>
+            <span class="inline-block text-xs font-bold bg-white/20 px-2.5 py-1 rounded-full">#<%= @rank_dominance %> / <%= @total_suits %></span>
+          <% end %>
+        </div>
+      </div>
+
+    </div>
+
+    <%# ── プレイヤーランキング %>
+    <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+      <div class="px-6 py-4 border-b border-gray-100">
+        <h2 class="text-base font-bold text-gray-700">使用プレイヤー TOP5</h2>
+      </div>
+      <% if @player_ranking.any? %>
+        <ul class="divide-y divide-gray-100">
+          <% @player_ranking.each_with_index do |d, i| %>
+            <li class="flex items-center gap-4 px-6 py-4">
+              <span class="w-7 text-center text-sm font-black <%= i == 0 ? 'text-yellow-500' : i == 1 ? 'text-gray-400' : i == 2 ? 'text-orange-400' : 'text-gray-300' %>">
+                <%= i + 1 %>
+              </span>
+              <span class="flex-1 font-semibold text-gray-800 truncate"><%= d[:user].nickname %></span>
+              <span class="text-xl font-black text-gray-900 tabular-nums">
+                <%= d[:uses] %><span class="text-sm font-normal text-gray-400 ml-0.5">回</span>
+              </span>
+              <span class="w-14 text-right text-sm font-bold tabular-nums text-purple-600">
+                <%= d[:win_rate] %>%
+              </span>
+            </li>
+          <% end %>
+        </ul>
+      <% else %>
+        <p class="px-6 py-8 text-sm text-gray-400 text-center">データがありません</p>
+      <% end %>
+    </div>
+
+    <%# ── 相方コスト別 %>
+    <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+      <div class="px-6 py-4 border-b border-gray-100">
+        <h2 class="text-base font-bold text-gray-700">相方コスト別</h2>
+      </div>
+      <% if @partner_costs.any? %>
+        <div class="divide-y divide-gray-100">
+          <% @partner_costs.each do |d| %>
+            <div class="px-6 py-4">
+              <%# コストバッジ + 数値 %>
+              <div class="flex items-center gap-4 mb-3">
+                <span class="text-sm font-bold px-3 py-1 rounded-lg <%= cost_badge_classes(d[:cost]) %>">Cost <%= d[:cost] %></span>
+                <span class="text-sm font-semibold text-gray-700"><%= d[:total] %><span class="text-xs font-normal text-gray-400 ml-0.5">回</span></span>
+              </div>
+              <%# 使用割合バー %>
+              <div class="mb-2">
+                <div class="flex justify-between text-sm text-gray-400 mb-1">
+                  <span>使用割合</span>
+                  <span class="font-medium text-gray-600"><%= d[:ratio] %>%</span>
+                </div>
+                <div class="h-2 rounded-full bg-gray-100 overflow-hidden">
+                  <div class="h-2 rounded-full transition-all duration-500 <%= cost_bar_classes(d[:cost]) %>" style="width: <%= d[:ratio] %>%"></div>
+                </div>
+              </div>
+              <%# 勝率バー %>
+              <div>
+                <div class="flex justify-between text-sm text-gray-400 mb-1">
+                  <span>勝率</span>
+                  <span class="font-bold text-purple-600"><%= d[:win_rate] %>%</span>
+                </div>
+                <div class="h-2 rounded-full bg-gray-100 overflow-hidden">
+                  <div class="h-2 rounded-full transition-all duration-500 bg-purple-400" style="width: <%= d[:win_rate] %>%"></div>
+                </div>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <p class="px-6 py-8 text-sm text-gray-400 text-center">データがありません</p>
+      <% end %>
+    </div>
+
+    <%# ── 相方機体ランキング %>
+    <% if @partner_suits.any? %>
+      <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+          <h2 class="text-base font-bold text-gray-700">相方機体ランキング</h2>
+          <span class="text-xs text-gray-400">使用回数順 · 上位10件</span>
+        </div>
+        <ul class="divide-y divide-gray-100">
+          <% @partner_suits.first(10).each_with_index do |d, i| %>
+            <li class="flex items-center gap-4 px-6 py-4">
+              <span class="w-5 flex-shrink-0 text-sm font-black text-center <%= i == 0 ? 'text-yellow-500' : 'text-gray-300' %>"><%= i + 1 %></span>
+              <div class="flex-shrink-0 w-32 h-16 flex items-center justify-center">
+                <% if d[:mobile_suit].image_filename.present? %>
+                  <%= image_tag "/mobile_suits/#{d[:mobile_suit].image_filename}", alt: d[:mobile_suit].name, class: "w-32 h-16 object-contain" %>
+                <% else %>
+                  <div class="w-32 h-16 flex items-center justify-center bg-gray-100 rounded-xl">
+                    <svg class="w-9 h-9 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                    </svg>
+                  </div>
+                <% end %>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-base font-semibold text-gray-800 leading-snug line-clamp-2"><%= d[:mobile_suit].name %></p>
+                <span class="inline-block mt-0.5 text-[11px] font-bold px-1.5 py-0.5 rounded <%= cost_badge_classes(d[:mobile_suit].cost) %>"><%= d[:mobile_suit].cost %></span>
+              </div>
+              <div class="flex-shrink-0 text-right">
+                <p class="text-lg font-black text-gray-900 tabular-nums leading-tight"><%= d[:total] %><span class="text-xs font-normal text-gray-400 ml-0.5">回</span></p>
+                <p class="text-xs text-gray-400 tabular-nums"><%= d[:ratio] %>%</p>
+                <p class="text-sm font-bold tabular-nums text-purple-600"><%= d[:win_rate] %>%</p>
+              </div>
+            </li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+  <% else %>
+    <div class="bg-white rounded-2xl border border-gray-200 shadow-sm py-16 text-center">
+      <svg class="mx-auto w-10 h-10 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+      </svg>
+      <p class="text-sm font-medium text-gray-500">まだ試合データがありません</p>
+    </div>
+  <% end %>
+
+  <%# ── パフォーマンス統計 %>
+  <% if @global_perf %>
+    <%
+      perf_groups = [
+        { label: "基本戦績", rows: [
+          { key: :avg_score,  label: "スコア"   },
+          { key: :avg_kills,  label: "撃墜数"   },
+          { key: :avg_deaths, label: "被撃墜数" },
+        ]},
+        { label: "ダメージ", rows: [
+          { key: :avg_damage_dealt,   label: "与ダメージ"         },
+          { key: :avg_damage_recv,    label: "被ダメージ"         },
+          { key: :avg_exburst_damage, label: "EXバーストダメージ" },
+        ]},
+        { label: "EXバースト", rows: [
+          { key: :avg_exburst_count,   label: "EXバースト発動回数"   },
+          { key: :avg_exburst_deaths,  label: "EXバースト中被撃墜数" },
+          { key: :exburst_death_ratio, label: "EXバースト中被撃墜率", unit: "%" },
+        ]},
+        { label: "EXオーバーリミット", rows: [
+          { key: :ol_rate, label: "EXオーバーリミット発動率", unit: "%" },
+        ]},
+      ]
+      all_players = @player_perf
+      col_count   = 2 + all_players.size
+
+      global_st = @global_perf[:survival_stats]
+      st_max_n  = [ global_st.size, all_players.map { |d| d[:survival_stats].size }.max.to_i ].max
+    %>
+    <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+      <div class="px-6 py-4 border-b border-gray-100 flex flex-wrap items-baseline gap-2">
+        <h2 class="text-base font-bold text-gray-700">基本パフォーマンス統計</h2>
+        <span class="text-xs text-gray-400">統計あり試合 <%= @global_perf[:stats_count] %> 件の平均値</span>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-base">
+          <thead>
+            <tr class="bg-gray-50 border-b border-gray-200">
+              <th class="sticky left-0 bg-gray-50 text-left px-5 py-3 text-sm font-semibold text-gray-500 tracking-wide whitespace-nowrap w-52">指標</th>
+              <th class="text-right px-4 py-3 text-sm font-semibold text-indigo-600 whitespace-nowrap">全体平均</th>
+              <% all_players.each do |d| %>
+                <th class="text-right px-4 py-3 text-sm font-semibold text-gray-500 whitespace-nowrap">
+                  <%= d[:user].nickname %><span class="font-normal text-gray-400 ml-1">(<%= d[:stats_count] %>)</span>
+                </th>
+              <% end %>
+            </tr>
+          </thead>
+          <tbody>
+            <%# 通常グループ %>
+            <% perf_groups.each do |group| %>
+              <tr class="bg-gray-50/70 border-t border-gray-200">
+                <td colspan="<%= col_count %>" class="sticky left-0 px-5 py-1.5 text-xs font-bold text-gray-400 uppercase tracking-widest">
+                  <%= group[:label] %>
+                </td>
+              </tr>
+              <% group[:rows].each do |row| %>
+                <tr class="border-t border-gray-100 hover:bg-gray-50/50 transition-colors">
+                  <td class="sticky left-0 bg-white hover:bg-gray-50/50 px-5 py-3 text-sm font-medium text-gray-600 whitespace-nowrap">
+                    <%= row[:label] %>
+                  </td>
+                  <% val = @global_perf[row[:key]] %>
+                  <td class="px-4 py-3 text-right font-bold text-indigo-700 tabular-nums whitespace-nowrap">
+                    <%= val ? "#{val}#{row[:unit]}" : "—" %>
+                  </td>
+                  <% all_players.each do |d| %>
+                    <% pval = d[row[:key]] %>
+                    <td class="px-4 py-3 text-right text-gray-700 tabular-nums whitespace-nowrap">
+                      <%= pval ? "#{pval}#{row[:unit]}" : "—" %>
+                    </td>
+                  <% end %>
+                </tr>
+              <% end %>
+            <% end %>
+
+            <%# 生存時間グループ（ライフ数が動的） %>
+            <% if st_max_n > 0 %>
+              <tr class="bg-gray-50/70 border-t border-gray-200">
+                <td colspan="<%= col_count %>" class="sticky left-0 px-5 py-1.5 text-xs font-bold text-gray-400 uppercase tracking-widest">
+                  生存時間
+                </td>
+              </tr>
+              <% st_max_n.times do |i| %>
+                <%# N機体目ラベル行 %>
+                <tr class="bg-gray-50/40 border-t border-gray-100">
+                  <td colspan="<%= col_count %>" class="px-5 py-1 text-xs font-medium text-gray-400 pl-8">
+                    <%= i + 1 %>機体目
+                  </td>
+                </tr>
+                <%# 生存・被撃破の2行 %>
+                <% [ { key: :survived_cs, count_key: :survived_count, label: "生存",   label_color: "text-green-600" },
+                     { key: :died_cs,     count_key: :died_count,     label: "被撃破", label_color: "text-rose-600"  } ].each do |outcome| %>
+                  <%
+                    g_st  = global_st[i]
+                    g_cs  = g_st&.dig(outcome[:key])
+                    g_cnt = g_st&.dig(outcome[:count_key]).to_i
+                    next if g_cs.nil? && all_players.all? { |d| d[:survival_stats][i]&.dig(outcome[:key]).nil? }
+                  %>
+                  <tr class="border-t border-gray-100 hover:bg-gray-50/50 transition-colors">
+                    <td class="sticky left-0 bg-white hover:bg-gray-50/50 pl-10 pr-5 py-3 text-sm font-semibold whitespace-nowrap <%= outcome[:label_color] %>">
+                      <%= outcome[:label] %>
+                    </td>
+                    <td class="px-4 py-3 text-right font-bold text-indigo-700 tabular-nums whitespace-nowrap">
+                      <% if g_cs %>
+                        <%= format_survival_cs(g_cs) %>
+                        <span class="text-xs font-normal text-gray-400 ml-0.5"><%= g_cnt %>試合</span>
+                      <% else %>—<% end %>
+                    </td>
+                    <% all_players.each do |d| %>
+                      <% p_st  = d[:survival_stats][i]
+                         p_cs  = p_st&.dig(outcome[:key])
+                         p_cnt = p_st&.dig(outcome[:count_key]).to_i %>
+                      <td class="px-4 py-3 text-right text-gray-700 tabular-nums whitespace-nowrap">
+                        <% if p_cs %>
+                          <%= format_survival_cs(p_cs) %>
+                          <span class="text-xs text-gray-400 ml-0.5"><%= p_cnt %>試合</span>
+                        <% else %>—<% end %>
+                      </td>
+                    <% end %>
+                  </tr>
+                <% end %>
+              <% end %>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  <% end %>
+
+  <%# ── 戻るリンク（下） %>
+  <%= link_to mobile_suits_path, class: "inline-flex items-center gap-1.5 text-sm text-gray-400 hover:text-gray-700 transition-colors" do %>
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+    </svg>
+    機体一覧に戻る
+  <% end %>
+
+</div>
