@@ -14,6 +14,13 @@ module MobileSuitsHelper
     COST_STYLES.dig(cost, :bar) || "bg-gray-400"
   end
 
+  def safe_external_url(url)
+    uri = URI.parse(url.to_s)
+    %w[http https].include?(uri.scheme) ? url : "#"
+  rescue URI::InvalidURIError
+    "#"
+  end
+
   # "フルアーマー：7強化型：8" のような連結スペック文字列を
   # [{label: "フルアーマー", value: "7"}, {label: "強化型", value: "8"}] に分解する。
   # ラベルなし単純値（"8", "A"）は [{label: nil, value: "8"}] を返す。
