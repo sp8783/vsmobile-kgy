@@ -12,6 +12,12 @@
             <img src="/youtube_social_icon_red.png" alt="YouTube" class="h-4">
             配信を見る
           <% end %>
+          <% if current_user.is_admin? %>
+            <%= button_to post_broadcast_to_discord_event_path(@event), method: :post, data: { turbo_confirm: "「#{@event.name}」の配信URLをDiscordへ投稿しますか？" }, class: "inline-flex items-center gap-1 px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 text-sm font-semibold hover:bg-indigo-100 transition-colors flex-shrink-0 border-0 cursor-pointer" do %>
+              <img src="/discord_logo_blurple.png" alt="Discord" class="h-4">
+              Discordへ共有
+            <% end %>
+          <% end %>
         <% end %>
       </div>
       <p class="text-sm text-gray-500">

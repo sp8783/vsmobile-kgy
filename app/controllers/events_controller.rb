@@ -3,8 +3,8 @@ require "net/http"
 class EventsController < ApplicationController
   include TimestampParseable
   before_action :authenticate_user!
-  before_action :require_admin, only: [ :new, :create, :edit, :update, :destroy, :edit_timestamps, :update_timestamps, :trigger_analysis, :trigger_scraping ]
-  before_action :set_event, only: [ :show, :edit, :update, :destroy, :edit_timestamps, :update_timestamps, :trigger_analysis, :trigger_scraping ]
+  before_action :require_admin, only: [ :new, :create, :edit, :update, :destroy, :edit_timestamps, :update_timestamps, :trigger_analysis, :trigger_scraping, :post_broadcast_to_discord ]
+  before_action :set_event, only: [ :show, :edit, :update, :destroy, :edit_timestamps, :update_timestamps, :trigger_analysis, :trigger_scraping, :post_broadcast_to_discord ]
 
   def index
     @events = Event.includes(:matches).order(held_on: :desc)
@@ -171,6 +171,16 @@ class EventsController < ApplicationController
     end
   rescue => e
     redirect_to event_path(@event), alert: "スクレイピング開始でエラーが発生しました: #{e.message}"
+  end
+
+  def post_broadcast_to_discord
+    if @event.broadcast_url.blank?
+      return redirect_to event_path(@event), alert: "配信URLが設定されていません。"
+    end
+
+    message = @event.broadcast_url
+    DiscordWebhookService.post(purpose: "broadcast_url", message: message)
+    redirect_to event_path(@event), notice: "Discordへ配信URLを投稿しました。"
   end
 
   def destroy
