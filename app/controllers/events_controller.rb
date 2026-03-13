@@ -178,7 +178,7 @@ class EventsController < ApplicationController
       return redirect_to event_path(@event), alert: "配信URLが設定されていません。"
     end
 
-    message = "**#{@event.name}** の配信が始まりました！\n#{@event.broadcast_url}"
+    message = @event.broadcast_url
     DiscordWebhookService.post(purpose: "broadcast_url", message: message)
     redirect_to event_path(@event), notice: "Discordへ配信URLを投稿しました。"
   end
