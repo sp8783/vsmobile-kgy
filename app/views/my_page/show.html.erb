@@ -3,7 +3,7 @@
 <div data-controller="favorite-picker"
      data-favorite-picker-initial-value="<%= @selected_suit_ids.to_json %>">
 
-  <div class="max-w-4xl mx-auto px-4 py-8">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
     <%# ── view-as バナー ── %>
     <% if viewing_as_someone_else? %>
@@ -71,33 +71,63 @@
           </div>
         <% else %>
           <%# 設定済みスロット一覧: レスポンシブグリッド %>
-          <div class="grid grid-cols-4 sm:grid-cols-6 gap-3">
+          <div class="grid grid-cols-6 gap-3">
             <% (0..11).each do |slot| %>
               <% fav = @favorites_by_slot[slot] %>
               <% next unless fav %>
-              <div class="flex flex-col items-center gap-1.5 min-w-0">
-                <div class="relative w-full">
-                  <%# 画像カード %>
-                  <div class="relative w-full aspect-square rounded-xl overflow-hidden bg-gradient-to-b from-gray-50 to-gray-100 border border-gray-200 shadow-sm flex items-center justify-center">
-                    <% if fav.mobile_suit.image_filename.present? %>
-                      <%= image_tag "/mobile_suits/#{fav.mobile_suit.image_filename}",
-                          alt: fav.mobile_suit.name,
-                          class: "w-full h-full object-contain p-1" %>
-                    <% else %>
-                      <svg class="w-1/2 h-1/2 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+              <div class="group relative flex flex-col rounded-xl overflow-hidden bg-white border border-gray-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 hover:border-indigo-300 transition-all duration-150">
+
+                <%# 画像エリア → 機体詳細へ %>
+                <%= link_to mobile_suit_path(fav.mobile_suit), class: "relative block bg-gradient-to-b from-gray-50 to-gray-100" do %>
+                  <% if fav.mobile_suit.image_filename.present? %>
+                    <%= image_tag "/mobile_suits/#{fav.mobile_suit.image_filename}", alt: fav.mobile_suit.name,
+                        class: "w-full h-[100px] object-contain px-2 pt-2 group-hover:scale-105 transition-transform duration-150",
+                        loading: "lazy" %>
+                  <% else %>
+                    <div class="w-full h-[100px] flex items-center justify-center text-gray-300">
+                      <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                      </svg>
+                    </div>
+                  <% end %>
+                  <%# ホバーで「詳細を見る」 %>
+                  <div class="absolute bottom-1.5 inset-x-0 flex justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-150">
+                    <span class="text-[10px] font-bold text-indigo-700 bg-white/95 rounded-full px-2 py-0.5 shadow-sm border border-indigo-100">詳細を見る</span>
+                  </div>
+                <% end %>
+
+                <%# テキストエリア %>
+                <div class="px-2 pt-1.5 pb-1 flex-1 flex flex-col gap-0.5">
+                  <%= link_to mobile_suit_path(fav.mobile_suit), class: "block" do %>
+                    <p class="text-xs font-semibold text-gray-800 leading-tight line-clamp-2 group-hover:text-indigo-700 transition-colors">
+                      <%= fav.mobile_suit.name %>
+                    </p>
+                  <% end %>
+                  <p class="text-[10px] text-gray-400 leading-tight line-clamp-1">
+                    <%= fav.mobile_suit.series %>
+                  </p>
+                </div>
+
+                <%# Wiki リンク %>
+                <% if fav.mobile_suit.wiki_url.present? %>
+                  <div class="border-t border-gray-100 px-2 py-1 flex justify-center">
+                    <%= link_to fav.mobile_suit.wiki_url, target: "_blank", rel: "noopener noreferrer",
+                        class: "inline-flex items-center gap-0.5 text-[10px] font-semibold text-indigo-500 hover:text-indigo-700 transition-colors" do %>
+                      <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                      </svg>
+                      Wiki
+                      <svg class="w-2 h-2 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
                       </svg>
                     <% end %>
                   </div>
-                  <%# スロットバッジ %>
-                  <span class="absolute -top-1.5 -left-1.5 px-1.5 min-w-[22px] h-[22px] <%= slot == 0 ? 'bg-indigo-600' : 'bg-indigo-400' %> text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-md ring-2 ring-white leading-none">
-                    <%= slot == 0 ? "M" : "S#{slot}" %>
-                  </span>
-                </div>
-                <%# 機体名 %>
-                <p class="text-[11px] text-gray-600 font-medium text-center leading-tight line-clamp-2 w-full px-0.5">
-                  <%= fav.mobile_suit.name %>
-                </p>
+                <% end %>
+
+                <%# スロットバッジ %>
+                <span class="absolute top-1.5 left-1.5 px-1.5 min-w-[22px] h-[22px] <%= slot == 0 ? 'bg-indigo-600' : 'bg-indigo-400' %> text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-md ring-2 ring-white leading-none pointer-events-none z-10">
+                  <%= slot == 0 ? "M" : "S#{slot}" %>
+                </span>
               </div>
             <% end %>
           </div>
