@@ -207,6 +207,6 @@ class EventsController < ApplicationController
   end
 
   def event_params
-    params.require(:event).permit(:name, :held_on, :description, :broadcast_url)
+    params.require(:event).permit(:name, :held_on, :description, :broadcast_url, :discord_thread_url)
   end
 end
