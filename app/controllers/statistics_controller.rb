@@ -182,31 +182,30 @@ class StatisticsController < ApplicationController
       my_team = my_mp.team_number
       my_cost = my_mp.mobile_suit.cost
 
-      # パートナーのコストを取得
       partner_mp = match.match_players.find do |mp|
         mp.team_number == my_team && mp.user_id != viewing_as_user.id
       end
 
-      next unless partner_mp
-
-      partner_cost = partner_mp.mobile_suit.cost
-      costs = [ my_cost, partner_cost ].sort.reverse
-      cost_key = "#{costs[0]}+#{costs[1]}"
+      partner_cost = partner_mp&.mobile_suit&.cost
+      cost_key = [ my_cost, partner_cost ]
 
       cost_data[cost_key][:total] += 1
       cost_data[cost_key][:wins] += 1 if match.winning_team == my_team
     end
 
-    cost_data.map do |cost_combo, data|
-      costs = cost_combo.split("+").map(&:to_i)
+    cost_data.map do |cost_key, data|
+      my_cost, partner_cost = cost_key
+      wins = data[:wins]
+      total = data[:total]
       {
-        cost_combo: cost_combo,
-        cost1: costs[0],
-        cost2: costs[1],
-        win_rate: data[:total] > 0 ? (data[:wins].to_f / data[:total] * 100).round(1) : 0,
-        total: data[:total]
+        my_cost: my_cost,
+        partner_cost: partner_cost,
+        wins: wins,
+        losses: total - wins,
+        total: total,
+        win_rate: total > 0 ? (wins.to_f / total * 100).round(1) : 0
       }
-    end.sort_by { |d| [ -d[:cost1], -d[:cost2] ] }
+    end.sort_by { |d| [ -d[:my_cost], -(d[:partner_cost] || 0) ] }
   end
 
   def calculate_rotation_round_stats
