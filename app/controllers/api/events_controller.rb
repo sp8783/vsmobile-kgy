@@ -16,6 +16,7 @@ module Api
       if lines.size != matches.size
         error_msg = "行数（#{lines.size}）と試合数（#{matches.size}）が一致しません。"
         PushNotificationService.notify_timestamps_failed(event: event, error: error_msg)
+        DiscordWebhookService.post(purpose: "timestamp_result", message: "❌ [#{event.name}] タイムスタンプ解析失敗: #{error_msg}")
         return render json: { error: error_msg }, status: :unprocessable_entity
       end
 
@@ -24,6 +25,7 @@ module Api
         unless seconds
           error_msg = "#{i + 1}行目「#{line}」の形式が不正です。H:MM:SS または MM:SS の形式で入力してください。"
           PushNotificationService.notify_timestamps_failed(event: event, error: error_msg)
+          DiscordWebhookService.post(purpose: "timestamp_result", message: "❌ [#{event.name}] タイムスタンプ解析失敗: #{error_msg}")
           return render json: { error: error_msg }, status: :unprocessable_entity
         end
         seconds
@@ -36,6 +38,7 @@ module Api
       end
 
       PushNotificationService.notify_timestamps_registered(event: event, count: matches.size)
+      DiscordWebhookService.post(purpose: "timestamp_result", message: "✅ [#{event.name}] タイムスタンプ登録完了: #{matches.size}試合")
       render json: { message: "OK", updated: matches.size }
     end
 
@@ -45,6 +48,7 @@ module Api
 
       error_msg = params[:error].presence || "不明なエラー"
       PushNotificationService.notify_timestamps_failed(event: event, error: error_msg)
+      DiscordWebhookService.post(purpose: "timestamp_result", message: "❌ [#{event.name}] タイムスタンプ解析失敗: #{error_msg}")
       render json: { message: "OK" }
     end
 
@@ -61,9 +65,9 @@ module Api
       db_matches = event.matches.includes(:match_timeline, match_players: [ :user ]).order(:played_at, :id)
 
       if matches_data.size != db_matches.size
-        return render json: {
-          error: "データ件数（#{matches_data.size}）とイベント内試合数（#{db_matches.size}）が一致しません"
-        }, status: :unprocessable_entity
+        error_msg = "データ件数（#{matches_data.size}）とイベント内試合数（#{db_matches.size}）が一致しません"
+        DiscordWebhookService.post(purpose: "stats_result", message: "❌ [#{event.name}] 統計スクレイピング失敗: #{error_msg}")
+        return render json: { error: error_msg }, status: :unprocessable_entity
       end
 
       ActiveRecord::Base.transaction do
@@ -74,10 +78,12 @@ module Api
         end
       end
 
+      DiscordWebhookService.post(purpose: "stats_result", message: "✅ [#{event.name}] 統計データ登録完了: #{db_matches.size}試合")
       render json: { message: "OK", updated: db_matches.size }
     rescue JSON::ParserError
       render json: { error: "リクエストボディが不正な JSON 形式です" }, status: :unprocessable_entity
     rescue ActiveRecord::RecordInvalid => e
+      DiscordWebhookService.post(purpose: "stats_result", message: "❌ [#{event.name}] 統計スクレイピング失敗: #{e.message}")
       render json: { error: e.message }, status: :unprocessable_entity
     end
   end
