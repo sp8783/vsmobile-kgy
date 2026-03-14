@@ -259,12 +259,66 @@
         <% end %>
       </div>
 
-      <!-- Cost Win Rates Chart -->
+      <!-- Cost Win Rates Matrix -->
       <div class="bg-white rounded-lg shadow p-6">
         <h3 class="text-lg font-semibold text-gray-900 mb-4">コスト帯別勝率</h3>
         <% if @cost_win_rates.any? %>
-          <div style="position: relative; height: 300px;">
-            <canvas id="costWinRatesChart"></canvas>
+          <% cost_tiers = [3000, 2500, 2000, 1500] %>
+          <% rate_map = @cost_win_rates.index_by { |s| [s[:my_cost], s[:partner_cost]] } %>
+          <div class="flex items-stretch gap-2">
+            <!-- 自分のコスト: 縦ラベル -->
+            <div class="flex items-center justify-center flex-shrink-0">
+              <span class="text-xs font-medium text-gray-400 select-none" style="writing-mode: vertical-rl;">自分のコスト</span>
+            </div>
+            <!-- Matrix table -->
+            <div class="flex-1 overflow-x-auto">
+              <table class="w-full text-sm border-separate border-spacing-1 table-fixed">
+                <colgroup>
+                  <col style="width: 72px;">
+                  <% cost_tiers.each do %>
+                    <col>
+                  <% end %>
+                </colgroup>
+                <thead>
+                  <tr>
+                    <th></th>
+                    <th colspan="<%= cost_tiers.size %>" class="pb-1 text-xs font-medium text-gray-400 text-center">相方のコスト</th>
+                  </tr>
+                  <tr>
+                    <th></th>
+                    <% cost_tiers.each do |c| %>
+                      <th class="text-center pb-1"><%= cost_badge(c) %></th>
+                    <% end %>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% cost_tiers.each do |my_cost| %>
+                    <tr>
+                      <td class="text-center align-middle"><%= cost_badge(my_cost) %></td>
+                      <% cost_tiers.each do |partner_cost| %>
+                        <% stat = rate_map[[my_cost, partner_cost]] %>
+                        <% if stat %>
+                          <% r = stat[:win_rate] %>
+                          <% cell_bg   = r >= 70 ? "bg-purple-500" : r >= 60 ? "bg-purple-300" : r >= 50 ? "bg-purple-100" : r >= 40 ? "bg-purple-50" : "bg-gray-50" %>
+                          <% cell_text = r >= 70 ? "text-white" : "text-purple-900" %>
+                          <% sub_text  = r >= 70 ? "text-purple-200" : r >= 60 ? "text-purple-700" : r >= 50 ? "text-purple-500" : r >= 40 ? "text-purple-400" : "text-gray-400" %>
+                          <td class="p-0">
+                            <div class="rounded-lg <%= cell_bg %> px-3 py-2.5 text-center">
+                              <div class="<%= cell_text %> font-bold tabular-nums text-base leading-tight"><%= r %>%</div>
+                              <div class="<%= sub_text %> text-xs tabular-nums mt-0.5"><%= stat[:total] %>試合</div>
+                            </div>
+                          </td>
+                        <% else %>
+                          <td class="p-0">
+                            <div class="rounded-lg bg-gray-50 px-3 py-2.5 text-center text-gray-300 text-xl leading-tight">—</div>
+                          </td>
+                        <% end %>
+                      <% end %>
+                    </tr>
+                  <% end %>
+                </tbody>
+              </table>
+            </div>
           </div>
         <% else %>
           <p class="text-gray-500 text-center py-8">データがありません</p>
@@ -393,71 +447,6 @@
           });
         }
 
-        // Initialize Cost Win Rates Chart
-        const costCtx = document.getElementById('costWinRatesChart');
-        if (costCtx) {
-          // Destroy existing chart if any
-          if (costCtx.chart) {
-            costCtx.chart.destroy();
-          }
-
-          costCtx.chart = new Chart(costCtx, {
-            type: 'bar',
-            data: {
-              labels: <%= raw @cost_win_rates.map { |d| d[:cost_combo] }.to_json %>,
-              datasets: [{
-                label: '勝率 (%)',
-                data: <%= raw @cost_win_rates.map { |d| d[:win_rate] }.to_json %>,
-                backgroundColor: 'rgba(147, 51, 234, 0.6)',
-                borderColor: 'rgb(147, 51, 234)',
-                borderWidth: 1
-              }]
-            },
-            options: {
-              responsive: true,
-              maintainAspectRatio: false,
-              scales: {
-                y: {
-                  beginAtZero: true,
-                  max: 100,
-                  ticks: {
-                    callback: function(value) {
-                      return value + '%';
-                    }
-                  }
-                }
-              },
-              plugins: {
-                legend: {
-                  display: false
-                },
-                tooltip: {
-                  callbacks: {
-                    label: function(context) {
-                      return context.dataset.label + ': ' + context.parsed.y + '%';
-                    }
-                  }
-                },
-                datalabels: {
-                  color: 'rgb(147, 51, 234)',
-                  anchor: function(context) {
-                    return context.dataset.data[context.dataIndex] > 70 ? 'center' : 'end';
-                  },
-                  align: function(context) {
-                    return context.dataset.data[context.dataIndex] > 70 ? 'center' : 'top';
-                  },
-                  font: {
-                    weight: 'bold',
-                    size: 14
-                  },
-                  formatter: function(value) {
-                    return value + '%';
-                  }
-                }
-              }
-            }
-          });
-        }
       };
     </script>
 
