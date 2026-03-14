@@ -192,6 +192,7 @@ class MatchesController < ApplicationController
     @filter_mobile_suits = params[:mobile_suits].present? ? params[:mobile_suits].reject(&:blank?).map(&:to_i) : []
     @filter_costs = params[:costs].present? ? params[:costs].reject(&:blank?).map(&:to_i) : []
     @filter_my_mobile_suits = params[:my_mobile_suits] == "1"
+    @flip_team = params[:flip_team] == "1"
     @filter_stat_player_id = stat_player_id
     @filter_ol_filter = ol_filter
     @filter_stat_filters = stat_filters
