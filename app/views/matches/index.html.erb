@@ -8,9 +8,9 @@
     <% if current_user.is_admin? %>
       <div class="flex flex-wrap gap-2">
         <% if @latest_event %>
-          <%= link_to "新規登録", new_event_match_path(@latest_event), class: "bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded" %>
+          <%= link_to "新規登録", new_event_match_path(@latest_event), class: "bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded", data: { turbo_frame: "_top" } %>
         <% end %>
-        <%= link_to "CSVインポート", new_admin_import_path, class: "bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded" %>
+        <%= link_to "CSVインポート", new_admin_import_path, class: "bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded", data: { turbo_frame: "_top" } %>
       </div>
     <% end %>
   </div>
@@ -359,7 +359,10 @@
                 _right_label  = "チーム2"
               end
             %>
-            <%= link_to match_path(match), class: "block", data: { turbo_frame: "_top" } do %>
+            <div class="block cursor-pointer"
+                 data-controller="card-link"
+                 data-card-link-url-value="<%= match_path(match) %>"
+                 data-action="click->card-link#navigate">
               <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
 
                 <!-- 左チーム -->
@@ -378,7 +381,9 @@
                           <span class="ml-1 px-1 py-0.5 bg-red-100 text-red-700 rounded text-xs font-semibold">配信台</span>
                         <% end %>
                       </span>
-                      <div class="text-gray-500"><%= player.mobile_suit.name %></div>
+                      <%= link_to player.mobile_suit.name, mobile_suit_path(player.mobile_suit),
+                          class: "text-gray-500 hover:text-indigo-600 hover:underline transition-colors",
+                          data: { turbo_frame: "_top" } %>
                     </div>
                   <% end %>
                 </div>
@@ -404,12 +409,14 @@
                           <span class="ml-1 px-1 py-0.5 bg-red-100 text-red-700 rounded text-xs font-semibold">配信台</span>
                         <% end %>
                       </span>
-                      <div class="text-gray-500"><%= player.mobile_suit.name %></div>
+                      <%= link_to player.mobile_suit.name, mobile_suit_path(player.mobile_suit),
+                          class: "text-gray-500 hover:text-indigo-600 hover:underline transition-colors",
+                          data: { turbo_frame: "_top" } %>
                     </div>
                   <% end %>
                 </div>
               </div>
-            <% end %>
+            </div>
 
             <!-- リアクションバー（リアルタイム更新対応） -->
             <%= turbo_stream_from "match_#{match.id}_reactions_compact" %>

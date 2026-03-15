@@ -122,8 +122,10 @@
           <ul class="divide-y divide-gray-200">
             <% @matches.each do |match| %>
               <%= turbo_stream_from "match_#{match.id}_reactions_compact" %>
-              <%= link_to match_path(match), class: "block hover:bg-gray-50" do %>
-                <li class="px-4 py-3">
+              <li class="px-4 py-3 hover:bg-gray-50 cursor-pointer"
+                  data-controller="card-link"
+                  data-card-link-url-value="<%= match_path(match) %>"
+                  data-action="click->card-link#navigate">
                   <div class="flex items-center gap-2 mb-2">
                     <span class="text-sm font-semibold text-gray-900">第<%= @match_numbers[match.id] %>試合</span>
                     <% if match.rotation_match&.started_at %>
@@ -160,7 +162,8 @@
                               <span class="ml-1 px-1 py-0.5 bg-red-100 text-red-700 rounded text-xs font-semibold">配信台</span>
                             <% end %>
                           </span>
-                          <div class="text-gray-500"><%= player.mobile_suit.name %></div>
+                          <%= link_to player.mobile_suit.name, mobile_suit_path(player.mobile_suit),
+                              class: "text-gray-500 hover:text-indigo-600 hover:underline transition-colors" %>
                         </div>
                       <% end %>
                     </div>
@@ -181,7 +184,8 @@
                       <% team2_players.each do |player| %>
                         <div class="mb-1">
                           <span class="text-gray-700"><%= player.user.nickname %></span>
-                          <div class="text-gray-500"><%= player.mobile_suit.name %></div>
+                          <%= link_to player.mobile_suit.name, mobile_suit_path(player.mobile_suit),
+                              class: "text-gray-500 hover:text-indigo-600 hover:underline transition-colors" %>
                         </div>
                       <% end %>
                     </div>
@@ -190,7 +194,6 @@
                     <%= render "reactions/reaction_bar", match: match, compact: true, emojis: @emojis %>
                   </div>
                 </li>
-              <% end %>
             <% end %>
           </ul>
           <% if @matches.respond_to?(:total_pages) && @matches.total_pages > 1 %>
