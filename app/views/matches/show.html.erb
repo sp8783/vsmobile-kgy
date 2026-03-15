@@ -20,6 +20,7 @@
                 配信を見る
               <% end %>
             <% end %>
+            <%= render "favorite_matches/favorite_button", match: @match, is_favorited: @is_favorited %>
           </div>
         </div>
         <% if current_user.is_admin? %>
