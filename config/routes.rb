@@ -83,6 +83,7 @@ Rails.application.routes.draw do
       end
     end
     resource :stats, controller: "match_stats", only: [ :edit, :update, :destroy ]
+    resource :favorite, controller: "favorite_matches", only: [ :create, :destroy ]
   end
 
   # Rotations
