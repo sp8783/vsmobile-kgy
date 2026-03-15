@@ -32,7 +32,8 @@
         <div class="flex items-center gap-2 flex-wrap">
           <span class="text-sm font-semibold text-gray-800"><%= mp.user.nickname %></span>
           <span class="text-gray-300 text-xs">·</span>
-          <span class="text-sm text-gray-600"><%= mp.mobile_suit.name %></span>
+          <%= link_to mp.mobile_suit.name, mobile_suit_path(mp.mobile_suit),
+              class: "text-sm text-gray-600 hover:text-indigo-600 hover:underline transition-colors" %>
           <%= cost_badge(mp.mobile_suit.cost) %>
         </div>
       <% end %>

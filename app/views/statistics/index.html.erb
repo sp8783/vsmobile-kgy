@@ -548,9 +548,24 @@
             <tbody class="bg-white divide-y divide-gray-200">
               <% @mobile_suits_list.each do |suit_stat| %>
                 <tr class="hover:bg-gray-50">
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="text-sm font-medium text-gray-900">
-                      <%= suit_stat[:mobile_suit].name %>
+                  <td class="px-6 py-3 whitespace-nowrap">
+                    <div class="flex items-center gap-3">
+                      <%= link_to mobile_suit_path(suit_stat[:mobile_suit]), class: "shrink-0 block" do %>
+                        <% if suit_stat[:mobile_suit].image_filename.present? %>
+                          <%= image_tag "/mobile_suits/#{suit_stat[:mobile_suit].image_filename}", alt: suit_stat[:mobile_suit].name,
+                              class: "w-20 h-10 object-contain rounded bg-gray-100 hover:opacity-80 transition-opacity" %>
+                        <% else %>
+                          <div class="w-20 h-10 flex items-center justify-center bg-gray-100 rounded">
+                            <svg class="w-5 h-5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                          </div>
+                        <% end %>
+                      <% end %>
+                      <div class="text-sm font-medium text-gray-900">
+                        <%= link_to suit_stat[:mobile_suit].name, mobile_suit_path(suit_stat[:mobile_suit]),
+                            class: "hover:text-indigo-600 hover:underline transition-colors" %>
+                      </div>
                     </div>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
@@ -628,9 +643,24 @@
             <tbody class="bg-white divide-y divide-gray-200">
               <% @opponent_suits_list.each do |suit_stat| %>
                 <tr class="hover:bg-gray-50">
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="text-sm font-medium text-gray-900">
-                      <%= suit_stat[:mobile_suit].name %>
+                  <td class="px-6 py-3 whitespace-nowrap">
+                    <div class="flex items-center gap-3">
+                      <%= link_to mobile_suit_path(suit_stat[:mobile_suit]), class: "shrink-0 block" do %>
+                        <% if suit_stat[:mobile_suit].image_filename.present? %>
+                          <%= image_tag "/mobile_suits/#{suit_stat[:mobile_suit].image_filename}", alt: suit_stat[:mobile_suit].name,
+                              class: "w-20 h-10 object-contain rounded bg-gray-100 hover:opacity-80 transition-opacity" %>
+                        <% else %>
+                          <div class="w-20 h-10 flex items-center justify-center bg-gray-100 rounded">
+                            <svg class="w-5 h-5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                          </div>
+                        <% end %>
+                      <% end %>
+                      <div class="text-sm font-medium text-gray-900">
+                        <%= link_to suit_stat[:mobile_suit].name, mobile_suit_path(suit_stat[:mobile_suit]),
+                            class: "hover:text-indigo-600 hover:underline transition-colors" %>
+                      </div>
                     </div>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
@@ -1017,11 +1047,24 @@
           <div class="divide-y divide-gray-200">
             <% @dominant_suits.each_with_index do |suit_stat, index| %>
               <div class="px-6 py-4 flex items-center justify-between">
-                <div class="flex items-center">
-                  <span class="text-lg font-bold text-gray-400 w-6"><%= index + 1 %></span>
-                  <div class="ml-3">
+                <div class="flex items-center gap-3">
+                  <span class="text-lg font-bold text-gray-400 w-6 shrink-0"><%= index + 1 %></span>
+                  <%= link_to mobile_suit_path(suit_stat[:mobile_suit]), class: "shrink-0 block" do %>
+                    <% if suit_stat[:mobile_suit].image_filename.present? %>
+                      <%= image_tag "/mobile_suits/#{suit_stat[:mobile_suit].image_filename}", alt: suit_stat[:mobile_suit].name,
+                          class: "w-32 h-16 object-contain rounded bg-gray-100 hover:opacity-80 transition-opacity" %>
+                    <% else %>
+                      <div class="w-32 h-16 flex items-center justify-center bg-gray-100 rounded">
+                        <svg class="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                        </svg>
+                      </div>
+                    <% end %>
+                  <% end %>
+                  <div>
                     <div class="text-sm font-medium text-gray-900 flex items-center gap-2">
-                      <%= suit_stat[:mobile_suit].name %>
+                      <%= link_to suit_stat[:mobile_suit].name, mobile_suit_path(suit_stat[:mobile_suit]),
+                          class: "hover:text-indigo-600 hover:underline transition-colors" %>
                       <%= cost_badge(suit_stat[:mobile_suit].cost) %>
                     </div>
                     <div class="text-xs text-gray-500">
@@ -1054,11 +1097,24 @@
             <div class="divide-y divide-gray-200">
               <% @popular_suits.each_with_index do |suit_stat, index| %>
                 <div class="px-6 py-4 flex items-center justify-between">
-                  <div class="flex items-center">
-                    <span class="text-lg font-bold text-gray-400 w-6"><%= index + 1 %></span>
-                    <div class="ml-3">
+                  <div class="flex items-center gap-3">
+                    <span class="text-lg font-bold text-gray-400 w-6 shrink-0"><%= index + 1 %></span>
+                    <%= link_to mobile_suit_path(suit_stat[:mobile_suit]), class: "shrink-0 block" do %>
+                      <% if suit_stat[:mobile_suit].image_filename.present? %>
+                        <%= image_tag "/mobile_suits/#{suit_stat[:mobile_suit].image_filename}", alt: suit_stat[:mobile_suit].name,
+                            class: "w-32 h-16 object-contain rounded bg-gray-100 hover:opacity-80 transition-opacity" %>
+                      <% else %>
+                        <div class="w-32 h-16 flex items-center justify-center bg-gray-100 rounded">
+                          <svg class="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                          </svg>
+                        </div>
+                      <% end %>
+                    <% end %>
+                    <div>
                       <div class="text-sm font-medium text-gray-900 flex items-center gap-2">
-                        <%= suit_stat[:mobile_suit].name %>
+                        <%= link_to suit_stat[:mobile_suit].name, mobile_suit_path(suit_stat[:mobile_suit]),
+                            class: "hover:text-indigo-600 hover:underline transition-colors" %>
                         <%= cost_badge(suit_stat[:mobile_suit].cost) %>
                       </div>
                       <div class="text-xs text-gray-500"><%= suit_stat[:mobile_suit].series %></div>
@@ -1088,11 +1144,24 @@
             <div class="divide-y divide-gray-200">
               <% @high_winrate_suits.each_with_index do |suit_stat, index| %>
                 <div class="px-6 py-4 flex items-center justify-between">
-                  <div class="flex items-center">
-                    <span class="text-lg font-bold text-gray-400 w-6"><%= index + 1 %></span>
-                    <div class="ml-3">
+                  <div class="flex items-center gap-3">
+                    <span class="text-lg font-bold text-gray-400 w-6 shrink-0"><%= index + 1 %></span>
+                    <%= link_to mobile_suit_path(suit_stat[:mobile_suit]), class: "shrink-0 block" do %>
+                      <% if suit_stat[:mobile_suit].image_filename.present? %>
+                        <%= image_tag "/mobile_suits/#{suit_stat[:mobile_suit].image_filename}", alt: suit_stat[:mobile_suit].name,
+                            class: "w-32 h-16 object-contain rounded bg-gray-100 hover:opacity-80 transition-opacity" %>
+                      <% else %>
+                        <div class="w-32 h-16 flex items-center justify-center bg-gray-100 rounded">
+                          <svg class="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                          </svg>
+                        </div>
+                      <% end %>
+                    <% end %>
+                    <div>
                       <div class="text-sm font-medium text-gray-900 flex items-center gap-2">
-                        <%= suit_stat[:mobile_suit].name %>
+                        <%= link_to suit_stat[:mobile_suit].name, mobile_suit_path(suit_stat[:mobile_suit]),
+                            class: "hover:text-indigo-600 hover:underline transition-colors" %>
                         <%= cost_badge(suit_stat[:mobile_suit].cost) %>
                       </div>
                       <div class="text-xs text-gray-500"><%= suit_stat[:wins] %>勝<%= suit_stat[:total] - suit_stat[:wins] %>敗</div>
