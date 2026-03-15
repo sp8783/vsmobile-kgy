@@ -125,7 +125,7 @@
     <!-- 全体系タブ: イベント選択 -->
     <div class="bg-white rounded-xl shadow-sm ring-1 ring-gray-900/5 mb-6 px-5 py-4 space-y-3">
       <div class="flex items-center flex-wrap gap-2">
-        <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide w-20 shrink-0">イベント</span>
+        <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide w-24 shrink-0">イベント</span>
         <%= link_to "全イベント", statistics_path(tab: @active_tab),
             class: "px-3 py-1.5 text-sm font-medium rounded-md transition-colors #{@filter_events.empty? ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}" %>
         <% @all_events.each do |event| %>
@@ -145,7 +145,7 @@
   <div class="bg-white rounded-xl shadow-sm ring-1 ring-gray-900/5 mb-6 px-5 py-4 space-y-3">
     <!-- イベント -->
     <div class="flex items-center flex-wrap gap-2">
-      <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide w-20 shrink-0">イベント</span>
+      <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide w-24 shrink-0">イベント</span>
       <%= link_to "全イベント", statistics_path(ev_base),
           class: "px-3 py-1.5 text-sm font-medium rounded-md transition-colors #{@filter_events.empty? ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}" %>
       <% @all_events.each do |event| %>
@@ -156,7 +156,7 @@
 
     <!-- パートナー -->
     <div class="flex items-center flex-wrap gap-2">
-      <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide w-20 shrink-0">パートナー</span>
+      <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide w-24 shrink-0">パートナー</span>
       <%= link_to "全員", statistics_path(pt_base),
           class: "px-3 py-1.5 text-sm font-medium rounded-md transition-colors #{@filter_partners.empty? ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}" %>
       <% @all_partners.each do |partner| %>
@@ -167,7 +167,7 @@
 
     <!-- 機体・コスト -->
     <div class="flex flex-wrap items-center gap-3">
-      <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide w-20 shrink-0">機体・コスト</span>
+      <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide w-24 shrink-0">機体・コスト</span>
       <div class="flex rounded-xl bg-gray-100 p-1 gap-0.5 shrink-0">
         <%= link_to "全体", statistics_path(suit_base),
             class: "#{seg_btn} #{no_suit_cost ? 'bg-white shadow text-gray-900' : 'text-gray-500 hover:text-gray-700'}" %>
@@ -203,7 +203,7 @@
     <% _fav_suits = viewing_as_user&.user_favorite_suits&.order(:slot)&.includes(:mobile_suit)&.to_a || [] %>
     <% if _fav_suits.any? %>
       <div class="flex items-center flex-wrap gap-2">
-        <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide w-20 shrink-0">お気に入り</span>
+        <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide w-24 shrink-0">お気に入り機体</span>
         <% _fav_suits.each do |fav| %>
           <% _new_suits = @filter_mobile_suits.include?(fav.mobile_suit.id) ? @filter_mobile_suits - [fav.mobile_suit.id] : @filter_mobile_suits + [fav.mobile_suit.id] %>
           <%= link_to fav.mobile_suit.name, statistics_path(suit_base.merge(mobile_suits: _new_suits)),
