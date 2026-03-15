@@ -135,6 +135,105 @@
       </div>
     </div>
 
+    <%# ── お気に入り試合 ── %>
+    <div class="mt-6 bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+
+      <%# カードヘッダー %>
+      <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-100 to-yellow-100 flex items-center justify-center">
+            <svg class="w-4 h-4 text-amber-600" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M5 4a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 20V4z"/>
+            </svg>
+          </div>
+          <h2 class="text-sm font-bold text-gray-900">お気に入り試合</h2>
+          <% if @favorite_matches.total_count > 0 %>
+            <span class="px-2 py-0.5 rounded-full bg-amber-50 text-amber-600 text-xs font-semibold">
+              <%= @favorite_matches.total_count %>
+            </span>
+          <% end %>
+        </div>
+        <% if @favorite_matches.total_count > 0 %>
+          <%= link_to "一覧で見る", matches_path(only_favorites: "1"),
+              class: "text-xs font-medium text-indigo-600 hover:text-indigo-700",
+              data: { turbo_frame: "_top" } %>
+        <% end %>
+      </div>
+
+      <% if @favorite_matches.any? %>
+        <ul class="divide-y divide-gray-100">
+          <% @favorite_matches.each do |match| %>
+            <%
+              all_mp = match.match_players.sort_by { |mp| [mp.team_number, mp.position] }
+              team1  = all_mp.select { |mp| mp.team_number == 1 }
+              team2  = all_mp.select { |mp| mp.team_number == 2 }
+            %>
+            <li class="px-6 py-4 hover:bg-gray-50 transition-colors cursor-pointer"
+                data-controller="card-link"
+                data-card-link-url-value="<%= match_path(match) %>"
+                data-action="click->card-link#navigate">
+              <%# 日付・イベント %>
+              <div class="flex items-center gap-2 mb-3 flex-wrap">
+                <span class="text-xs text-gray-400"><%= match.played_at.strftime('%Y年%m月%d日') %></span>
+                <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-blue-100 text-blue-800"><%= match.event.name %></span>
+              </div>
+
+              <%# 対戦カード %>
+              <div class="grid grid-cols-[1fr_auto_1fr] gap-2 items-center text-xs">
+                <%# チーム1 %>
+                <div class="<%= match.winning_team == 1 ? 'border-blue-300 bg-blue-50' : 'border-red-200 bg-red-50' %> rounded-lg border p-2 space-y-1.5">
+                  <span class="text-[10px] font-bold <%= match.winning_team == 1 ? 'text-blue-600' : 'text-red-500' %>">
+                    <%= match.winning_team == 1 ? 'WIN' : 'LOSE' %>
+                  </span>
+                  <% team1.each do |player| %>
+                    <div>
+                      <span class="font-semibold text-gray-800"><%= player.user.nickname %></span>
+                      <%= link_to player.mobile_suit.name, mobile_suit_path(player.mobile_suit),
+                          class: "block text-[10px] text-indigo-500 hover:text-indigo-700 hover:underline leading-tight truncate",
+                          data: { turbo_frame: "_top" } %>
+                    </div>
+                  <% end %>
+                </div>
+
+                <%# VS %>
+                <div class="text-center text-gray-300 font-bold text-sm px-1">VS</div>
+
+                <%# チーム2 %>
+                <div class="<%= match.winning_team == 2 ? 'border-blue-300 bg-blue-50' : 'border-red-200 bg-red-50' %> rounded-lg border p-2 space-y-1.5">
+                  <span class="text-[10px] font-bold <%= match.winning_team == 2 ? 'text-blue-600' : 'text-red-500' %>">
+                    <%= match.winning_team == 2 ? 'WIN' : 'LOSE' %>
+                  </span>
+                  <% team2.each do |player| %>
+                    <div>
+                      <span class="font-semibold text-gray-800"><%= player.user.nickname %></span>
+                      <%= link_to player.mobile_suit.name, mobile_suit_path(player.mobile_suit),
+                          class: "block text-[10px] text-indigo-500 hover:text-indigo-700 hover:underline leading-tight truncate",
+                          data: { turbo_frame: "_top" } %>
+                    </div>
+                  <% end %>
+                </div>
+              </div>
+            </li>
+          <% end %>
+        </ul>
+
+        <% if @favorite_matches.total_pages > 1 %>
+          <div class="px-6 py-3 border-t border-gray-100 flex justify-center">
+            <%= paginate @favorite_matches, param_name: :fav_page %>
+          </div>
+        <% end %>
+      <% else %>
+        <div class="px-6 py-10 text-center">
+          <svg class="mx-auto w-8 h-8 text-gray-300 mb-2" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 4a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 20V4z"/>
+          </svg>
+          <p class="text-sm text-gray-400">お気に入りに登録した試合はありません</p>
+          <p class="mt-1 text-xs text-gray-300">対戦履歴の「保存」ボタンから追加できます</p>
+        </div>
+      <% end %>
+
+    </div>
+
   </div>
 
   <%# 機体ピッカーモーダル（コントローラー内に配置） %>
