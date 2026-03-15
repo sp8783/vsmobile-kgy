@@ -18,6 +18,7 @@
   <!-- フィルターセクション -->
   <%
     _bp = { sort: @sort, per: @per_page, flip_team: @flip_team ? "1" : nil,
+            only_favorites: @filter_only_favorites ? "1" : nil,
             stat_player_id: @filter_stat_player_id, ol_filter: @filter_ol_filter,
             stat_filters: @filter_stat_filters,
             damage_dealt_val: @filter_damage_dealt_val, damage_dealt_dir: @filter_damage_dealt_dir,
@@ -123,6 +124,20 @@
       </div>
     <% end %>
 
+    <!-- お気に入り試合フィルター -->
+    <% if viewing_as_user&.regular_user? %>
+      <div class="flex items-center flex-wrap gap-2">
+        <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide w-20 shrink-0">保存済み</span>
+        <%= link_to matches_path(_all.merge(only_favorites: @filter_only_favorites ? nil : "1", page: nil)),
+            class: "flex items-center gap-1.5 #{@filter_only_favorites ? _btn_on : _btn_off}" do %>
+          <svg class="w-3.5 h-3.5" fill="<%= @filter_only_favorites ? 'currentColor' : 'none' %>" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 4a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 20V4z"/>
+          </svg>
+          お気に入りのみ
+        <% end %>
+      </div>
+    <% end %>
+
     <!-- 詳細条件（折りたたみ） -->
     <% stat_section_active = @filter_ol_filter.present? || @filter_stat_filters.any? || @filter_stat_player_id.present? || @filter_damage_dealt_val.present? || @filter_damage_received_val.present? %>
     <details class="group/detail rounded-xl border border-gray-200 overflow-hidden" <%= 'open' if stat_section_active %>>
@@ -152,6 +167,7 @@
           <% @filter_costs.each do |c| %><input type="hidden" name="costs[]" value="<%= c %>"><% end %>
           <% if @filter_my_mobile_suits %><input type="hidden" name="my_mobile_suits" value="1"><% end %>
           <% if @flip_team %><input type="hidden" name="flip_team" value="1"><% end %>
+          <% if @filter_only_favorites %><input type="hidden" name="only_favorites" value="1"><% end %>
           <input type="hidden" name="sort" value="<%= @sort %>">
           <input type="hidden" name="per" value="<%= @per_page %>">
 
@@ -333,6 +349,7 @@
                   <% end %>
                 <% end %>
               </div>
+              <%= render "favorite_matches/favorite_button", match: match, is_favorited: @my_favorite_match_ids.include?(match.id) %>
             </div>
 
             <%

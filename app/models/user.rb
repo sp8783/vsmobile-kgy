@@ -11,6 +11,8 @@ class User < ApplicationRecord
   has_many :reactions, dependent: :destroy
   has_many :user_announcement_reads, dependent: :destroy
   has_many :read_announcements, through: :user_announcement_reads, source: :announcement
+  has_many :favorite_matches, dependent: :destroy
+  has_many :favorited_matches, through: :favorite_matches, source: :match
 
   # Validations
   validates :username, presence: true, uniqueness: { case_sensitive: false },

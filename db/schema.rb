@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_14_002422) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_15_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -42,6 +42,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_14_002422) do
     t.string "name", null: false
     t.datetime "updated_at", null: false
     t.index ["held_on"], name: "index_events_on_held_on"
+  end
+
+  create_table "favorite_matches", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "match_id", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["match_id"], name: "index_favorite_matches_on_match_id"
+    t.index ["user_id", "match_id"], name: "index_favorite_matches_on_user_id_and_match_id", unique: true
+    t.index ["user_id"], name: "index_favorite_matches_on_user_id"
   end
 
   create_table "master_emojis", force: :cascade do |t|
@@ -215,6 +225,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_14_002422) do
     t.index ["username"], name: "index_users_on_username", unique: true
   end
 
+  add_foreign_key "favorite_matches", "matches"
+  add_foreign_key "favorite_matches", "users"
   add_foreign_key "match_players", "matches"
   add_foreign_key "match_players", "mobile_suits"
   add_foreign_key "match_players", "users"

@@ -164,10 +164,21 @@ class MatchesController < ApplicationController
       @matches = scope.distinct
     end
 
+    # フィルター: お気に入りのみ
+    if params[:only_favorites] == "1" && viewing_as_user
+      @matches = @matches.joins(:favorite_matches).where(favorite_matches: { user_id: viewing_as_user.id })
+    end
+
     @per_page = [ 10, 20, 50 ].include?(params[:per].to_i) ? params[:per].to_i : 20
     @matches = @matches.page(params[:page]).per(@per_page)
     @emojis = MasterEmoji.active.ordered
     @latest_event = Event.order(held_on: :desc).first
+
+    @my_favorite_match_ids = if viewing_as_user
+      FavoriteMatch.where(user_id: viewing_as_user.id, match_id: @matches.map(&:id)).pluck(:match_id).to_set
+    else
+      Set.new
+    end
 
     # フィルター用のデータ
     @all_events = Event.order(held_on: :desc)
@@ -200,9 +211,11 @@ class MatchesController < ApplicationController
     @filter_damage_dealt_dir = params[:damage_dealt_dir].presence_in(%w[gte lte]) || "gte"
     @filter_damage_received_val = params[:damage_received_val].presence
     @filter_damage_received_dir = params[:damage_received_dir].presence_in(%w[gte lte]) || "gte"
+    @filter_only_favorites = params[:only_favorites] == "1"
   end
 
   def show
+    @is_favorited = viewing_as_user ? @match.favorite_matches.exists?(user: viewing_as_user) : false
   end
 
   def new

@@ -1,0 +1,3 @@
+<%= turbo_stream.replace dom_id(@match, "favorite_button") do %>
+  <%= render "favorite_matches/favorite_button", match: @match, is_favorited: true %>
+<% end %>
