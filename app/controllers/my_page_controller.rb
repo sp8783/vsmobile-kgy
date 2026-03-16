@@ -12,5 +12,11 @@ class MyPageController < ApplicationController
     @all_suits      = MobileSuit.all.order(:id)
     @costs          = COSTS
     @counts_by_cost = MobileSuit.group(:cost).count
+
+    @favorite_matches = viewing_as_user.favorited_matches
+                                       .by_latest
+                                       .includes(:event, match_players: [ :user, :mobile_suit ])
+                                       .page(params[:fav_page])
+                                       .per(10)
   end
 end

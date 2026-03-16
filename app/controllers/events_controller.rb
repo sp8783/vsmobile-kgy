@@ -3,8 +3,8 @@ require "net/http"
 class EventsController < ApplicationController
   include TimestampParseable
   before_action :authenticate_user!
-  before_action :require_admin, only: [ :new, :create, :edit, :update, :destroy, :edit_timestamps, :update_timestamps, :trigger_analysis, :trigger_scraping ]
-  before_action :set_event, only: [ :show, :edit, :update, :destroy, :edit_timestamps, :update_timestamps, :trigger_analysis, :trigger_scraping ]
+  before_action :require_admin, only: [ :new, :create, :edit, :update, :destroy, :edit_timestamps, :update_timestamps, :trigger_analysis, :trigger_scraping, :post_broadcast_to_discord ]
+  before_action :set_event, only: [ :show, :edit, :update, :destroy, :edit_timestamps, :update_timestamps, :trigger_analysis, :trigger_scraping, :post_broadcast_to_discord ]
 
   def index
     @events = Event.includes(:matches).order(held_on: :desc)
@@ -24,6 +24,12 @@ class EventsController < ApplicationController
 
     ordered_ids = @event.matches.order(:played_at, :id).pluck(:id)
     @match_numbers = ordered_ids.each_with_index.to_h { |id, i| [ id, i + 1 ] }
+
+    @my_favorite_match_ids = if viewing_as_user
+      FavoriteMatch.where(user_id: viewing_as_user.id, match_id: @matches.map(&:id)).pluck(:match_id).to_set
+    else
+      Set.new
+    end
   end
 
   def new
@@ -173,6 +179,16 @@ class EventsController < ApplicationController
     redirect_to event_path(@event), alert: "スクレイピング開始でエラーが発生しました: #{e.message}"
   end
 
+  def post_broadcast_to_discord
+    if @event.broadcast_url.blank?
+      return redirect_to event_path(@event), alert: "配信URLが設定されていません。"
+    end
+
+    message = @event.broadcast_url
+    DiscordWebhookService.post(purpose: "broadcast_url", message: message)
+    redirect_to event_path(@event), notice: "Discordへ配信URLを投稿しました。"
+  end
+
   def destroy
     name = @event.name
 
@@ -197,6 +213,6 @@ class EventsController < ApplicationController
   end
 
   def event_params
-    params.require(:event).permit(:name, :held_on, :description, :broadcast_url)
+    params.require(:event).permit(:name, :held_on, :description, :broadcast_url, :discord_thread_url)
   end
 end

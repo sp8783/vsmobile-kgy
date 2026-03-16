@@ -1,6 +1,10 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
+  static values = {
+    clearCost: { type: Boolean, default: false }
+  }
+
   connect() {
     if (typeof TomSelect === 'undefined') return
     const optgroups = this.element.dataset.hasFavorites === 'true'
@@ -16,6 +20,7 @@ export default class extends Controller {
         const url = new URL(window.location.href)
         url.searchParams.delete('mobile_suits[]')
         url.searchParams.delete('my_mobile_suits')
+        if (this.clearCostValue) url.searchParams.delete('costs[]')
         if (value) url.searchParams.set('mobile_suits[]', value)
         window.location.href = url.toString()
       }

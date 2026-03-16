@@ -20,6 +20,7 @@
                 配信を見る
               <% end %>
             <% end %>
+            <%= render "favorite_matches/favorite_button", match: @match, is_favorited: @is_favorited %>
           </div>
         </div>
         <% if current_user.is_admin? %>
@@ -43,13 +44,13 @@
         <% team2_players = @match.match_players.select { |p| p.team_number == 2 }.sort_by(&:position) %>
 
         <!-- Team 1 -->
-        <div class="<%= @match.winning_team == 1 ? 'bg-blue-50 border-2 border-blue-400 rounded-lg p-6' : 'bg-red-50 border-2 border-red-400 rounded-lg p-6' %>">
+        <div class="<%= @match.winning_team == 1 ? 'bg-sky-50/70' : 'bg-red-50/70' %> rounded-xl p-6">
           <div class="flex items-center justify-between mb-4">
-            <h3 class="text-lg font-semibold text-gray-900">チーム1</h3>
+            <h3 class="text-base font-semibold text-gray-500 uppercase tracking-wide">チーム1</h3>
             <% if @match.winning_team == 1 %>
-              <span class="px-3 py-1 bg-blue-600 text-white rounded-full text-sm font-semibold">WIN</span>
+              <span class="px-3 py-1 bg-sky-100 text-sky-700 rounded-full text-sm font-bold">WIN</span>
             <% else %>
-              <span class="px-3 py-1 bg-red-600 text-white rounded-full text-sm font-semibold">LOSE</span>
+              <span class="px-3 py-1 bg-red-100 text-red-600 rounded-full text-sm font-bold">LOSE</span>
             <% end %>
           </div>
 
@@ -67,12 +68,27 @@
                         <span class="px-2 py-0.5 bg-red-100 text-red-700 rounded text-xs font-semibold">配信台</span>
                       <% end %>
                     </div>
-                    <div class="mt-2">
-                      <p class="text-sm text-gray-500">使用機体</p>
-                      <p class="text-sm font-medium text-gray-900 flex items-center gap-2">
-                        <%= player.mobile_suit.name %>
-                        <%= cost_badge(player.mobile_suit.cost) %>
-                      </p>
+                    <div class="mt-3 flex items-center gap-3">
+                      <%= link_to mobile_suit_path(player.mobile_suit), class: "shrink-0 block" do %>
+                        <% if player.mobile_suit.image_filename.present? %>
+                          <%= image_tag "/mobile_suits/#{player.mobile_suit.image_filename}", alt: player.mobile_suit.name,
+                              class: "w-28 h-16 object-contain rounded-lg bg-gray-100 hover:opacity-80 transition-opacity" %>
+                        <% else %>
+                          <div class="w-28 h-16 flex items-center justify-center bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">
+                            <svg class="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                          </div>
+                        <% end %>
+                      <% end %>
+                      <div>
+                        <p class="text-xs text-gray-500 mb-0.5">使用機体</p>
+                        <div class="flex items-center gap-2 flex-wrap">
+                          <%= link_to player.mobile_suit.name, mobile_suit_path(player.mobile_suit),
+                              class: "text-sm font-medium text-gray-900 hover:text-indigo-600 hover:underline transition-colors" %>
+                          <%= cost_badge(player.mobile_suit.cost) %>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -82,13 +98,13 @@
         </div>
 
         <!-- Team 2 -->
-        <div class="<%= @match.winning_team == 2 ? 'bg-blue-50 border-2 border-blue-400 rounded-lg p-6' : 'bg-red-50 border-2 border-red-400 rounded-lg p-6' %>">
+        <div class="<%= @match.winning_team == 2 ? 'bg-sky-50/70' : 'bg-red-50/70' %> rounded-xl p-6">
           <div class="flex items-center justify-between mb-4">
-            <h3 class="text-lg font-semibold text-gray-900">チーム2</h3>
+            <h3 class="text-base font-semibold text-gray-500 uppercase tracking-wide">チーム2</h3>
             <% if @match.winning_team == 2 %>
-              <span class="px-3 py-1 bg-blue-600 text-white rounded-full text-sm font-semibold">WIN</span>
+              <span class="px-3 py-1 bg-sky-100 text-sky-700 rounded-full text-sm font-bold">WIN</span>
             <% else %>
-              <span class="px-3 py-1 bg-red-600 text-white rounded-full text-sm font-semibold">LOSE</span>
+              <span class="px-3 py-1 bg-red-100 text-red-600 rounded-full text-sm font-bold">LOSE</span>
             <% end %>
           </div>
 
@@ -101,12 +117,27 @@
                       <%= render "matches/rank_badge", rank: player.match_rank %>
                       <p class="text-lg font-semibold text-gray-900"><%= player.user.nickname %></p>
                     </div>
-                    <div class="mt-2">
-                      <p class="text-sm text-gray-500">使用機体</p>
-                      <p class="text-sm font-medium text-gray-900 flex items-center gap-2">
-                        <%= player.mobile_suit.name %>
-                        <%= cost_badge(player.mobile_suit.cost) %>
-                      </p>
+                    <div class="mt-3 flex items-center gap-3">
+                      <%= link_to mobile_suit_path(player.mobile_suit), class: "shrink-0 block" do %>
+                        <% if player.mobile_suit.image_filename.present? %>
+                          <%= image_tag "/mobile_suits/#{player.mobile_suit.image_filename}", alt: player.mobile_suit.name,
+                              class: "w-28 h-16 object-contain rounded-lg bg-gray-100 hover:opacity-80 transition-opacity" %>
+                        <% else %>
+                          <div class="w-28 h-16 flex items-center justify-center bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">
+                            <svg class="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                          </div>
+                        <% end %>
+                      <% end %>
+                      <div>
+                        <p class="text-xs text-gray-500 mb-0.5">使用機体</p>
+                        <div class="flex items-center gap-2 flex-wrap">
+                          <%= link_to player.mobile_suit.name, mobile_suit_path(player.mobile_suit),
+                              class: "text-sm font-medium text-gray-900 hover:text-indigo-600 hover:underline transition-colors" %>
+                          <%= cost_badge(player.mobile_suit.cost) %>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -133,9 +164,9 @@
               <h3 class="text-sm font-semibold text-gray-600 mb-2">
                 チーム<%= team_num %>
                 <% if is_winner %>
-                  <span class="ml-1 text-blue-600">WIN</span>
+                  <span class="ml-1 px-2 py-0.5 rounded-full text-xs font-bold bg-sky-100 text-sky-700">WIN</span>
                 <% else %>
-                  <span class="ml-1 text-red-600">LOSE</span>
+                  <span class="ml-1 px-2 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-600">LOSE</span>
                 <% end %>
               </h3>
               <div class="overflow-x-auto">

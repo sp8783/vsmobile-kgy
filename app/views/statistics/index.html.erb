@@ -125,7 +125,7 @@
     <!-- 全体系タブ: イベント選択 -->
     <div class="bg-white rounded-xl shadow-sm ring-1 ring-gray-900/5 mb-6 px-5 py-4 space-y-3">
       <div class="flex items-center flex-wrap gap-2">
-        <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide w-20 shrink-0">イベント</span>
+        <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide w-24 shrink-0">イベント</span>
         <%= link_to "全イベント", statistics_path(tab: @active_tab),
             class: "px-3 py-1.5 text-sm font-medium rounded-md transition-colors #{@filter_events.empty? ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}" %>
         <% @all_events.each do |event| %>
@@ -145,7 +145,7 @@
   <div class="bg-white rounded-xl shadow-sm ring-1 ring-gray-900/5 mb-6 px-5 py-4 space-y-3">
     <!-- イベント -->
     <div class="flex items-center flex-wrap gap-2">
-      <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide w-20 shrink-0">イベント</span>
+      <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide w-24 shrink-0">イベント</span>
       <%= link_to "全イベント", statistics_path(ev_base),
           class: "px-3 py-1.5 text-sm font-medium rounded-md transition-colors #{@filter_events.empty? ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}" %>
       <% @all_events.each do |event| %>
@@ -156,7 +156,7 @@
 
     <!-- パートナー -->
     <div class="flex items-center flex-wrap gap-2">
-      <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide w-20 shrink-0">パートナー</span>
+      <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide w-24 shrink-0">パートナー</span>
       <%= link_to "全員", statistics_path(pt_base),
           class: "px-3 py-1.5 text-sm font-medium rounded-md transition-colors #{@filter_partners.empty? ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}" %>
       <% @all_partners.each do |partner| %>
@@ -167,7 +167,7 @@
 
     <!-- 機体・コスト -->
     <div class="flex flex-wrap items-center gap-3">
-      <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide w-20 shrink-0">機体・コスト</span>
+      <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide w-24 shrink-0">機体・コスト</span>
       <div class="flex rounded-xl bg-gray-100 p-1 gap-0.5 shrink-0">
         <%= link_to "全体", statistics_path(suit_base),
             class: "#{seg_btn} #{no_suit_cost ? 'bg-white shadow text-gray-900' : 'text-gray-500 hover:text-gray-700'}" %>
@@ -182,7 +182,10 @@
         <% end %>
       </div>
       <div class="flex-1 min-w-[180px] max-w-xs">
-        <select id="stat-suit-select" class="w-full" data-has-favorites="<%= viewing_as_user&.user_favorite_suits&.any? %>">
+        <select id="stat-suit-select" class="w-full"
+                data-controller="suit-select"
+                data-has-favorites="<%= viewing_as_user&.user_favorite_suits&.any? %>"
+                data-suit-select-clear-cost-value="true">
           <option value="">機体を検索...</option>
           <% visible_suits = @filter_costs.any? ? @all_mobile_suits.select { |s| @filter_costs.include?(s.cost) } : @all_mobile_suits %>
           <%= mobile_suit_options_with_favorites(visible_suits, viewing_as_user, @filter_mobile_suits) %>
@@ -202,13 +205,15 @@
     <!-- お気に入り機体 -->
     <% _fav_suits = viewing_as_user&.user_favorite_suits&.order(:slot)&.includes(:mobile_suit)&.to_a || [] %>
     <% if _fav_suits.any? %>
-      <div class="flex items-center flex-wrap gap-2">
-        <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide w-20 shrink-0">お気に入り</span>
-        <% _fav_suits.each do |fav| %>
-          <% _new_suits = @filter_mobile_suits.include?(fav.mobile_suit.id) ? @filter_mobile_suits - [fav.mobile_suit.id] : @filter_mobile_suits + [fav.mobile_suit.id] %>
-          <%= link_to fav.mobile_suit.name, statistics_path(suit_base.merge(mobile_suits: _new_suits)),
-              class: "px-3 py-1.5 text-sm font-medium rounded-md transition-colors #{@filter_mobile_suits.include?(fav.mobile_suit.id) ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}" %>
-        <% end %>
+      <div class="flex items-start gap-2">
+        <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide w-24 shrink-0 pt-1.5">お気に入り機体</span>
+        <div class="flex flex-wrap gap-2">
+          <% _fav_suits.each do |fav| %>
+            <% _new_suits = @filter_mobile_suits.include?(fav.mobile_suit.id) ? @filter_mobile_suits - [fav.mobile_suit.id] : @filter_mobile_suits + [fav.mobile_suit.id] %>
+            <%= link_to fav.mobile_suit.name, statistics_path(suit_base.merge(mobile_suits: _new_suits)),
+                class: "px-3 py-1.5 text-sm font-medium rounded-md transition-colors #{@filter_mobile_suits.include?(fav.mobile_suit.id) ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}" %>
+          <% end %>
+        </div>
       </div>
     <% end %>
   </div>
@@ -259,12 +264,66 @@
         <% end %>
       </div>
 
-      <!-- Cost Win Rates Chart -->
+      <!-- Cost Win Rates Matrix -->
       <div class="bg-white rounded-lg shadow p-6">
         <h3 class="text-lg font-semibold text-gray-900 mb-4">コスト帯別勝率</h3>
         <% if @cost_win_rates.any? %>
-          <div style="position: relative; height: 300px;">
-            <canvas id="costWinRatesChart"></canvas>
+          <% cost_tiers = [3000, 2500, 2000, 1500] %>
+          <% rate_map = @cost_win_rates.index_by { |s| [s[:my_cost], s[:partner_cost]] } %>
+          <div class="flex items-stretch gap-2">
+            <!-- 自分のコスト: 縦ラベル -->
+            <div class="flex items-center justify-center flex-shrink-0">
+              <span class="text-xs font-medium text-gray-400 select-none" style="writing-mode: vertical-rl;">自分のコスト</span>
+            </div>
+            <!-- Matrix table -->
+            <div class="flex-1 overflow-x-auto">
+              <table class="w-full text-sm border-separate border-spacing-1 table-fixed">
+                <colgroup>
+                  <col style="width: 72px;">
+                  <% cost_tiers.each do %>
+                    <col>
+                  <% end %>
+                </colgroup>
+                <thead>
+                  <tr>
+                    <th></th>
+                    <th colspan="<%= cost_tiers.size %>" class="pb-1 text-xs font-medium text-gray-400 text-center">相方のコスト</th>
+                  </tr>
+                  <tr>
+                    <th></th>
+                    <% cost_tiers.each do |c| %>
+                      <th class="text-center pb-1"><%= cost_badge(c) %></th>
+                    <% end %>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% cost_tiers.each do |my_cost| %>
+                    <tr>
+                      <td class="text-center align-middle"><%= cost_badge(my_cost) %></td>
+                      <% cost_tiers.each do |partner_cost| %>
+                        <% stat = rate_map[[my_cost, partner_cost]] %>
+                        <% if stat %>
+                          <% r = stat[:win_rate] %>
+                          <% cell_bg   = r >= 70 ? "bg-purple-500" : r >= 60 ? "bg-purple-300" : r >= 50 ? "bg-purple-100" : r >= 40 ? "bg-purple-50" : "bg-gray-50" %>
+                          <% cell_text = r >= 70 ? "text-white" : "text-purple-900" %>
+                          <% sub_text  = r >= 70 ? "text-purple-200" : r >= 60 ? "text-purple-700" : r >= 50 ? "text-purple-500" : r >= 40 ? "text-purple-400" : "text-gray-400" %>
+                          <td class="p-0">
+                            <div class="rounded-lg <%= cell_bg %> px-3 py-2.5 text-center">
+                              <div class="<%= cell_text %> font-bold tabular-nums text-base leading-tight"><%= r %>%</div>
+                              <div class="<%= sub_text %> text-xs tabular-nums mt-0.5"><%= stat[:total] %>試合</div>
+                            </div>
+                          </td>
+                        <% else %>
+                          <td class="p-0">
+                            <div class="rounded-lg bg-gray-50 px-3 py-2.5 text-center text-gray-300 text-xl leading-tight">—</div>
+                          </td>
+                        <% end %>
+                      <% end %>
+                    </tr>
+                  <% end %>
+                </tbody>
+              </table>
+            </div>
           </div>
         <% else %>
           <p class="text-gray-500 text-center py-8">データがありません</p>
@@ -393,71 +452,6 @@
           });
         }
 
-        // Initialize Cost Win Rates Chart
-        const costCtx = document.getElementById('costWinRatesChart');
-        if (costCtx) {
-          // Destroy existing chart if any
-          if (costCtx.chart) {
-            costCtx.chart.destroy();
-          }
-
-          costCtx.chart = new Chart(costCtx, {
-            type: 'bar',
-            data: {
-              labels: <%= raw @cost_win_rates.map { |d| d[:cost_combo] }.to_json %>,
-              datasets: [{
-                label: '勝率 (%)',
-                data: <%= raw @cost_win_rates.map { |d| d[:win_rate] }.to_json %>,
-                backgroundColor: 'rgba(147, 51, 234, 0.6)',
-                borderColor: 'rgb(147, 51, 234)',
-                borderWidth: 1
-              }]
-            },
-            options: {
-              responsive: true,
-              maintainAspectRatio: false,
-              scales: {
-                y: {
-                  beginAtZero: true,
-                  max: 100,
-                  ticks: {
-                    callback: function(value) {
-                      return value + '%';
-                    }
-                  }
-                }
-              },
-              plugins: {
-                legend: {
-                  display: false
-                },
-                tooltip: {
-                  callbacks: {
-                    label: function(context) {
-                      return context.dataset.label + ': ' + context.parsed.y + '%';
-                    }
-                  }
-                },
-                datalabels: {
-                  color: 'rgb(147, 51, 234)',
-                  anchor: function(context) {
-                    return context.dataset.data[context.dataIndex] > 70 ? 'center' : 'end';
-                  },
-                  align: function(context) {
-                    return context.dataset.data[context.dataIndex] > 70 ? 'center' : 'top';
-                  },
-                  font: {
-                    weight: 'bold',
-                    size: 14
-                  },
-                  formatter: function(value) {
-                    return value + '%';
-                  }
-                }
-              }
-            }
-          });
-        }
       };
     </script>
 
@@ -550,18 +544,31 @@
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap" data-sort="number">使用回数</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap" data-sort="number">勝利</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap" data-sort="percent">勝率</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap" data-sort="number">平均スコア</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap" data-sort="number">KD比</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">よく組むパートナー機体</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[200px]">よく組むパートナー機体</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap" data-sort="date">最終使用日</th>
               </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
               <% @mobile_suits_list.each do |suit_stat| %>
                 <tr class="hover:bg-gray-50">
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="text-sm font-medium text-gray-900">
-                      <%= suit_stat[:mobile_suit].name %>
+                  <td class="px-6 py-3 whitespace-nowrap">
+                    <div class="flex items-center gap-3">
+                      <%= link_to mobile_suit_path(suit_stat[:mobile_suit]), class: "shrink-0 block" do %>
+                        <% if suit_stat[:mobile_suit].image_filename.present? %>
+                          <%= image_tag "/mobile_suits/#{suit_stat[:mobile_suit].image_filename}", alt: suit_stat[:mobile_suit].name,
+                              class: "w-32 h-16 object-contain rounded bg-gray-100 hover:opacity-80 transition-opacity" %>
+                        <% else %>
+                          <div class="w-32 h-16 flex items-center justify-center bg-gray-100 rounded">
+                            <svg class="w-5 h-5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                          </div>
+                        <% end %>
+                      <% end %>
+                      <div class="text-sm font-medium text-gray-900">
+                        <%= link_to suit_stat[:mobile_suit].name, mobile_suit_path(suit_stat[:mobile_suit]),
+                            class: "hover:text-indigo-600 hover:underline transition-colors" %>
+                      </div>
                     </div>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
@@ -580,12 +587,6 @@
                         <div class="bg-purple-600 h-2 rounded-full" style="width: <%= suit_stat[:win_rate].to_f %>%"></div>
                       </div>
                     </div>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <%= suit_stat[:avg_score].nil? ? "N/A" : suit_stat[:avg_score] %>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <%= suit_stat[:kd_ratio].nil? ? "N/A" : suit_stat[:kd_ratio] %>
                   </td>
                   <td class="px-6 py-4 text-sm text-gray-500">
                     <% if suit_stat[:top_partner_suits].any? %>
@@ -639,9 +640,24 @@
             <tbody class="bg-white divide-y divide-gray-200">
               <% @opponent_suits_list.each do |suit_stat| %>
                 <tr class="hover:bg-gray-50">
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="text-sm font-medium text-gray-900">
-                      <%= suit_stat[:mobile_suit].name %>
+                  <td class="px-6 py-3 whitespace-nowrap">
+                    <div class="flex items-center gap-3">
+                      <%= link_to mobile_suit_path(suit_stat[:mobile_suit]), class: "shrink-0 block" do %>
+                        <% if suit_stat[:mobile_suit].image_filename.present? %>
+                          <%= image_tag "/mobile_suits/#{suit_stat[:mobile_suit].image_filename}", alt: suit_stat[:mobile_suit].name,
+                              class: "w-32 h-16 object-contain rounded bg-gray-100 hover:opacity-80 transition-opacity" %>
+                        <% else %>
+                          <div class="w-32 h-16 flex items-center justify-center bg-gray-100 rounded">
+                            <svg class="w-5 h-5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                          </div>
+                        <% end %>
+                      <% end %>
+                      <div class="text-sm font-medium text-gray-900">
+                        <%= link_to suit_stat[:mobile_suit].name, mobile_suit_path(suit_stat[:mobile_suit]),
+                            class: "hover:text-indigo-600 hover:underline transition-colors" %>
+                      </div>
                     </div>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
@@ -1028,11 +1044,24 @@
           <div class="divide-y divide-gray-200">
             <% @dominant_suits.each_with_index do |suit_stat, index| %>
               <div class="px-6 py-4 flex items-center justify-between">
-                <div class="flex items-center">
-                  <span class="text-lg font-bold text-gray-400 w-6"><%= index + 1 %></span>
-                  <div class="ml-3">
+                <div class="flex items-center gap-3">
+                  <span class="text-lg font-bold text-gray-400 w-6 shrink-0"><%= index + 1 %></span>
+                  <%= link_to mobile_suit_path(suit_stat[:mobile_suit]), class: "shrink-0 block" do %>
+                    <% if suit_stat[:mobile_suit].image_filename.present? %>
+                      <%= image_tag "/mobile_suits/#{suit_stat[:mobile_suit].image_filename}", alt: suit_stat[:mobile_suit].name,
+                          class: "w-32 h-16 object-contain rounded bg-gray-100 hover:opacity-80 transition-opacity" %>
+                    <% else %>
+                      <div class="w-32 h-16 flex items-center justify-center bg-gray-100 rounded">
+                        <svg class="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                        </svg>
+                      </div>
+                    <% end %>
+                  <% end %>
+                  <div>
                     <div class="text-sm font-medium text-gray-900 flex items-center gap-2">
-                      <%= suit_stat[:mobile_suit].name %>
+                      <%= link_to suit_stat[:mobile_suit].name, mobile_suit_path(suit_stat[:mobile_suit]),
+                          class: "hover:text-indigo-600 hover:underline transition-colors" %>
                       <%= cost_badge(suit_stat[:mobile_suit].cost) %>
                     </div>
                     <div class="text-xs text-gray-500">
@@ -1065,11 +1094,24 @@
             <div class="divide-y divide-gray-200">
               <% @popular_suits.each_with_index do |suit_stat, index| %>
                 <div class="px-6 py-4 flex items-center justify-between">
-                  <div class="flex items-center">
-                    <span class="text-lg font-bold text-gray-400 w-6"><%= index + 1 %></span>
-                    <div class="ml-3">
+                  <div class="flex items-center gap-3">
+                    <span class="text-lg font-bold text-gray-400 w-6 shrink-0"><%= index + 1 %></span>
+                    <%= link_to mobile_suit_path(suit_stat[:mobile_suit]), class: "shrink-0 block" do %>
+                      <% if suit_stat[:mobile_suit].image_filename.present? %>
+                        <%= image_tag "/mobile_suits/#{suit_stat[:mobile_suit].image_filename}", alt: suit_stat[:mobile_suit].name,
+                            class: "w-32 h-16 object-contain rounded bg-gray-100 hover:opacity-80 transition-opacity" %>
+                      <% else %>
+                        <div class="w-32 h-16 flex items-center justify-center bg-gray-100 rounded">
+                          <svg class="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                          </svg>
+                        </div>
+                      <% end %>
+                    <% end %>
+                    <div>
                       <div class="text-sm font-medium text-gray-900 flex items-center gap-2">
-                        <%= suit_stat[:mobile_suit].name %>
+                        <%= link_to suit_stat[:mobile_suit].name, mobile_suit_path(suit_stat[:mobile_suit]),
+                            class: "hover:text-indigo-600 hover:underline transition-colors" %>
                         <%= cost_badge(suit_stat[:mobile_suit].cost) %>
                       </div>
                       <div class="text-xs text-gray-500"><%= suit_stat[:mobile_suit].series %></div>
@@ -1099,11 +1141,24 @@
             <div class="divide-y divide-gray-200">
               <% @high_winrate_suits.each_with_index do |suit_stat, index| %>
                 <div class="px-6 py-4 flex items-center justify-between">
-                  <div class="flex items-center">
-                    <span class="text-lg font-bold text-gray-400 w-6"><%= index + 1 %></span>
-                    <div class="ml-3">
+                  <div class="flex items-center gap-3">
+                    <span class="text-lg font-bold text-gray-400 w-6 shrink-0"><%= index + 1 %></span>
+                    <%= link_to mobile_suit_path(suit_stat[:mobile_suit]), class: "shrink-0 block" do %>
+                      <% if suit_stat[:mobile_suit].image_filename.present? %>
+                        <%= image_tag "/mobile_suits/#{suit_stat[:mobile_suit].image_filename}", alt: suit_stat[:mobile_suit].name,
+                            class: "w-32 h-16 object-contain rounded bg-gray-100 hover:opacity-80 transition-opacity" %>
+                      <% else %>
+                        <div class="w-32 h-16 flex items-center justify-center bg-gray-100 rounded">
+                          <svg class="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                          </svg>
+                        </div>
+                      <% end %>
+                    <% end %>
+                    <div>
                       <div class="text-sm font-medium text-gray-900 flex items-center gap-2">
-                        <%= suit_stat[:mobile_suit].name %>
+                        <%= link_to suit_stat[:mobile_suit].name, mobile_suit_path(suit_stat[:mobile_suit]),
+                            class: "hover:text-indigo-600 hover:underline transition-colors" %>
                         <%= cost_badge(suit_stat[:mobile_suit].cost) %>
                       </div>
                       <div class="text-xs text-gray-500"><%= suit_stat[:wins] %>勝<%= suit_stat[:total] - suit_stat[:wins] %>敗</div>
@@ -2183,53 +2238,16 @@
 
 <!-- Initialize Charts and Statistics page -->
 <script>
-  // 機体セレクトの変更でナビゲート（コスト・機体フィルター）
-  window.navigateStatSuit = function(suitId) {
-    const url = new URL(window.location.href);
-    url.searchParams.delete('mobile_suits[]');
-    url.searchParams.delete('costs[]');
-    if (suitId) { url.searchParams.set('mobile_suits[]', suitId); }
-    window.location.href = url.toString();
+  // Initialize function that will be called on load
+  window.initializeStatisticsPage = function() {
+    // Sortable tables
+    if (typeof initSortableTables === 'function') {
+      initSortableTables();
+    }
+
+    // Initialize charts - wait for Chart.js to load
+    window.initializeChartsWhenReady();
   };
-
-  (function() {
-    function initStatSuitSelect() {
-      const el = document.querySelector('#stat-suit-select');
-      if (!el || el.tomselect) return;
-      const statSuitOptgroups = el.dataset.hasFavorites === 'true'
-        ? [{ value: 'favorites', label: '★ お気に入り機体' }, { value: 'others', label: '── その他の機体 ──' }]
-        : [];
-      new TomSelect('#stat-suit-select', {
-        placeholder: '機体を検索...',
-        maxOptions: null,
-        dropdownParent: 'body',
-        optgroupField: 'optgroup',
-        optgroups: statSuitOptgroups,
-        onChange: function(value) {
-          navigateStatSuit(value);
-        }
-      });
-    }
-
-    function destroyStatSuitSelect() {
-      const el = document.querySelector('#stat-suit-select');
-      if (el && el.tomselect) el.tomselect.destroy();
-    }
-
-    document.addEventListener('turbo:before-cache', destroyStatSuitSelect);
-
-    // Initialize function that will be called on load
-    window.initializeStatisticsPage = function() {
-      initStatSuitSelect();
-
-      // Sortable tables
-      if (typeof initSortableTables === 'function') {
-        initSortableTables();
-      }
-
-      // Initialize charts - wait for Chart.js to load
-      window.initializeChartsWhenReady();
-    };
 
   window.initializeChartsWhenReady = function(retryCount = 0) {
     const maxRetries = 50; // Maximum 2.5 seconds (50 * 50ms)
@@ -2284,8 +2302,6 @@
     // DOM is already loaded
     window.initializeStatisticsPage();
   }
-
-  })();
 
   function initSortableTables() {
     document.querySelectorAll('table.sortable').forEach(table => {

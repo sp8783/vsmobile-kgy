@@ -349,67 +349,48 @@
           <% if @recent_matches.any? %>
             <% @recent_matches.each do |match| %>
               <%
-                # ログインユーザーのチームを特定
-                my_player = match.match_players.find { |mp| mp.user_id == viewing_as_user.id }
+                _all_mp = match.match_players.sort_by { |mp| [mp.team_number, mp.position] }
+                _team1 = _all_mp.select { |mp| mp.team_number == 1 }
+                _team2 = _all_mp.select { |mp| mp.team_number == 2 }
+                _my_player = _all_mp.find { |mp| mp.user_id == viewing_as_user.id }
+                if _my_player
+                  _my_team = _my_player.team_number
+                  _left_players  = _my_team == 1 ? _team1 : _team2
+                  _right_players = _my_team == 1 ? _team2 : _team1
+                  _left_wins     = match.winning_team == _my_team
+                  _left_label    = "自チーム"
+                  _right_label   = "相手チーム"
+                else
+                  _left_players  = _team1
+                  _right_players = _team2
+                  _left_wins     = match.winning_team == 1
+                  _left_label    = "チーム1"
+                  _right_label   = "チーム2"
+                end
               %>
-              <%= link_to match_path(match), class: "block hover:bg-gray-50 px-6 py-4" do %>
-                <div class="flex items-center justify-between mb-2">
-                  <span class="text-xs text-gray-500"><%= match.played_at.strftime('%Y年%m月%d日') %></span>
-                  <% if my_player %>
-                    <% is_win = (match.winning_team == my_player.team_number) %>
-                    <span class="text-xs font-bold px-2 py-0.5 rounded <%= is_win ? 'bg-blue-600 text-white' : 'bg-red-600 text-white' %>">
-                      <%= is_win ? 'WIN' : 'LOSE' %>
-                    </span>
+              <div class="px-5 py-4">
+                <%# メタ行 %>
+                <div class="flex items-center flex-wrap gap-2 mb-3">
+                  <%= link_to match_path(match), class: "text-sm text-gray-400 hover:text-blue-600 transition-colors", data: { turbo_frame: "_top" } do %>
+                    <%= match.played_at.strftime('%Y年%m月%d日') %>
                   <% end %>
+                  <span class="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-indigo-50 text-indigo-600">
+                    <%= match.event.name %>
+                  </span>
                 </div>
-                <div class="text-xs text-gray-500 mb-2"><%= match.event.name %></div>
-
-                <%
-                  if my_player
-                    my_team = my_player.team_number
-                    opponent_team = my_team == 1 ? 2 : 1
-
-                    my_team_players = match.match_players.select { |mp| mp.team_number == my_team }.sort_by(&:position)
-                    opponent_players = match.match_players.select { |mp| mp.team_number == opponent_team }.sort_by(&:position)
-                %>
-                  <div class="grid grid-cols-2 gap-2 text-xs mt-2">
-                    <div class="<%= match.winning_team == my_team ? 'bg-blue-50 border-2 border-blue-400' : 'bg-red-50 border-2 border-red-400' %> rounded p-2 relative">
-                      <% if match.winning_team == my_team %>
-                        <div class="absolute top-1 right-1">
-                          <span class="text-xs font-bold px-2 py-0.5 rounded bg-blue-600 text-white">WIN</span>
-                        </div>
-                      <% else %>
-                        <div class="absolute top-1 right-1">
-                          <span class="text-xs font-bold px-2 py-0.5 rounded bg-red-600 text-white">LOSE</span>
-                        </div>
-                      <% end %>
-                      <div class="font-semibold text-gray-700 mb-1">自チーム</div>
-                      <% my_team_players.each_with_index do |player, index| %>
-                        <div class="<%= (my_team == 1 && player.position == 1) ? 'text-red-600 font-bold' : 'text-gray-600' %>">
-                          <%= player.user.nickname %> / <%= player.mobile_suit.name %>
-                        </div>
-                      <% end %>
-                    </div>
-                    <div class="<%= match.winning_team == opponent_team ? 'bg-blue-50 border-2 border-blue-400' : 'bg-red-50 border-2 border-red-400' %> rounded p-2 relative">
-                      <% if match.winning_team == opponent_team %>
-                        <div class="absolute top-1 right-1">
-                          <span class="text-xs font-bold px-2 py-0.5 rounded bg-blue-600 text-white">WIN</span>
-                        </div>
-                      <% else %>
-                        <div class="absolute top-1 right-1">
-                          <span class="text-xs font-bold px-2 py-0.5 rounded bg-red-600 text-white">LOSE</span>
-                        </div>
-                      <% end %>
-                      <div class="font-semibold text-gray-700 mb-1">相手チーム</div>
-                      <% opponent_players.each_with_index do |player, index| %>
-                        <div class="<%= (opponent_team == 1 && player.position == 1) ? 'text-red-600 font-bold' : 'text-gray-600' %>">
-                          <%= player.user.nickname %> / <%= player.mobile_suit.name %>
-                        </div>
-                      <% end %>
-                    </div>
-                  </div>
-                <% end %>
-              <% end %>
+                <%# 対戦カード %>
+                <div class="block cursor-pointer"
+                     data-controller="card-link"
+                     data-card-link-url-value="<%= match_path(match) %>"
+                     data-action="click->card-link#navigate">
+                  <%= render "matches/match_teams",
+                        left_players:  _left_players,
+                        right_players: _right_players,
+                        left_wins:     _left_wins,
+                        left_label:    _left_label,
+                        right_label:   _right_label %>
+                </div>
+              </div>
             <% end %>
           <% else %>
             <div class="px-6 py-8 text-center">
@@ -439,14 +420,16 @@
             <% @matchup_matrix.each do |matrix| %>
               <div class="border rounded p-4">
                 <div class="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                  <%= matrix[:my_suit].name %>
+                  <%= link_to matrix[:my_suit].name, mobile_suit_path(matrix[:my_suit]),
+                      class: "hover:text-indigo-600 hover:underline transition-colors" %>
                   <%= cost_badge(matrix[:my_suit].cost) %>
                 </div>
                 <div class="space-y-2">
                   <% matrix[:matchups].each do |matchup| %>
                     <div class="flex items-center justify-between text-sm bg-gray-50 rounded p-2">
                       <div class="flex-1">
-                        <span class="text-gray-700"><%= matchup[:opponent_suit].name %></span>
+                        <%= link_to matchup[:opponent_suit].name, mobile_suit_path(matchup[:opponent_suit]),
+                            class: "text-gray-700 hover:text-indigo-600 hover:underline transition-colors" %>
                         <span class="text-xs text-gray-500 ml-2"><%= matchup[:wins] %>勝<%= matchup[:losses] %>敗</span>
                       </div>
                       <div class="flex items-center space-x-2">
@@ -606,7 +589,10 @@
             <% @event_suit_trend.each do |trend| %>
               <div class="px-6 py-4">
                 <div class="flex items-center justify-between mb-1">
-                  <div class="font-medium text-gray-900"><%= trend[:mobile_suit].name %></div>
+                  <div class="font-medium text-gray-900">
+                    <%= link_to trend[:mobile_suit].name, mobile_suit_path(trend[:mobile_suit]),
+                        class: "hover:text-indigo-600 hover:underline transition-colors" %>
+                  </div>
                   <div class="text-sm font-semibold <%= trend[:win_rate] >= 60 ? 'text-blue-600' : 'text-gray-600' %>">
                     <%= trend[:win_rate] %>%
                   </div>
@@ -697,7 +683,11 @@
                 <div class="flex items-center">
                   <span class="text-lg font-bold text-gray-400 mr-3"><%= index + 1 %></span>
                   <div>
-                    <div class="text-sm font-medium text-gray-900 flex items-center gap-2"><%= suit.name %> <%= cost_badge(suit.cost) %></div>
+                    <div class="text-sm font-medium text-gray-900 flex items-center gap-2">
+                      <%= link_to suit.name, mobile_suit_path(suit),
+                          class: "hover:text-indigo-600 hover:underline transition-colors" %>
+                      <%= cost_badge(suit.cost) %>
+                    </div>
                     <div class="text-xs text-gray-500"><%= suit.series %></div>
                   </div>
                 </div>
@@ -758,7 +748,10 @@
                   <span class="text-xl sm:text-2xl font-bold text-gray-300"><%= index + 1 %></span>
                   <span class="text-xs sm:text-sm text-blue-600 font-semibold"><%= suit.usage_count %>回</span>
                 </div>
-                <div class="text-xs sm:text-sm font-medium text-gray-900"><%= suit.name %></div>
+                <div class="text-xs sm:text-sm font-medium text-gray-900">
+                  <%= link_to suit.name, mobile_suit_path(suit),
+                      class: "hover:text-indigo-600 hover:underline transition-colors" %>
+                </div>
                 <div class="text-xs text-gray-500 mt-1 truncate"><%= suit.series %></div>
                 <div class="mt-1"><%= cost_badge(suit.cost) %></div>
               </div>

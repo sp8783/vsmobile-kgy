@@ -66,6 +66,7 @@ Rails.application.routes.draw do
       patch :update_timestamps
       post :trigger_analysis
       post :trigger_scraping
+      post :post_broadcast_to_discord
     end
     resources :matches, only: [ :new, :create ]
     resources :rotations, only: [ :new, :create ]
@@ -82,6 +83,7 @@ Rails.application.routes.draw do
       end
     end
     resource :stats, controller: "match_stats", only: [ :edit, :update, :destroy ]
+    resource :favorite, controller: "favorite_matches", only: [ :create, :destroy ]
   end
 
   # Rotations
@@ -107,6 +109,7 @@ Rails.application.routes.draw do
 
   # Admin
   namespace :admin do
+    resources :discord_channels, only: [ :index, :update ], param: :purpose
     resources :announcements
     resources :users, except: [ :show ] do
       member do

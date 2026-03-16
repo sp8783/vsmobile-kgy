@@ -11,7 +11,7 @@ class PushNotificationService
         user_id: user.id,
         title: title,
         body: body,
-        path: "/dashboard"
+        path: "/rotations/#{rotation.id}"
       )
     end
 
@@ -25,7 +25,7 @@ class PushNotificationService
         user_id: user.id,
         title: title,
         body: body,
-        path: "/dashboard"
+        path: "/rotations/#{rotation.id}"
       )
     end
 
@@ -66,7 +66,7 @@ class PushNotificationService
           user_id: user.id,
           title: "ローテーションが開始されました",
           body: "#{rotation.display_name}が開始されました",
-          path: "/dashboard"
+          path: "/rotations/#{rotation.id}"
         )
       end
     end

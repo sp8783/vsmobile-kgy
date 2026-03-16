@@ -1,0 +1,26 @@
+<%# locals: (match:, is_favorited:) %>
+<% return unless viewing_as_user&.regular_user? %>
+
+<div id="<%= dom_id(match, "favorite_button") %>">
+  <% if is_favorited %>
+    <%= button_to match_favorite_path(match), method: :delete,
+        class: "flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700 border border-amber-300 hover:bg-amber-200 transition-colors",
+        data: { turbo_stream: true },
+        title: "お気に入りを解除" do %>
+      <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M5 4a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 20V4z"/>
+      </svg>
+      保存済み
+    <% end %>
+  <% else %>
+    <%= button_to match_favorite_path(match), method: :post,
+        class: "flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-500 border border-gray-200 hover:bg-amber-50 hover:text-amber-600 hover:border-amber-200 transition-colors",
+        data: { turbo_stream: true },
+        title: "お気に入りに追加" do %>
+      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M5 4a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 20V4z"/>
+      </svg>
+      保存
+    <% end %>
+  <% end %>
+</div>
