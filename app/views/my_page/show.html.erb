@@ -168,51 +168,31 @@
               team1  = all_mp.select { |mp| mp.team_number == 1 }
               team2  = all_mp.select { |mp| mp.team_number == 2 }
             %>
-            <li class="px-6 py-4 hover:bg-gray-50 transition-colors cursor-pointer"
+            <li class="px-5 py-5 hover:bg-gray-50 transition-colors cursor-pointer"
                 data-controller="card-link"
                 data-card-link-url-value="<%= match_path(match) %>"
                 data-action="click->card-link#navigate">
-              <%# 日付・イベント %>
+
+              <%# メタ行 %>
               <div class="flex items-center gap-2 mb-3 flex-wrap">
-                <span class="text-xs text-gray-400"><%= match.played_at.strftime('%Y年%m月%d日') %></span>
-                <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-blue-100 text-blue-800"><%= match.event.name %></span>
+                <span class="text-sm text-gray-400"><%= match.played_at.strftime('%Y年%m月%d日') %></span>
+                <span class="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-indigo-50 text-indigo-600"><%= match.event.name %></span>
+                <% if match.video_url %>
+                  <span onclick="event.stopPropagation()">
+                    <%= link_to match.video_url, target: "_blank", rel: "noopener noreferrer",
+                        class: "inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-red-50 text-red-600 text-xs font-semibold hover:bg-red-100 transition-colors" do %>
+                      <img src="/youtube_social_icon_red.png" alt="YouTube" class="h-3.5">
+                      配信
+                    <% end %>
+                  </span>
+                <% end %>
               </div>
 
-              <%# 対戦カード %>
-              <div class="grid grid-cols-[1fr_auto_1fr] gap-2 items-center text-xs">
-                <%# チーム1 %>
-                <div class="<%= match.winning_team == 1 ? 'border-blue-300 bg-blue-50' : 'border-red-200 bg-red-50' %> rounded-lg border p-2 space-y-1.5">
-                  <span class="text-[10px] font-bold <%= match.winning_team == 1 ? 'text-blue-600' : 'text-red-500' %>">
-                    <%= match.winning_team == 1 ? 'WIN' : 'LOSE' %>
-                  </span>
-                  <% team1.each do |player| %>
-                    <div>
-                      <span class="font-semibold text-gray-800"><%= player.user.nickname %></span>
-                      <%= link_to player.mobile_suit.name, mobile_suit_path(player.mobile_suit),
-                          class: "block text-[10px] text-indigo-500 hover:text-indigo-700 hover:underline leading-tight truncate",
-                          data: { turbo_frame: "_top" } %>
-                    </div>
-                  <% end %>
-                </div>
-
-                <%# VS %>
-                <div class="text-center text-gray-300 font-bold text-sm px-1">VS</div>
-
-                <%# チーム2 %>
-                <div class="<%= match.winning_team == 2 ? 'border-blue-300 bg-blue-50' : 'border-red-200 bg-red-50' %> rounded-lg border p-2 space-y-1.5">
-                  <span class="text-[10px] font-bold <%= match.winning_team == 2 ? 'text-blue-600' : 'text-red-500' %>">
-                    <%= match.winning_team == 2 ? 'WIN' : 'LOSE' %>
-                  </span>
-                  <% team2.each do |player| %>
-                    <div>
-                      <span class="font-semibold text-gray-800"><%= player.user.nickname %></span>
-                      <%= link_to player.mobile_suit.name, mobile_suit_path(player.mobile_suit),
-                          class: "block text-[10px] text-indigo-500 hover:text-indigo-700 hover:underline leading-tight truncate",
-                          data: { turbo_frame: "_top" } %>
-                    </div>
-                  <% end %>
-                </div>
-              </div>
+              <%# チームグリッド %>
+              <%= render "matches/match_teams",
+                    left_players: team1,
+                    right_players: team2,
+                    left_wins: match.winning_team == 1 %>
             </li>
           <% end %>
         </ul>
