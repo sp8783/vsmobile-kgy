@@ -182,7 +182,10 @@
         <% end %>
       </div>
       <div class="flex-1 min-w-[180px] max-w-xs">
-        <select id="stat-suit-select" class="w-full" data-has-favorites="<%= viewing_as_user&.user_favorite_suits&.any? %>">
+        <select id="stat-suit-select" class="w-full"
+                data-controller="suit-select"
+                data-has-favorites="<%= viewing_as_user&.user_favorite_suits&.any? %>"
+                data-suit-select-clear-cost-value="true">
           <option value="">機体を検索...</option>
           <% visible_suits = @filter_costs.any? ? @all_mobile_suits.select { |s| @filter_costs.include?(s.cost) } : @all_mobile_suits %>
           <%= mobile_suit_options_with_favorites(visible_suits, viewing_as_user, @filter_mobile_suits) %>
@@ -202,13 +205,15 @@
     <!-- お気に入り機体 -->
     <% _fav_suits = viewing_as_user&.user_favorite_suits&.order(:slot)&.includes(:mobile_suit)&.to_a || [] %>
     <% if _fav_suits.any? %>
-      <div class="flex items-center flex-wrap gap-2">
-        <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide w-24 shrink-0">お気に入り機体</span>
-        <% _fav_suits.each do |fav| %>
-          <% _new_suits = @filter_mobile_suits.include?(fav.mobile_suit.id) ? @filter_mobile_suits - [fav.mobile_suit.id] : @filter_mobile_suits + [fav.mobile_suit.id] %>
-          <%= link_to fav.mobile_suit.name, statistics_path(suit_base.merge(mobile_suits: _new_suits)),
-              class: "px-3 py-1.5 text-sm font-medium rounded-md transition-colors #{@filter_mobile_suits.include?(fav.mobile_suit.id) ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}" %>
-        <% end %>
+      <div class="flex items-start gap-2">
+        <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide w-24 shrink-0 pt-1.5">お気に入り機体</span>
+        <div class="flex flex-wrap gap-2">
+          <% _fav_suits.each do |fav| %>
+            <% _new_suits = @filter_mobile_suits.include?(fav.mobile_suit.id) ? @filter_mobile_suits - [fav.mobile_suit.id] : @filter_mobile_suits + [fav.mobile_suit.id] %>
+            <%= link_to fav.mobile_suit.name, statistics_path(suit_base.merge(mobile_suits: _new_suits)),
+                class: "px-3 py-1.5 text-sm font-medium rounded-md transition-colors #{@filter_mobile_suits.include?(fav.mobile_suit.id) ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}" %>
+          <% end %>
+        </div>
       </div>
     <% end %>
   </div>
@@ -539,9 +544,7 @@
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap" data-sort="number">使用回数</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap" data-sort="number">勝利</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap" data-sort="percent">勝率</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap" data-sort="number">平均スコア</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap" data-sort="number">KD比</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">よく組むパートナー機体</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[200px]">よく組むパートナー機体</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap" data-sort="date">最終使用日</th>
               </tr>
             </thead>
@@ -553,9 +556,9 @@
                       <%= link_to mobile_suit_path(suit_stat[:mobile_suit]), class: "shrink-0 block" do %>
                         <% if suit_stat[:mobile_suit].image_filename.present? %>
                           <%= image_tag "/mobile_suits/#{suit_stat[:mobile_suit].image_filename}", alt: suit_stat[:mobile_suit].name,
-                              class: "w-20 h-10 object-contain rounded bg-gray-100 hover:opacity-80 transition-opacity" %>
+                              class: "w-32 h-16 object-contain rounded bg-gray-100 hover:opacity-80 transition-opacity" %>
                         <% else %>
-                          <div class="w-20 h-10 flex items-center justify-center bg-gray-100 rounded">
+                          <div class="w-32 h-16 flex items-center justify-center bg-gray-100 rounded">
                             <svg class="w-5 h-5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                             </svg>
@@ -584,12 +587,6 @@
                         <div class="bg-purple-600 h-2 rounded-full" style="width: <%= suit_stat[:win_rate].to_f %>%"></div>
                       </div>
                     </div>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <%= suit_stat[:avg_score].nil? ? "N/A" : suit_stat[:avg_score] %>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <%= suit_stat[:kd_ratio].nil? ? "N/A" : suit_stat[:kd_ratio] %>
                   </td>
                   <td class="px-6 py-4 text-sm text-gray-500">
                     <% if suit_stat[:top_partner_suits].any? %>
@@ -648,9 +645,9 @@
                       <%= link_to mobile_suit_path(suit_stat[:mobile_suit]), class: "shrink-0 block" do %>
                         <% if suit_stat[:mobile_suit].image_filename.present? %>
                           <%= image_tag "/mobile_suits/#{suit_stat[:mobile_suit].image_filename}", alt: suit_stat[:mobile_suit].name,
-                              class: "w-20 h-10 object-contain rounded bg-gray-100 hover:opacity-80 transition-opacity" %>
+                              class: "w-32 h-16 object-contain rounded bg-gray-100 hover:opacity-80 transition-opacity" %>
                         <% else %>
-                          <div class="w-20 h-10 flex items-center justify-center bg-gray-100 rounded">
+                          <div class="w-32 h-16 flex items-center justify-center bg-gray-100 rounded">
                             <svg class="w-5 h-5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                             </svg>
@@ -2241,53 +2238,16 @@
 
 <!-- Initialize Charts and Statistics page -->
 <script>
-  // 機体セレクトの変更でナビゲート（コスト・機体フィルター）
-  window.navigateStatSuit = function(suitId) {
-    const url = new URL(window.location.href);
-    url.searchParams.delete('mobile_suits[]');
-    url.searchParams.delete('costs[]');
-    if (suitId) { url.searchParams.set('mobile_suits[]', suitId); }
-    window.location.href = url.toString();
+  // Initialize function that will be called on load
+  window.initializeStatisticsPage = function() {
+    // Sortable tables
+    if (typeof initSortableTables === 'function') {
+      initSortableTables();
+    }
+
+    // Initialize charts - wait for Chart.js to load
+    window.initializeChartsWhenReady();
   };
-
-  (function() {
-    function initStatSuitSelect() {
-      const el = document.querySelector('#stat-suit-select');
-      if (!el || el.tomselect) return;
-      const statSuitOptgroups = el.dataset.hasFavorites === 'true'
-        ? [{ value: 'favorites', label: '★ お気に入り機体' }, { value: 'others', label: '── その他の機体 ──' }]
-        : [];
-      new TomSelect('#stat-suit-select', {
-        placeholder: '機体を検索...',
-        maxOptions: null,
-        dropdownParent: 'body',
-        optgroupField: 'optgroup',
-        optgroups: statSuitOptgroups,
-        onChange: function(value) {
-          navigateStatSuit(value);
-        }
-      });
-    }
-
-    function destroyStatSuitSelect() {
-      const el = document.querySelector('#stat-suit-select');
-      if (el && el.tomselect) el.tomselect.destroy();
-    }
-
-    document.addEventListener('turbo:before-cache', destroyStatSuitSelect);
-
-    // Initialize function that will be called on load
-    window.initializeStatisticsPage = function() {
-      initStatSuitSelect();
-
-      // Sortable tables
-      if (typeof initSortableTables === 'function') {
-        initSortableTables();
-      }
-
-      // Initialize charts - wait for Chart.js to load
-      window.initializeChartsWhenReady();
-    };
 
   window.initializeChartsWhenReady = function(retryCount = 0) {
     const maxRetries = 50; // Maximum 2.5 seconds (50 * 50ms)
@@ -2342,8 +2302,6 @@
     // DOM is already loaded
     window.initializeStatisticsPage();
   }
-
-  })();
 
   function initSortableTables() {
     document.querySelectorAll('table.sortable').forEach(table => {
