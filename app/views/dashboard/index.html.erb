@@ -349,73 +349,47 @@
           <% if @recent_matches.any? %>
             <% @recent_matches.each do |match| %>
               <%
-                # ログインユーザーのチームを特定
-                my_player = match.match_players.find { |mp| mp.user_id == viewing_as_user.id }
+                _all_mp = match.match_players.sort_by { |mp| [mp.team_number, mp.position] }
+                _team1 = _all_mp.select { |mp| mp.team_number == 1 }
+                _team2 = _all_mp.select { |mp| mp.team_number == 2 }
+                _my_player = _all_mp.find { |mp| mp.user_id == viewing_as_user.id }
+                if _my_player
+                  _my_team = _my_player.team_number
+                  _left_players  = _my_team == 1 ? _team1 : _team2
+                  _right_players = _my_team == 1 ? _team2 : _team1
+                  _left_wins     = match.winning_team == _my_team
+                  _left_label    = "自チーム"
+                  _right_label   = "相手チーム"
+                else
+                  _left_players  = _team1
+                  _right_players = _team2
+                  _left_wins     = match.winning_team == 1
+                  _left_label    = "チーム1"
+                  _right_label   = "チーム2"
+                end
               %>
-              <div class="block hover:bg-gray-50 px-6 py-4 cursor-pointer"
-                   data-controller="card-link"
-                   data-card-link-url-value="<%= match_path(match) %>"
-                   data-action="click->card-link#navigate">
-                <div class="flex items-center justify-between mb-2">
-                  <span class="text-xs text-gray-500"><%= match.played_at.strftime('%Y年%m月%d日') %></span>
-                  <% if my_player %>
-                    <% is_win = (match.winning_team == my_player.team_number) %>
-                    <span class="text-xs font-bold px-2 py-0.5 rounded <%= is_win ? 'bg-blue-600 text-white' : 'bg-red-600 text-white' %>">
-                      <%= is_win ? 'WIN' : 'LOSE' %>
-                    </span>
+              <div class="px-5 py-4">
+                <%# メタ行 %>
+                <div class="flex items-center flex-wrap gap-2 mb-3">
+                  <%= link_to match_path(match), class: "text-sm text-gray-400 hover:text-blue-600 transition-colors", data: { turbo_frame: "_top" } do %>
+                    <%= match.played_at.strftime('%Y年%m月%d日') %>
                   <% end %>
+                  <span class="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-indigo-50 text-indigo-600">
+                    <%= match.event.name %>
+                  </span>
                 </div>
-                <div class="text-xs text-gray-500 mb-2"><%= match.event.name %></div>
-
-                <%
-                  if my_player
-                    my_team = my_player.team_number
-                    opponent_team = my_team == 1 ? 2 : 1
-
-                    my_team_players = match.match_players.select { |mp| mp.team_number == my_team }.sort_by(&:position)
-                    opponent_players = match.match_players.select { |mp| mp.team_number == opponent_team }.sort_by(&:position)
-                %>
-                  <div class="grid grid-cols-2 gap-2 text-xs mt-2">
-                    <div class="<%= match.winning_team == my_team ? 'bg-blue-50 border-2 border-blue-400' : 'bg-red-50 border-2 border-red-400' %> rounded p-2 relative">
-                      <% if match.winning_team == my_team %>
-                        <div class="absolute top-1 right-1">
-                          <span class="text-xs font-bold px-2 py-0.5 rounded bg-blue-600 text-white">WIN</span>
-                        </div>
-                      <% else %>
-                        <div class="absolute top-1 right-1">
-                          <span class="text-xs font-bold px-2 py-0.5 rounded bg-red-600 text-white">LOSE</span>
-                        </div>
-                      <% end %>
-                      <div class="font-semibold text-gray-700 mb-1">自チーム</div>
-                      <% my_team_players.each_with_index do |player, index| %>
-                        <div class="<%= (my_team == 1 && player.position == 1) ? 'text-red-600 font-bold' : 'text-gray-600' %>">
-                          <%= player.user.nickname %> /
-                          <%= link_to player.mobile_suit.name, mobile_suit_path(player.mobile_suit),
-                              class: "hover:text-indigo-600 hover:underline transition-colors" %>
-                        </div>
-                      <% end %>
-                    </div>
-                    <div class="<%= match.winning_team == opponent_team ? 'bg-blue-50 border-2 border-blue-400' : 'bg-red-50 border-2 border-red-400' %> rounded p-2 relative">
-                      <% if match.winning_team == opponent_team %>
-                        <div class="absolute top-1 right-1">
-                          <span class="text-xs font-bold px-2 py-0.5 rounded bg-blue-600 text-white">WIN</span>
-                        </div>
-                      <% else %>
-                        <div class="absolute top-1 right-1">
-                          <span class="text-xs font-bold px-2 py-0.5 rounded bg-red-600 text-white">LOSE</span>
-                        </div>
-                      <% end %>
-                      <div class="font-semibold text-gray-700 mb-1">相手チーム</div>
-                      <% opponent_players.each_with_index do |player, index| %>
-                        <div class="<%= (opponent_team == 1 && player.position == 1) ? 'text-red-600 font-bold' : 'text-gray-600' %>">
-                          <%= player.user.nickname %> /
-                          <%= link_to player.mobile_suit.name, mobile_suit_path(player.mobile_suit),
-                              class: "hover:text-indigo-600 hover:underline transition-colors" %>
-                        </div>
-                      <% end %>
-                    </div>
-                  </div>
-                <% end %>
+                <%# 対戦カード %>
+                <div class="block cursor-pointer"
+                     data-controller="card-link"
+                     data-card-link-url-value="<%= match_path(match) %>"
+                     data-action="click->card-link#navigate">
+                  <%= render "matches/match_teams",
+                        left_players:  _left_players,
+                        right_players: _right_players,
+                        left_wins:     _left_wins,
+                        left_label:    _left_label,
+                        right_label:   _right_label %>
+                </div>
               </div>
             <% end %>
           <% else %>
