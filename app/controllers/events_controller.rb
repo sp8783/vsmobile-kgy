@@ -24,6 +24,12 @@ class EventsController < ApplicationController
 
     ordered_ids = @event.matches.order(:played_at, :id).pluck(:id)
     @match_numbers = ordered_ids.each_with_index.to_h { |id, i| [ id, i + 1 ] }
+
+    @my_favorite_match_ids = if viewing_as_user
+      FavoriteMatch.where(user_id: viewing_as_user.id, match_id: @matches.map(&:id)).pluck(:match_id).to_set
+    else
+      Set.new
+    end
   end
 
   def new
