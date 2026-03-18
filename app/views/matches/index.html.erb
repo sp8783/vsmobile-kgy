@@ -1,6 +1,6 @@
 <turbo-frame id="matches-content" data-turbo-action="advance">
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-  <div class="page-header flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 mb-6">
+<div class="py-8">
+  <div class="page-header">
     <div>
       <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">対戦履歴</h1>
       <p class="mt-2 text-sm text-gray-600">試合の一覧を表示・フィルタリングできます</p>
@@ -471,19 +471,6 @@
 <% end %>
 
 <style>
-  /* ページヘッダー */
-  .page-header {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-  }
-  @media (min-width: 640px) {
-    .page-header {
-      flex-direction: row;
-      justify-content: space-between;
-      align-items: center;
-    }
-  }
   /* summary デフォルトマーカー非表示 */
   .stat-summary { list-style: none; }
   .stat-summary::-webkit-details-marker { display: none; }
