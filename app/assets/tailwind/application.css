@@ -1,1 +1,49 @@
 @import "tailwindcss";
+
+/* ============================================================
+   ページレイアウト共通クラス
+   ============================================================ */
+
+/* ページコンテナ: 全ページ共通の最大幅・中央寄せ・水平パディング */
+.page-container {
+  max-width: 1536px; /* max-w-screen-2xl 相当 */
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;   /* px-4 */
+  padding-right: 1rem;
+}
+@media (min-width: 640px) {
+  .page-container {
+    padding-left: 1.5rem; /* sm:px-6 */
+    padding-right: 1.5rem;
+  }
+}
+@media (min-width: 1024px) {
+  .page-container {
+    padding-left: 2rem; /* lg:px-8 */
+    padding-right: 2rem;
+  }
+}
+
+/* ページヘッダー: タイトルとアクションボタンを横並びにするレイアウト */
+.page-header {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.5rem; /* mb-6 */
+}
+@media (min-width: 640px) {
+  .page-header {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+}
+
+/* モバイル・デスクトップ表示切り替え（768px 境界） */
+.mobile-only-view  { display: block !important; }
+.desktop-only-view { display: none  !important; }
+@media (min-width: 768px) {
+  .mobile-only-view  { display: none  !important; }
+  .desktop-only-view { display: block !important; }
+}

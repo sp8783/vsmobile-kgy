@@ -481,14 +481,16 @@
     </nav>
 
     <!-- フラッシュメッセージ -->
-    <div id="flash-messages" class="<%= 'main-content-with-sidebar' if user_signed_in? %> max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div id="flash-messages" class="<%= 'main-content-with-sidebar' if user_signed_in? %> page-container">
       <% flash.each do |type, message| %>
         <%= render "shared/flash_message", type: type, message: message %>
       <% end %>
     </div>
 
     <main class="<%= 'main-content-with-sidebar' if user_signed_in? %>">
-      <%= yield %>
+      <div class="page-container">
+        <%= yield %>
+      </div>
     </main>
 
     <%# お知らせモーダル %>
