@@ -86,17 +86,26 @@ class DashboardController < ApplicationController
     # ベストパートナー
     calculate_best_partners
 
-    # 機体使用トレンド（直近のイベント）
+    # 機体使用トレンド（直近のイベント）—— パーソナルハイライトのフォールバック用
     calculate_event_mobile_suit_trend
 
     # 対戦会クイック比較
     calculate_event_comparison
 
-    # コスト帯分析
+    # コスト帯分析 —— EXバーストサマリーのフォールバック用
     calculate_cost_analysis
 
-    # 対面相性マトリクス
+    # 対面相性マトリクス —— パフォーマンススナップショットのフォールバック用
     calculate_matchup_matrix
+
+    # パフォーマンス スナップショット（新規）
+    calculate_performance_snapshot
+
+    # パーソナル ハイライト（新規）
+    calculate_personal_highlights
+
+    # EXバースト サマリー（新規）
+    calculate_exburst_summary
 
     # 最近の試合（キャッシュ済みデータから取得）
     # IDでユニーク化して順序を保つ
@@ -110,22 +119,23 @@ class DashboardController < ApplicationController
       end
     end
 
-    # 人気機体TOP5（データベースで集計）
-    @popular_mobile_suits = MobileSuit.joins(:match_players)
-                                      .select("mobile_suits.*, COUNT(match_players.id) as usage_count")
-                                      .group("mobile_suits.id")
-                                      .order("usage_count DESC")
-                                      .limit(5)
-
-    # ユーザーのお気に入り機体（キャッシュ済みデータから集計）
-    user_suit_usage = Hash.new(0)
-    @all_user_matches.each { |mp| user_suit_usage[mp.mobile_suit] += 1 }
-    @user_favorite_suits = user_suit_usage.sort_by { |_, count| -count }
+    # ユーザーのお気に入り機体（勝率付き）
+    user_suit_stats = Hash.new { |h, k| h[k] = { count: 0, wins: 0 } }
+    @all_user_matches.each do |mp|
+      user_suit_stats[mp.mobile_suit][:count] += 1
+      user_suit_stats[mp.mobile_suit][:wins] += 1 if mp.match.winning_team == mp.team_number
+    end
+    @user_favorite_suits = user_suit_stats.sort_by { |_, stats| -stats[:count] }
                                           .take(3)
-                                          .map { |suit, count| suit.tap { |s| s.define_singleton_method(:usage_count) { count } } }
+                                          .map do |suit, stats|
+                                            win_rate = stats[:count] > 0 ? (stats[:wins].to_f / stats[:count] * 100).round(1) : 0
+                                            suit.tap do |s|
+                                              s.define_singleton_method(:usage_count) { stats[:count] }
+                                              s.define_singleton_method(:win_rate) { win_rate }
+                                            end
+                                          end
 
     @upcoming_events = Event.where("held_on >= ?", Time.zone.today).order(held_on: :asc).limit(3)
-    @latest_event = Event.order(held_on: :desc).first
 
     render "index"
   end
@@ -151,6 +161,17 @@ class DashboardController < ApplicationController
       "(matches.winning_team = 1 AND match_players.team_number = 1) OR (matches.winning_team = 2 AND match_players.team_number = 2)"
     ).count
     @user_win_rate = @user_total_matches > 0 ? (@user_wins.to_f / @user_total_matches * 100).round(1) : 0
+
+    # パフォーマンスデータのある試合から平均を計算
+    stats_mps = @all_user_matches.select(&:has_stats?)
+    @user_has_stats = stats_mps.any?
+    if @user_has_stats
+      total = stats_mps.size
+      total_kills = stats_mps.sum { |mp| mp.kills.to_i }
+      total_deaths = stats_mps.sum { |mp| mp.deaths.to_i }
+      @user_avg_damage = (stats_mps.sum { |mp| mp.damage_dealt.to_i }.to_f / total).round(0).to_i
+      @user_avg_kd = total_deaths > 0 ? (total_kills.to_f / total_deaths).round(2) : nil
+    end
   end
 
   def calculate_realtime_status
@@ -360,13 +381,17 @@ class DashboardController < ApplicationController
       total = event_matches.size
       wins = event_matches.count { |mp| mp.match.winning_team == mp.team_number }
 
+      stats_mps = event_matches.select(&:has_stats?)
+      avg_damage = stats_mps.any? ? (stats_mps.sum { |mp| mp.damage_dealt.to_i }.to_f / stats_mps.size).round(0).to_i : nil
+
       {
         event: event,
         total: total,
         wins: wins,
         losses: total - wins,
         win_rate: total > 0 ? (wins.to_f / total * 100).round(1) : 0,
-        is_today: event.held_on == Time.zone.today
+        is_today: event.held_on == Time.zone.today,
+        avg_damage: avg_damage
       }
     end
   end
@@ -412,6 +437,60 @@ class DashboardController < ApplicationController
                         }
                       end
                       .sort_by { |c| -c[:win_rate] }
+  end
+
+  def calculate_performance_snapshot
+    stats_mps = @all_user_matches.select(&:has_stats?)
+    return if stats_mps.empty?
+
+    total = stats_mps.size
+    total_kills = stats_mps.sum { |mp| mp.kills.to_i }
+    total_deaths = stats_mps.sum { |mp| mp.deaths.to_i }
+
+    @performance_snapshot = {
+      avg_score: (stats_mps.sum { |mp| mp.score.to_i }.to_f / total).round(1),
+      avg_damage: (stats_mps.sum { |mp| mp.damage_dealt.to_i }.to_f / total).round(0).to_i,
+      kd_ratio: total_deaths > 0 ? (total_kills.to_f / total_deaths).round(2) : nil,
+      avg_exburst_damage: (stats_mps.sum { |mp| mp.exburst_damage.to_i }.to_f / total).round(0).to_i
+    }
+
+    # コミュニティ平均（ゲスト以外・stats あり）
+    community_base = MatchPlayer.joins(:user).where(users: { is_guest: false }).where.not(damage_dealt: nil)
+    if community_base.exists?
+      @community_snapshot = {
+        avg_score: community_base.average(:score)&.round(1),
+        avg_damage: community_base.average(:damage_dealt)&.round(0)&.to_i,
+        avg_exburst_damage: community_base.average(:exburst_damage)&.round(0)&.to_i
+      }
+    end
+  end
+
+  def calculate_personal_highlights
+    stats_mps = @all_user_matches.select { |mp| mp.has_stats? && mp.damage_dealt.to_i > 0 }
+    return if stats_mps.empty?
+
+    @highlight_best_damage_mp = stats_mps.max_by { |mp| mp.damage_dealt.to_i }
+
+    kd_mps = stats_mps.select { |mp| mp.kills.to_i > 0 || mp.deaths.to_i > 0 }
+    @highlight_best_kd_mp = kd_mps.max_by { |mp| mp.kills.to_f / [ mp.deaths.to_i, 1 ].max } if kd_mps.any?
+  end
+
+  def calculate_exburst_summary
+    ex_mps = @all_user_matches.select { |mp| mp.exburst_count.present? }
+    return if ex_mps.empty?
+
+    total = ex_mps.size
+    total_deaths = ex_mps.sum { |mp| mp.deaths.to_i }
+
+    @exburst_summary = {
+      avg_count: (ex_mps.sum { |mp| mp.exburst_count.to_i }.to_f / total).round(2),
+      avg_damage: (ex_mps.sum { |mp| mp.exburst_damage.to_i }.to_f / total).round(0).to_i,
+      death_rate: total_deaths > 0 ? (ex_mps.sum { |mp| mp.exburst_deaths.to_i }.to_f / total_deaths * 100).round(1) : 0.0
+    }
+
+    # コミュニティ平均
+    community_avg = MatchPlayer.joins(:user).where(users: { is_guest: false }).where.not(exburst_count: nil).average(:exburst_count)
+    @exburst_summary[:community_avg_count] = community_avg&.round(2)
   end
 
   def calculate_matchup_matrix
