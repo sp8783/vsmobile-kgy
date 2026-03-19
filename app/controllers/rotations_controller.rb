@@ -10,7 +10,8 @@ class RotationsController < ApplicationController
 
   def show
     @rotation_matches = @rotation.rotation_matches
-                                  .includes(:team1_player1, :team1_player2, :team2_player1, :team2_player2, :match)
+                                  .includes(:team1_player1, :team1_player2, :team2_player1, :team2_player2,
+                                            match: { match_players: :mobile_suit })
                                   .order(:match_index)
     @current_match = @rotation_matches[@rotation.current_match_index]
     @player_statistics = @rotation.player_statistics
