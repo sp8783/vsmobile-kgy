@@ -58,7 +58,7 @@
   </script>
 <% end %>
 
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<div class="py-8">
   <!-- Header -->
   <div class="mb-6">
     <div class="flex justify-between items-start">
@@ -596,11 +596,24 @@
                   <% end %>
                 </div>
               </td>
+              <%
+                mp1 = rm.match&.match_players&.find { |mp| mp.position == 1 }
+                mp2 = rm.match&.match_players&.find { |mp| mp.position == 2 }
+                mp3 = rm.match&.match_players&.find { |mp| mp.position == 3 }
+                mp4 = rm.match&.match_players&.find { |mp| mp.position == 4 }
+              %>
               <td class="px-6 py-4 whitespace-nowrap">
                 <div class="text-sm text-gray-900">
                   <span class="font-bold text-red-600"><%= rm.team1_player1.nickname %></span>
-                  <span class="ml-1 px-1.5 py-0.5 bg-red-100 text-red-700 rounded text-xs font-semibold">配信台</span><br>
+                  <span class="ml-1 px-1.5 py-0.5 bg-red-100 text-red-700 rounded text-xs font-semibold">配信台</span>
+                  <% if mp1&.mobile_suit %>
+                    <a href="<%= mobile_suit_path(mp1.mobile_suit) %>" class="ml-1 text-xs text-gray-500 hover:text-indigo-600 hover:underline" onclick="event.stopPropagation()">(<%= mp1.mobile_suit.name %>)</a>
+                  <% end %>
+                  <br>
                   <%= rm.team1_player2.nickname %>
+                  <% if mp2&.mobile_suit %>
+                    <a href="<%= mobile_suit_path(mp2.mobile_suit) %>" class="ml-1 text-xs text-gray-500 hover:text-indigo-600 hover:underline" onclick="event.stopPropagation()">(<%= mp2.mobile_suit.name %>)</a>
+                  <% end %>
                 </div>
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-center">
@@ -608,8 +621,15 @@
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
                 <div class="text-sm text-gray-900">
-                  <%= rm.team2_player1.nickname %><br>
+                  <%= rm.team2_player1.nickname %>
+                  <% if mp3&.mobile_suit %>
+                    <a href="<%= mobile_suit_path(mp3.mobile_suit) %>" class="ml-1 text-xs text-gray-500 hover:text-indigo-600 hover:underline" onclick="event.stopPropagation()">(<%= mp3.mobile_suit.name %>)</a>
+                  <% end %>
+                  <br>
                   <%= rm.team2_player2.nickname %>
+                  <% if mp4&.mobile_suit %>
+                    <a href="<%= mobile_suit_path(mp4.mobile_suit) %>" class="ml-1 text-xs text-gray-500 hover:text-indigo-600 hover:underline" onclick="event.stopPropagation()">(<%= mp4.mobile_suit.name %>)</a>
+                  <% end %>
                 </div>
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-center">

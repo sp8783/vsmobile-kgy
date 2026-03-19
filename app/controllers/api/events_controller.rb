@@ -53,10 +53,13 @@ module Api
       event = Event.find_by(id: params[:id])
       return render json: { error: "Event not found" }, status: :not_found unless event
 
-      matches_data = JSON.parse(request.body.read)
-      unless matches_data.is_a?(Array)
-        return render json: { error: "リクエストボディは JSON 配列である必要があります" }, status: :unprocessable_entity
+      payload = JSON.parse(request.body.read)
+      unless payload.is_a?(Hash) && payload["matches"].is_a?(Array)
+        return render json: { error: "リクエストボディは matches キーを持つ JSON オブジェクトである必要があります" }, status: :unprocessable_entity
       end
+
+      matches_data  = payload["matches"]
+      expired_users = Array(payload["expired_users"])
 
       db_matches = event.matches.includes(:match_timeline, match_players: [ :user ]).order(:played_at, :id)
 
@@ -74,7 +77,9 @@ module Api
         end
       end
 
-      render json: { message: "OK", updated: db_matches.size }
+      PushNotificationService.notify_expired_cookies(event: event, users: expired_users) if expired_users.any?
+
+      render json: { message: "OK", updated: db_matches.size, expired_users: expired_users }
     rescue JSON::ParserError
       render json: { error: "リクエストボディが不正な JSON 形式です" }, status: :unprocessable_entity
     rescue ActiveRecord::RecordInvalid => e

@@ -55,6 +55,19 @@ class PushNotificationService
       end
     end
 
+    def notify_expired_cookies(event:, users:)
+      User.where(is_admin: true).find_each do |user|
+        next unless user.push_notifications_enabled?
+
+        SendPushNotificationJob.perform_later(
+          user_id: user.id,
+          title: "Cookie 期限切れユーザーあり",
+          body: "#{event.name}: #{users.join(', ')} の Cookie が期限切れです",
+          path: "/events/#{event.id}"
+        )
+      end
+    end
+
     def notify_rotation_activated(rotation:)
       player_ids = collect_player_ids(rotation)
       return if player_ids.empty?
