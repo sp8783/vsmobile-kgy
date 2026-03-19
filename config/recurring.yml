@@ -17,4 +17,4 @@ production:
   event_reminder:
     class: EventReminderJob
     queue: default
-    schedule: every day at 12pm
+    schedule: every day at 8am
