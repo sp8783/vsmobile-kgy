@@ -561,12 +561,13 @@
           </tr>
         </thead>
         <tbody class="bg-white">
+          <% mps = @rotation.matches_per_set %>
           <% @rotation_matches.each_with_index do |rm, index| %>
             <%
-              # 3試合1セットの計算
-              set_number = index / 3
-              is_set_start = (index % 3 == 0)
-              in_set_position = index % 3
+              # 人数に応じた1セットあたりの試合数（8人: 6試合、それ以外: 3試合）
+              set_number = index / mps
+              is_set_start = (index % mps == 0)
+              in_set_position = index % mps
 
               # 背景色（現在の試合のみハイライト）
               if index == @rotation.current_match_index
