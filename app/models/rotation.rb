@@ -22,6 +22,15 @@ class Rotation < ApplicationRecord
     User.where(id: player_ids)
   end
 
+  def player_count
+    players.count
+  end
+
+  # 8人の場合のみ1セット6試合、それ以外は1セット3試合
+  def matches_per_set
+    player_count == 8 ? 6 : 3
+  end
+
   # Calculate statistics for each player
   def player_statistics
     stats = Hash.new do |h, k|
