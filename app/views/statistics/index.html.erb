@@ -1435,8 +1435,8 @@
                       <div class="text-2xl font-semibold text-gray-500"><%= @community_ex_remaining_rate %><span class="text-sm font-normal">%</span></div>
                       <% if @community_ex_remaining_min && @community_ex_remaining_max %>
                         <%
-                          c_min    = [@community_ex_remaining_min, ex_pct].min
-                          c_max    = [@community_ex_remaining_max, ex_pct].max
+                          c_min    = @community_ex_remaining_min
+                          c_max    = @community_ex_remaining_max
                         %>
                         <% if c_min != c_max %>
                         <%
@@ -1516,8 +1516,8 @@
                     </div>
                     <% if item[:comm_rate] && item[:comm_min] && item[:comm_max] %>
                       <%
-                        ic_min       = [item[:comm_min], item[:user_v]].min
-                        ic_max       = [item[:comm_max], item[:user_v]].max
+                        ic_min       = item[:comm_min]
+                        ic_max       = item[:comm_max]
                       %>
                       <% if ic_min != ic_max %>
                       <%
@@ -1623,8 +1623,8 @@
                     <div class="text-2xl font-semibold text-gray-500"><%= @community_opp_no_ol_win_rate %><span class="text-sm font-normal">%</span></div>
                     <% if @community_opp_no_ol_win_min && @community_opp_no_ol_win_max %>
                       <%
-                        c_min = [@community_opp_no_ol_win_min, opp_no_ol_pct].min
-                        c_max = [@community_opp_no_ol_win_max, opp_no_ol_pct].max
+                        c_min = @community_opp_no_ol_win_min
+                        c_max = @community_opp_no_ol_win_max
                       %>
                       <% if c_min != c_max %>
                         <%
@@ -1708,8 +1708,8 @@
                     <div class="text-2xl font-semibold text-gray-500"><%= @community_no_ol_loss_rate %><span class="text-sm font-normal">%</span></div>
                     <% if @community_no_ol_loss_min && @community_no_ol_loss_max %>
                       <%
-                        c_min = [@community_no_ol_loss_min, no_ol_pct].min
-                        c_max = [@community_no_ol_loss_max, no_ol_pct].max
+                        c_min = @community_no_ol_loss_min
+                        c_max = @community_no_ol_loss_max
                       %>
                       <% if c_min != c_max %>
                         <%
@@ -2020,8 +2020,8 @@
                               <div class="text-sm text-gray-600 font-medium"><%= "#{avg_val}#{row[:suffix]}" %></div>
                               <% if min_val && max_val && user_val %>
                                 <%
-                                  c_min = [min_val, user_val.to_f].min
-                                  c_max = [max_val, user_val.to_f].max
+                                  c_min = min_val
+                                  c_max = max_val
                                 %>
                                 <% if c_min != c_max %>
                                   <%
