@@ -106,6 +106,13 @@ class StatisticsController < ApplicationController
     end
   end
 
+  # コミュニティ側クエリの基底スコープ（イベントフィルターのみ適用）
+  def community_base_scope
+    scope = MatchPlayer.joins(:match, :user).where(users: { is_guest: false })
+    scope = scope.where(matches: { event_id: @filter_events }) if @filter_events.any?
+    scope
+  end
+
   def calculate_overview_stats
     # サマリーカード用の統計
     @total_matches = @filtered_matches.count
@@ -679,8 +686,7 @@ class StatisticsController < ApplicationController
     }
 
     # EXバースト活用分析のコミュニティ分布（ユーザー別率 → avg/min/max）
-    ex_loss_mps = MatchPlayer.joins(:match, :user).includes(:match)
-      .where(users: { is_guest: false })
+    ex_loss_mps = community_base_scope.includes(:match)
       .where("matches.winning_team IS NOT NULL AND matches.winning_team != match_players.team_number")
       .where("last_death_ex_available IS NOT NULL OR survive_loss_ex_available IS NOT NULL")
       .to_a
@@ -706,8 +712,7 @@ class StatisticsController < ApplicationController
     end
 
     # OL分析のコミュニティ分布（ユーザー別率 → avg/min/max）
-    ol_mps_all = MatchPlayer.joins(:match, :user).includes(:match)
-      .where(users: { is_guest: false })
+    ol_mps_all = community_base_scope.includes(:match)
       .where("matches.winning_team IS NOT NULL")
       .to_a
     if ol_mps_all.any?
@@ -746,8 +751,8 @@ class StatisticsController < ApplicationController
     # コミュニティ平均を算出（基本パフォーマンス統計テーブル用）
     has_stats_sql = "score IS NOT NULL AND kills IS NOT NULL AND deaths IS NOT NULL AND " \
                     "damage_dealt IS NOT NULL AND damage_received IS NOT NULL AND exburst_damage IS NOT NULL"
-    all_stats_mps = MatchPlayer.joins(:match, :user).includes(:match)
-      .where(has_stats_sql).where(users: { is_guest: false }).to_a
+    all_stats_mps = community_base_scope.includes(:match)
+      .where(has_stats_sql).to_a
     if all_stats_mps.any?
       by_user = all_stats_mps.group_by(&:user_id)
 
@@ -875,8 +880,7 @@ class StatisticsController < ApplicationController
     return [] if user_st_mps.empty?
 
     # コミュニティデータ（非ゲストかつ survival_times 存在）
-    community_q = MatchPlayer.joins(:match, :user)
-      .where(users: { is_guest: false })
+    community_q = community_base_scope
       .where("survival_times IS NOT NULL AND jsonb_array_length(survival_times) > 0")
     community_q = case community_scope
     when :wins   then community_q.where("matches.winning_team = match_players.team_number")
