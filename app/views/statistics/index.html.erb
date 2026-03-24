@@ -503,7 +503,7 @@
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
               <% @partners_list.each do |partner| %>
-                <tr class="hover:bg-gray-50">
+                <tr class="hover:bg-gray-50 cursor-pointer" onclick="location.href='<%= matches_path(users: [viewing_as_user.id, partner[:user].id], users_mode: 'and') %>'">
                   <td class="px-6 py-4 whitespace-nowrap">
                     <div class="text-sm font-medium text-gray-900">
                       <%= partner[:user].nickname %>
