@@ -1,5 +1,6 @@
 class StatisticsController < ApplicationController
   before_action :authenticate_user!
+  before_action :set_regular_users
   before_action :set_filters
   before_action :apply_filters
 
@@ -52,6 +53,20 @@ class StatisticsController < ApplicationController
   end
 
   private
+
+  def set_regular_users
+    @regular_users = User.regular_users.order(:nickname)
+  end
+
+  def viewing_as_user
+    return super if current_user&.is_admin
+
+    if params[:view_user_id].present?
+      User.regular_users.find_by(id: params[:view_user_id]) || current_user
+    else
+      current_user
+    end
+  end
 
   def set_filters
     @filter_events = params[:events].present? ? params[:events].map(&:to_i) : []
