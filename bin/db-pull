@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+# bin/db-pull
+# 本番DBのデータをローカルのDockerコンテナDBに取り込む
+
+set -euo pipefail
+
+# 本番サーバー設定 (config/deploy.yml より)
+PROD_HOST="133.167.64.105"
+PROD_SSH_USER="ubuntu"
+PROD_DB_CONTAINER="vsmobile-kgy-db"
+PROD_DB_USER="vsmobile"
+PROD_DB_NAME="vsmobile_production"
+
+# ローカルDB設定 (config/database.yml より)
+LOCAL_DB_USER="postgres"
+LOCAL_DB_NAME="vsmobile_kgy_development"
+
+echo "==> 本番DB ($PROD_DB_NAME) → ローカルDB ($LOCAL_DB_NAME) へのデータ取り込みを開始します"
+echo "    接続先: ${PROD_SSH_USER}@${PROD_HOST}"
+echo ""
+
+# ローカルのDockerが起動しているか確認
+if ! docker compose ps db --status running | grep -q "running"; then
+  echo "==> ローカルのDBコンテナが起動していません。起動します..."
+  docker compose up -d db
+  echo "==> DBコンテナの起動を待機中..."
+  sleep 3
+fi
+
+# 既存のローカルDBを削除して再作成
+echo "==> ローカルDBをリセット中..."
+docker compose exec -T db psql -U "$LOCAL_DB_USER" -c "DROP DATABASE IF EXISTS $LOCAL_DB_NAME;" postgres
+docker compose exec -T db psql -U "$LOCAL_DB_USER" -c "CREATE DATABASE $LOCAL_DB_NAME;" postgres
+
+# 本番からダンプしてローカルへリストア (一時ファイルなし)
+echo "==> 本番DBからダンプしてローカルへリストア中..."
+ssh "${PROD_SSH_USER}@${PROD_HOST}" \
+  "docker exec ${PROD_DB_CONTAINER} pg_dump -U ${PROD_DB_USER} -d ${PROD_DB_NAME} --no-owner --no-acl -F c" \
+  | docker compose exec -T db pg_restore \
+      -U "$LOCAL_DB_USER" \
+      -d "$LOCAL_DB_NAME" \
+      --no-owner --no-acl \
+      -F c
+
+# マイグレーション差分を適用
+echo "==> マイグレーションを適用中..."
+bin/rails db:migrate
+
+echo ""
+echo "==> 完了しました！"
