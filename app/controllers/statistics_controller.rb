@@ -521,6 +521,7 @@ class StatisticsController < ApplicationController
         # ローテーションがある場合：ローテーション別に表示
         rotations_stats = data[:rotations].map do |rotation_id, rotation_data|
           {
+            rotation_id: rotation_id,
             rotation_name: rotation_data[:rotation_name],
             wins: rotation_data[:wins],
             total: rotation_data[:total],
