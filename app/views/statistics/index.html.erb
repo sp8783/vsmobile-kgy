@@ -847,8 +847,10 @@
                   </thead>
                   <tbody class="bg-white divide-y divide-gray-200">
                     <% event_prog[:rotations].each do |rotation| %>
-                      <tr class="hover:bg-gray-50">
-                        <td class="px-4 py-3 text-sm font-medium text-gray-900"><%= rotation[:rotation_name] %></td>
+                      <tr class="hover:bg-gray-50<%= rotation[:rotation_id] ? ' cursor-pointer' : '' %>"
+                          <% if rotation[:rotation_id] %>data-href="<%= rotation_path(rotation[:rotation_id]) %>"
+                          onclick="window.location.href=this.dataset.href"<% end %>>
+                        <td class="px-4 py-3 text-sm font-medium text-gray-900<%= rotation[:rotation_id] ? ' text-purple-700 hover:underline' : '' %>"><%= rotation[:rotation_name] %></td>
                         <td class="px-4 py-3 text-sm text-gray-500"><%= rotation[:total] %></td>
                         <td class="px-4 py-3 text-sm text-green-600 font-semibold"><%= rotation[:wins] %></td>
                         <td class="px-4 py-3 text-sm text-red-600 font-semibold"><%= rotation[:losses] %></td>
