@@ -517,9 +517,9 @@ class StatisticsController < ApplicationController
     end
 
     @event_progression_list = event_progression_data.map do |event_id, data|
-      if data[:has_rotation]
-        # ローテーションがある場合：ローテーション別に表示
-        rotations_stats = data[:rotations].map do |rotation_id, rotation_data|
+      # ローテーション別データ（ローテーションがある場合のみ）
+      rotation_stats = if data[:has_rotation]
+        data[:rotations].map do |rotation_id, rotation_data|
           {
             rotation_id: rotation_id,
             rotation_name: rotation_data[:rotation_name],
@@ -530,48 +530,45 @@ class StatisticsController < ApplicationController
           }
         end
       else
-        # ローテーションがない場合：試合を時系列順に4等分（ターム表示）
-        sorted_matches = data[:all_matches].sort_by { |mp| mp.match.played_at }
-        total_matches = sorted_matches.size
-
-        if total_matches > 0
-          # 4等分（第1ターム、第2ターム、第3ターム、第4ターム）
-          quarter_size = (total_matches / 4.0).ceil
-          quarters = [
-            { name: "第1ターム", matches: sorted_matches[0...quarter_size] },
-            { name: "第2ターム", matches: sorted_matches[quarter_size...(quarter_size * 2)] },
-            { name: "第3ターム", matches: sorted_matches[(quarter_size * 2)...(quarter_size * 3)] },
-            { name: "第4ターム", matches: sorted_matches[(quarter_size * 3)..-1] }
-          ]
-
-          rotations_stats = quarters.map do |quarter|
-            next if quarter[:matches].nil? || quarter[:matches].empty?
-
-            wins = quarter[:matches].count { |mp| mp.match.winning_team == mp.team_number }
-            total = quarter[:matches].size
-
-            {
-              rotation_name: quarter[:name],
-              wins: wins,
-              total: total,
-              losses: total - wins,
-              win_rate: total > 0 ? (wins.to_f / total * 100).round(1) : 0
-            }
-          end.compact
-        else
-          rotations_stats = []
-        end
+        []
       end
+
+      # ターム別データ（8等分）：ローテーションの有無に関わらず常に計算
+      sorted_matches = data[:all_matches].sort_by { |mp| mp.match.played_at }
+      term_stats = if sorted_matches.any?
+        n = sorted_matches.size
+        (1..8).map do |i|
+          start_idx = ((i - 1) * n / 8.0).round
+          end_idx   = (i * n / 8.0).round
+          slice = sorted_matches[start_idx...end_idx]
+          next if slice.nil? || slice.empty?
+
+          wins = slice.count { |mp| mp.match.winning_team == mp.team_number }
+          total = slice.size
+          {
+            rotation_name: "第#{i}ターム",
+            wins: wins,
+            total: total,
+            losses: total - wins,
+            win_rate: (wins.to_f / total * 100).round(1)
+          }
+        end.compact
+      else
+        []
+      end
+
+      all_total = data[:all_matches].size
+      all_wins  = data[:all_matches].count { |mp| mp.match.winning_team == mp.team_number }
 
       {
         event: data[:event],
         has_rotation: data[:has_rotation],
-        rotations: rotations_stats,
-        total_matches: rotations_stats.sum { |r| r[:total] },
-        overall_win_rate: rotations_stats.sum { |r| r[:total] } > 0 ?
-          (rotations_stats.sum { |r| r[:wins] }.to_f / rotations_stats.sum { |r| r[:total] } * 100).round(1) : 0
+        rotation_stats: rotation_stats,
+        term_stats: term_stats,
+        total_matches: all_total,
+        overall_win_rate: all_total > 0 ? (all_wins.to_f / all_total * 100).round(1) : 0
       }
-    end.select { |e| e[:rotations].any? }.sort_by { |e| e[:event].held_on }.reverse
+    end.select { |e| e[:term_stats].any? || e[:rotation_stats].any? }.sort_by { |e| e[:event].held_on }.reverse
   end
 
   def calculate_performance_stats
