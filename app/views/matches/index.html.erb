@@ -309,7 +309,7 @@
         <p class="text-sm text-gray-600">全 <%= @matches.total_count %> 試合</p>
         <div class="flex items-center gap-2 text-sm text-gray-600">
           <span>ソート:</span>
-          <% [["latest", "最新順"], ["reactions", "リアクション順"]].each do |value, label| %>
+          <% [["latest", "新しい順"], ["oldest", "古い順"], ["reactions", "リアクション順"]].each do |value, label| %>
             <% if value == @sort %>
               <span class="px-3 py-1 text-sm font-semibold text-white bg-indigo-600 border border-indigo-600 rounded-lg"><%= label %></span>
             <% else %>
