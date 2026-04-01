@@ -5,10 +5,14 @@ class MatchesController < ApplicationController
   before_action :set_match, only: [ :show, :edit, :update, :destroy ]
 
   def index
-    sort = params[:sort].presence_in(%w[latest reactions]) || "latest"
+    sort = params[:sort].presence_in(%w[latest oldest reactions]) || "latest"
     @sort = sort
 
-    base_scope = sort == "reactions" ? Match.by_reactions : Match.by_latest
+    base_scope = case sort
+                 when "reactions" then Match.by_reactions
+                 when "oldest"    then Match.by_oldest
+                 else                  Match.by_latest
+                 end
     @matches = base_scope.includes(:event, { match_players: [ :user, :mobile_suit ] }, { reactions: :user })
 
     # フィルター: イベント（複数選択対応）
