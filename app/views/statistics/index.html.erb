@@ -2071,8 +2071,10 @@
                     {
                       label: "EXバースト",
                       rows: [
-                        { label: "EXバースト発動回数",   key: :exburst_count,      suffix: "",  higher_is_better: true },
-                        { label: "EXバースト中被撃墜数", key: :exburst_deaths,     suffix: "",  higher_is_better: false },
+                        { label: "EXバースト発動回数（合計）", key: :exburst_count,             suffix: "",  higher_is_better: true },
+                        { label: "1機体目",                    key: :first_unit_exburst_count,  suffix: "",  higher_is_better: true, sub: true },
+                        { label: "2機体目以降",                key: :later_unit_exburst_count,  suffix: "",  higher_is_better: true, sub: true },
+                        { label: "EXバースト中被撃墜数",       key: :exburst_deaths,            suffix: "",  higher_is_better: false },
                         { label: "EXバースト中被撃墜率", key: :exburst_death_rate, suffix: "%", higher_is_better: false, na_if_nil: true },
                       ]
                     },
@@ -2109,8 +2111,17 @@
                     </td>
                   </tr>
                   <% group[:rows].each do |row| %>
-                    <tr class="hover:bg-gray-50">
-                      <td class="px-6 py-4 text-sm text-gray-700 pl-8"><%= row[:label] %></td>
+                    <tr class="hover:bg-gray-50 <%= 'bg-gray-50/50' if row[:sub] %>">
+                      <td class="px-6 py-4 text-sm <%= row[:sub] ? 'text-gray-500 pl-12' : 'text-gray-700 pl-8' %>">
+                        <% if row[:sub] %>
+                          <span class="inline-flex items-center gap-1.5">
+                            <span class="text-gray-300 text-xs">└</span>
+                            <%= row[:label] %>
+                          </span>
+                        <% else %>
+                          <%= row[:label] %>
+                        <% end %>
+                      </td>
                       <% perf_columns.each do |col| %>
                         <%# ユーザー値セル %>
                         <td class="px-6 py-4 text-center text-sm font-semibold <%= col[:color] %> <%= col[:border] %>">
