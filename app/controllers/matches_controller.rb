@@ -9,10 +9,10 @@ class MatchesController < ApplicationController
     @sort = sort
 
     base_scope = case sort
-                 when "reactions" then Match.by_reactions
-                 when "oldest"    then Match.by_oldest
-                 else                  Match.by_latest
-                 end
+    when "reactions" then Match.by_reactions
+    when "oldest"    then Match.by_oldest
+    else                  Match.by_latest
+    end
     @matches = base_scope.includes(:event, { match_players: [ :user, :mobile_suit ] }, { reactions: :user })
 
     # フィルター: イベント（複数選択対応）
