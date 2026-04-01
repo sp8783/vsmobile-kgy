@@ -788,7 +788,7 @@ class StatisticsController < ApplicationController
           exburst_damage:            (sf.call(:exburst_damage)            / m).round(0),
           exburst_count:             (sf.call(:exburst_count)             / m).round(2),
           first_unit_exburst_count:  (sf.call(:first_unit_exburst_count)  / m).round(2),
-          later_unit_exburst_count:  [(sf.call(:exburst_count) - sf.call(:first_unit_exburst_count)) / m, 0].max.round(2),
+          later_unit_exburst_count:  [ (sf.call(:exburst_count) - sf.call(:first_unit_exburst_count)) / m, 0 ].max.round(2),
           exburst_deaths:            (sf.call(:exburst_deaths)            / m).round(2),
           exburst_death_rate: total_ex > 0 ? (total_ex_d * 100.0 / total_ex).round(1) : nil,
           ol_rate:            (ol_count * 100.0 / m).round(1)
@@ -878,7 +878,7 @@ class StatisticsController < ApplicationController
       later_unit_exburst_count: begin
                                   ec = avg_field.call(:exburst_count)
                                   fec = avg_field.call(:first_unit_exburst_count)
-                                  (ec && fec) ? [(ec - fec).round(2), 0].max : nil
+                                  (ec && fec) ? [ (ec - fec).round(2), 0 ].max : nil
                                 end,
       exburst_deaths:           avg_field.call(:exburst_deaths)&.round(2),
       exburst_death_rate: begin
