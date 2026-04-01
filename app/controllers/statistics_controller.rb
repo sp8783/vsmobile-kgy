@@ -785,9 +785,11 @@ class StatisticsController < ApplicationController
           deaths:             (sf.call(:deaths)          / m).round(2),
           damage_dealt:       (sf.call(:damage_dealt)    / m).round(0),
           damage_received:    (sf.call(:damage_received) / m).round(0),
-          exburst_damage:     (sf.call(:exburst_damage)  / m).round(0),
-          exburst_count:      (sf.call(:exburst_count)   / m).round(2),
-          exburst_deaths:     (sf.call(:exburst_deaths)  / m).round(2),
+          exburst_damage:            (sf.call(:exburst_damage)            / m).round(0),
+          exburst_count:             (sf.call(:exburst_count)             / m).round(2),
+          first_unit_exburst_count:  (sf.call(:first_unit_exburst_count)  / m).round(2),
+          later_unit_exburst_count:  [ (sf.call(:exburst_count) - sf.call(:first_unit_exburst_count)) / m, 0 ].max.round(2),
+          exburst_deaths:            (sf.call(:exburst_deaths)            / m).round(2),
           exburst_death_rate: total_ex > 0 ? (total_ex_d * 100.0 / total_ex).round(1) : nil,
           ol_rate:            (ol_count * 100.0 / m).round(1)
         }
@@ -803,13 +805,15 @@ class StatisticsController < ApplicationController
           deaths:             (list.sum { |u| u[:deaths] }          / n).round(2),
           damage_dealt:       (list.sum { |u| u[:damage_dealt] }    / n).round(0),
           damage_received:    (list.sum { |u| u[:damage_received] } / n).round(0),
-          exburst_damage:     (list.sum { |u| u[:exburst_damage] }  / n).round(0),
-          exburst_count:      (list.sum { |u| u[:exburst_count] }   / n).round(2),
-          exburst_deaths:     (list.sum { |u| u[:exburst_deaths] }  / n).round(2),
+          exburst_damage:            (list.sum { |u| u[:exburst_damage] }           / n).round(0),
+          exburst_count:             (list.sum { |u| u[:exburst_count] }            / n).round(2),
+          first_unit_exburst_count:  (list.sum { |u| u[:first_unit_exburst_count] } / n).round(2),
+          later_unit_exburst_count:  (list.sum { |u| u[:later_unit_exburst_count] } / n).round(2),
+          exburst_deaths:            (list.sum { |u| u[:exburst_deaths] }           / n).round(2),
           exburst_death_rate: valid_dr.any? ? (valid_dr.sum / valid_dr.size).round(1) : nil,
           ol_rate:            (list.sum { |u| u[:ol_rate] }         / n).round(1)
         }
-        stat_keys = %i[score kills deaths damage_dealt damage_received exburst_damage exburst_count exburst_deaths ol_rate]
+        stat_keys = %i[score kills deaths damage_dealt damage_received exburst_damage exburst_count first_unit_exburst_count later_unit_exburst_count exburst_deaths ol_rate]
         min_h = stat_keys.to_h { |k| [ k, list.map { |u| u[k] }.compact.min ] }
         max_h = stat_keys.to_h { |k| [ k, list.map { |u| u[k] }.compact.max ] }
         if valid_dr.any?
@@ -868,9 +872,15 @@ class StatisticsController < ApplicationController
       deaths:          avg_field.call(:deaths)&.round(2),
       damage_dealt:    avg_field.call(:damage_dealt)&.round(0),
       damage_received: avg_field.call(:damage_received)&.round(0),
-      exburst_damage:  avg_field.call(:exburst_damage)&.round(0),
-      exburst_count:   avg_field.call(:exburst_count)&.round(2),
-      exburst_deaths:  avg_field.call(:exburst_deaths)&.round(2),
+      exburst_damage:           avg_field.call(:exburst_damage)&.round(0),
+      exburst_count:            avg_field.call(:exburst_count)&.round(2),
+      first_unit_exburst_count: avg_field.call(:first_unit_exburst_count)&.round(2),
+      later_unit_exburst_count: begin
+                                  ec = avg_field.call(:exburst_count)
+                                  fec = avg_field.call(:first_unit_exburst_count)
+                                  (ec && fec) ? [ (ec - fec).round(2), 0 ].max : nil
+                                end,
+      exburst_deaths:           avg_field.call(:exburst_deaths)&.round(2),
       exburst_death_rate: begin
                             total_count  = mps.sum { |mp| mp.exburst_count.to_i }
                             total_deaths = mps.sum { |mp| mp.exburst_deaths.to_i }
