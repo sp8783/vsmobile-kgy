@@ -175,6 +175,26 @@ class MatchesController < ApplicationController
       @matches = scope.distinct
     end
 
+    # フィルター: チーム指定（同一チームにいたユーザーの組み合わせ）
+    if params[:team_player_ids].present?
+      team_player_ids = params[:team_player_ids].reject(&:blank?).map(&:to_i)
+      if team_player_ids.length >= 2
+        uid1, uid2 = team_player_ids[0], team_player_ids[1]
+        @matches = @matches.where(
+          "EXISTS (" \
+          "SELECT 1 FROM match_players mp1 " \
+          "JOIN match_players mp2 ON mp1.match_id = mp2.match_id AND mp1.team_number = mp2.team_number " \
+          "WHERE mp1.match_id = matches.id AND mp1.user_id = ? AND mp2.user_id = ?" \
+          ")", uid1, uid2
+        )
+      elsif team_player_ids.length == 1
+        @matches = @matches.where(
+          "EXISTS (SELECT 1 FROM match_players mp WHERE mp.match_id = matches.id AND mp.user_id = ?)",
+          team_player_ids[0]
+        )
+      end
+    end
+
     # フィルター: お気に入りのみ
     if params[:only_favorites] == "1" && viewing_as_user
       @matches = @matches.joins(:favorite_matches).where(favorite_matches: { user_id: viewing_as_user.id })
@@ -223,6 +243,7 @@ class MatchesController < ApplicationController
     @filter_damage_received_val = params[:damage_received_val].presence
     @filter_damage_received_dir = params[:damage_received_dir].presence_in(%w[gte lte]) || "gte"
     @filter_only_favorites = params[:only_favorites] == "1"
+    @filter_team_player_ids = params[:team_player_ids].present? ? params[:team_player_ids].reject(&:blank?).map(&:to_i) : []
   end
 
   def show
