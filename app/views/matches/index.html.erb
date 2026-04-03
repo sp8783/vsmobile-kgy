@@ -40,8 +40,8 @@
   <div class="bg-white rounded-xl shadow-sm ring-1 ring-gray-900/5 mb-6 px-5 py-4 space-y-3">
 
     <!-- イベント -->
-    <div class="flex items-start gap-2">
-      <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide w-24 shrink-0 pt-1.5">イベント</span>
+    <div class="flex items-center gap-2">
+      <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide w-24 shrink-0">イベント</span>
       <div class="flex flex-wrap gap-2">
         <%= link_to "全イベント", matches_path(_all.merge(events: [])), class: @filter_events.empty? ? _btn_on : _btn_off %>
         <% @all_events.each do |event| %>
@@ -51,12 +51,12 @@
     </div>
 
     <!-- 参加ユーザー -->
-    <div class="flex items-start gap-2">
-      <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide w-24 shrink-0 pt-1.5">参加</span>
+    <div class="flex items-center gap-2">
+      <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide w-24 shrink-0">参加</span>
       <div class="flex flex-wrap gap-2">
         <div class="inline-flex rounded-md border border-gray-200 bg-white text-xs font-medium overflow-hidden shrink-0">
-          <%= link_to "OR", matches_path(_all.merge(users_mode: "or")), class: "block px-2 py-1 transition-colors #{@filter_users_mode == 'or' ? 'bg-indigo-600 text-white' : 'text-gray-500 hover:bg-gray-50'}" %>
-          <%= link_to "AND", matches_path(_all.merge(users_mode: "and")), class: "block px-2 py-1 border-l border-gray-200 transition-colors #{@filter_users_mode == 'and' ? 'bg-indigo-600 text-white' : 'text-gray-500 hover:bg-gray-50'}" %>
+          <%= link_to "OR", matches_path(_all.merge(users_mode: "or")), class: "block px-2 py-1.5 transition-colors #{@filter_users_mode == 'or' ? 'bg-indigo-600 text-white' : 'text-gray-500 hover:bg-gray-50'}" %>
+          <%= link_to "AND", matches_path(_all.merge(users_mode: "and")), class: "block px-2 py-1.5 border-l border-gray-200 transition-colors #{@filter_users_mode == 'and' ? 'bg-indigo-600 text-white' : 'text-gray-500 hover:bg-gray-50'}" %>
         </div>
         <%= link_to "全員", matches_path(_all.merge(users: [])), class: @filter_users.empty? ? _btn_on : _btn_off %>
         <% @all_users.each do |user| %>
@@ -67,8 +67,8 @@
 
     <!-- 配信台ユーザー -->
     <% _visible_streaming = @filter_users.any? ? @all_users.select { |u| @filter_users.include?(u.id) } : @all_users %>
-    <div class="flex items-start gap-2">
-      <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide w-24 shrink-0 pt-1.5">配信台</span>
+    <div class="flex items-center gap-2">
+      <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide w-24 shrink-0">配信台</span>
       <div class="flex flex-wrap gap-2">
         <%= link_to "全員", matches_path(_all.merge(streaming_users: [])), class: @filter_streaming_users.empty? ? _btn_on : _btn_off %>
         <% _visible_streaming.each do |user| %>
@@ -128,8 +128,8 @@
       }
     %>
     <% if _fav_suits.any? %>
-      <div class="flex items-start gap-2">
-        <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide w-24 shrink-0 pt-1.5">お気に入り機体</span>
+      <div class="flex items-center gap-2">
+        <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide w-24 shrink-0">お気に入り機体</span>
         <div class="flex flex-wrap gap-2">
           <% _fav_suits.each do |fav| %>
             <%= link_to fav.mobile_suit.name, _fav_toggle.call(fav.mobile_suit.id),
@@ -141,8 +141,8 @@
 
     <!-- お気に入り試合 -->
     <% if viewing_as_user&.regular_user? %>
-      <div class="flex items-start gap-2">
-        <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide w-24 shrink-0 pt-1.5">お気に入り試合</span>
+      <div class="flex items-center gap-2">
+        <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide w-24 shrink-0">お気に入り試合</span>
         <div class="flex flex-wrap gap-2">
           <%= link_to matches_path(_all.merge(only_favorites: @filter_only_favorites ? nil : "1", page: nil)),
               class: "flex items-center gap-1.5 #{@filter_only_favorites ? _btn_on : _btn_off}" do %>
