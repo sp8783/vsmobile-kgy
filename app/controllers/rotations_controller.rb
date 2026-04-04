@@ -14,7 +14,7 @@ class RotationsController < ApplicationController
                                             match: { match_players: :mobile_suit })
                                   .order(:match_index)
     @current_match = @rotation_matches[@rotation.current_match_index]
-    @player_statistics = @rotation.player_statistics
+    @player_statistics = @rotation.player_statistics(@rotation_matches)
     @all_mobile_suits = MobileSuit.order(:name).to_a
 
     # プレイヤーのお気に入り機体を N+1 を起こさずまとめてロード

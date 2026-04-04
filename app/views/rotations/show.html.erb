@@ -692,7 +692,7 @@
       <div class="flex items-center justify-between">
         <div>
           <h3 class="text-lg font-semibold text-gray-900">プレイヤー統計（平等性チェック）</h3>
-          <p class="mt-1 text-sm text-gray-500">各プレイヤーの試合数、ペア回数、対戦相手回数が均等に配分されているか確認できます</p>
+          <p class="mt-1 text-sm text-gray-500">各プレイヤーの試合数（記録済 / 計画）、ペア回数、対戦相手回数が均等に配分されているか確認できます</p>
         </div>
         <span class="text-xs text-gray-500" title="試合数の偏りがないか確認">ℹ️ 公平性</span>
       </div>
@@ -705,7 +705,10 @@
               プレイヤー
             </th>
             <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-              試合数
+              試合数<br><span class="normal-case font-normal">(記録済 / 計画)</span>
+            </th>
+            <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+              配信台回数<br><span class="normal-case font-normal">(記録済 / 計画)</span>
             </th>
             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               最もペアを組んだ相手
@@ -729,7 +732,12 @@
                 </div>
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-center">
-                <span class="text-sm font-semibold text-gray-900"><%= stats[:match_count] %></span>
+                <span class="text-sm font-semibold text-gray-900"><%= stats[:registered_match_count] %></span>
+                <span class="text-xs text-gray-400"> / <%= stats[:match_count] %></span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-center">
+                <span class="text-sm font-semibold text-gray-900"><%= stats[:registered_streaming_count] %></span>
+                <span class="text-xs text-gray-400"> / <%= stats[:streaming_count] %></span>
               </td>
               <td class="px-6 py-4">
                 <div class="text-sm text-gray-700">

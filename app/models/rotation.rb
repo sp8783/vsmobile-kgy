@@ -32,24 +32,37 @@ class Rotation < ApplicationRecord
   end
 
   # Calculate statistics for each player
-  def player_statistics
+  # rotation_matches_scope: preloaded scope (includes :match) to avoid N+1
+  def player_statistics(rotation_matches_scope = nil)
+    scope = rotation_matches_scope || rotation_matches.includes(:match)
+
     stats = Hash.new do |h, k|
       h[k] = {
         user: nil,
         match_count: 0,
+        registered_match_count: 0,
+        streaming_count: 0,
+        registered_streaming_count: 0,
         pair_counts: Hash.new(0),
         opponent_counts: Hash.new(0)
       }
     end
 
-    rotation_matches.each do |rm|
+    scope.each do |rm|
       all_players = [ rm.team1_player1, rm.team1_player2, rm.team2_player1, rm.team2_player2 ]
+      registered = rm.match.present?
 
       # Update match counts
       all_players.each do |player|
         stats[player.id][:user] = player
         stats[player.id][:match_count] += 1
+        stats[player.id][:registered_match_count] += 1 if registered
       end
+
+      # Update streaming seat (team1_player1) counts
+      streamer = rm.team1_player1
+      stats[streamer.id][:streaming_count] += 1
+      stats[streamer.id][:registered_streaming_count] += 1 if registered
 
       # Update pair counts
       [ [ rm.team1_player1, rm.team1_player2 ], [ rm.team2_player1, rm.team2_player2 ] ].each do |pair|
