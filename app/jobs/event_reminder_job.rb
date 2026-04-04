@@ -15,11 +15,8 @@ class EventReminderJob < ApplicationJob
         message = build_message(event, label)
         DiscordWebhookService.post(purpose: :reminder, message: message)
 
-        if days == 1 && event.discord_channel_webhook_url.present?
-          DiscordWebhookService.post_to_webhook_url(
-            url: event.discord_channel_webhook_url,
-            message: build_preparation_message
-          )
+        if days == 1
+          DiscordWebhookService.post(purpose: :reminder, message: build_preparation_message)
         end
       end
     end
