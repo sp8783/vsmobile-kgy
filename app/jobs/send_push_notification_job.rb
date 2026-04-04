@@ -5,6 +5,8 @@ class SendPushNotificationJob < ApplicationJob
   retry_on Net::ReadTimeout, wait: 10.seconds, attempts: 3
 
   def perform(user_id:, title:, body:, path: "/", icon: "/icon-192.png")
+    return unless Rails.env.production?
+
     user = User.find_by(id: user_id)
     return unless user
 
