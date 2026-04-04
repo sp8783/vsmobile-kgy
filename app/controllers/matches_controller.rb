@@ -5,10 +5,14 @@ class MatchesController < ApplicationController
   before_action :set_match, only: [ :show, :edit, :update, :destroy ]
 
   def index
-    sort = params[:sort].presence_in(%w[latest reactions]) || "latest"
+    sort = params[:sort].presence_in(%w[latest oldest reactions]) || "latest"
     @sort = sort
 
-    base_scope = sort == "reactions" ? Match.by_reactions : Match.by_latest
+    base_scope = case sort
+    when "reactions" then Match.by_reactions
+    when "oldest"    then Match.by_oldest
+    else                  Match.by_latest
+    end
     @matches = base_scope.includes(:event, { match_players: [ :user, :mobile_suit ] }, { reactions: :user })
 
     # フィルター: イベント（複数選択対応）
@@ -52,10 +56,11 @@ class MatchesController < ApplicationController
     end
 
     # フィルター: 使用機体（複数選択対応）
+    suit_scope_mine = params[:suit_scope] == "mine" && viewing_as_user
     if params[:mobile_suits].present?
       mobile_suit_ids = params[:mobile_suits].reject(&:blank?).map(&:to_i)
       if mobile_suit_ids.any?
-        if params[:my_mobile_suits] == "1"
+        if suit_scope_mine
           @matches = @matches.joins(:match_players).where(
             match_players: { mobile_suit_id: mobile_suit_ids, user_id: viewing_as_user.id }
           ).distinct
@@ -69,7 +74,13 @@ class MatchesController < ApplicationController
     if params[:costs].present?
       cost_values = params[:costs].reject(&:blank?).map(&:to_i)
       if cost_values.any?
-        @matches = @matches.joins(match_players: :mobile_suit).where(mobile_suits: { cost: cost_values }).distinct
+        if suit_scope_mine
+          @matches = @matches.joins(match_players: :mobile_suit).where(
+            mobile_suits: { cost: cost_values }, match_players: { user_id: viewing_as_user.id }
+          ).distinct
+        else
+          @matches = @matches.joins(match_players: :mobile_suit).where(mobile_suits: { cost: cost_values }).distinct
+        end
       end
     end
 
@@ -164,6 +175,26 @@ class MatchesController < ApplicationController
       @matches = scope.distinct
     end
 
+    # フィルター: チーム指定（同一チームにいたユーザーの組み合わせ）
+    if params[:team_player_ids].present?
+      team_player_ids = params[:team_player_ids].reject(&:blank?).map(&:to_i)
+      if team_player_ids.length >= 2
+        uid1, uid2 = team_player_ids[0], team_player_ids[1]
+        @matches = @matches.where(
+          "EXISTS (" \
+          "SELECT 1 FROM match_players mp1 " \
+          "JOIN match_players mp2 ON mp1.match_id = mp2.match_id AND mp1.team_number = mp2.team_number " \
+          "WHERE mp1.match_id = matches.id AND mp1.user_id = ? AND mp2.user_id = ?" \
+          ")", uid1, uid2
+        )
+      elsif team_player_ids.length == 1
+        @matches = @matches.where(
+          "EXISTS (SELECT 1 FROM match_players mp WHERE mp.match_id = matches.id AND mp.user_id = ?)",
+          team_player_ids[0]
+        )
+      end
+    end
+
     # フィルター: お気に入りのみ
     if params[:only_favorites] == "1" && viewing_as_user
       @matches = @matches.joins(:favorite_matches).where(favorite_matches: { user_id: viewing_as_user.id })
@@ -202,7 +233,7 @@ class MatchesController < ApplicationController
     @filter_streaming_users_mode = params[:streaming_users_mode].presence_in(%w[or and]) || "or"
     @filter_mobile_suits = params[:mobile_suits].present? ? params[:mobile_suits].reject(&:blank?).map(&:to_i) : []
     @filter_costs = params[:costs].present? ? params[:costs].reject(&:blank?).map(&:to_i) : []
-    @filter_my_mobile_suits = params[:my_mobile_suits] == "1"
+    @filter_suit_scope = params[:suit_scope].presence_in(%w[mine all]) || "all"
     @flip_team = params[:flip_team] == "1"
     @filter_stat_player_id = stat_player_id
     @filter_ol_filter = ol_filter
@@ -212,6 +243,7 @@ class MatchesController < ApplicationController
     @filter_damage_received_val = params[:damage_received_val].presence
     @filter_damage_received_dir = params[:damage_received_dir].presence_in(%w[gte lte]) || "gte"
     @filter_only_favorites = params[:only_favorites] == "1"
+    @filter_team_player_ids = params[:team_player_ids].present? ? params[:team_player_ids].reject(&:blank?).map(&:to_i) : []
   end
 
   def show

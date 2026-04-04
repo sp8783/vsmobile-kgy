@@ -41,6 +41,11 @@
     </div>
 
     <div>
+      <label class="block text-xs font-medium text-gray-600 mb-1">1機体目 EXバースト使用回数 ※</label>
+      <%= number_field_tag "#{pfx}[first_unit_exburst_count]", player.first_unit_exburst_count, min: 0, class: "w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" %>
+    </div>
+
+    <div>
       <label class="block text-xs font-medium text-gray-600 mb-1">バースト中被撃墜 ※</label>
       <%= number_field_tag "#{pfx}[exburst_deaths]", player.exburst_deaths, min: 0, class: "w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" %>
     </div>

@@ -127,6 +127,17 @@ module MatchStatsImportable
       # exburst_count: バースト発動イベントの数
       exburst_count = burst_events.size
 
+      # first_unit_exburst_count: 1機体目（最初の被撃墜前）のバースト発動数
+      # ※ death_times はこの後に計算するため、ここでは player_events から直接導出する
+      first_death_cs_for_burst = player_events.select { |e| e["is_point"] }
+                                              .map { |e| e["start_cs"] }
+                                              .compact.min
+      first_unit_exburst_count = if first_death_cs_for_burst
+        burst_events.count { |b| (b["start_cs"] || 0) < first_death_cs_for_burst }
+      else
+        burst_events.size
+      end
+
       # exburst_deaths: 被撃墜時刻がバースト区間内に含まれる数
       exburst_deaths = player_events.select { |e| e["is_point"] }.count do |death|
         cs = death["start_cs"]
@@ -178,6 +189,7 @@ module MatchStatsImportable
 
       mp.update!(
         exburst_count:             exburst_count,
+        first_unit_exburst_count:  first_unit_exburst_count,
         exburst_deaths:            exburst_deaths,
         last_death_ex_available:   last_death_ex_available,
         survive_loss_ex_available: survive_loss_ex_available,

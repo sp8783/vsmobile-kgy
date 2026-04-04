@@ -31,7 +31,7 @@ class MatchStatsController < ApplicationController
     ActiveRecord::Base.transaction do
       # プレイヤー統計をリセット
       stat_columns = %i[match_rank score kills deaths damage_dealt damage_received
-                        exburst_damage exburst_count exburst_deaths
+                        exburst_damage exburst_count first_unit_exburst_count exburst_deaths
                         last_death_ex_available survive_loss_ex_available ex_overlimit_activated]
       @match.match_players.update_all(stat_columns.index_with(nil))
 

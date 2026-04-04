@@ -1,5 +1,6 @@
 class StatisticsController < ApplicationController
   before_action :authenticate_user!
+  before_action :set_regular_users
   before_action :set_filters
   before_action :apply_filters
 
@@ -9,7 +10,7 @@ class StatisticsController < ApplicationController
     # ゲストユーザー（または管理者がゲスト視点切り替え中）は個人統計タブにアクセス不可
     personal_tabs = %w[overview performance events event_progression mobile_suits opponent_suits partners opponents]
     if viewing_as_user.is_guest && personal_tabs.include?(@active_tab)
-      redirect_to statistics_path(tab: "overall"), alert: "個人統計を見るには管理者にアカウント発行を依頼してください"
+      redirect_to statistics_path(tab: "overall"), alert: "ゲストユーザーには個人統計データがありません"
       return
     end
 
@@ -52,6 +53,20 @@ class StatisticsController < ApplicationController
   end
 
   private
+
+  def set_regular_users
+    @regular_users = User.regular_users.order(:nickname)
+  end
+
+  def viewing_as_user
+    return super if current_user&.is_admin
+
+    if params[:view_user_id].present?
+      User.regular_users.find_by(id: params[:view_user_id]) || current_user
+    else
+      current_user
+    end
+  end
 
   def set_filters
     @filter_events = params[:events].present? ? params[:events].map(&:to_i) : []
@@ -104,6 +119,13 @@ class StatisticsController < ApplicationController
 
       @filtered_matches = @filtered_matches.where(matches: { id: filtered_match_ids.uniq })
     end
+  end
+
+  # コミュニティ側クエリの基底スコープ（イベントフィルターのみ適用）
+  def community_base_scope
+    scope = MatchPlayer.joins(:match, :user).where(users: { is_guest: false })
+    scope = scope.where(matches: { event_id: @filter_events }) if @filter_events.any?
+    scope
   end
 
   def calculate_overview_stats
@@ -495,10 +517,11 @@ class StatisticsController < ApplicationController
     end
 
     @event_progression_list = event_progression_data.map do |event_id, data|
-      if data[:has_rotation]
-        # ローテーションがある場合：ローテーション別に表示
-        rotations_stats = data[:rotations].map do |rotation_id, rotation_data|
+      # ローテーション別データ（ローテーションがある場合のみ）
+      rotation_stats = if data[:has_rotation]
+        data[:rotations].map do |rotation_id, rotation_data|
           {
+            rotation_id: rotation_id,
             rotation_name: rotation_data[:rotation_name],
             wins: rotation_data[:wins],
             total: rotation_data[:total],
@@ -507,48 +530,45 @@ class StatisticsController < ApplicationController
           }
         end
       else
-        # ローテーションがない場合：試合を時系列順に4等分（ターム表示）
-        sorted_matches = data[:all_matches].sort_by { |mp| mp.match.played_at }
-        total_matches = sorted_matches.size
-
-        if total_matches > 0
-          # 4等分（第1ターム、第2ターム、第3ターム、第4ターム）
-          quarter_size = (total_matches / 4.0).ceil
-          quarters = [
-            { name: "第1ターム", matches: sorted_matches[0...quarter_size] },
-            { name: "第2ターム", matches: sorted_matches[quarter_size...(quarter_size * 2)] },
-            { name: "第3ターム", matches: sorted_matches[(quarter_size * 2)...(quarter_size * 3)] },
-            { name: "第4ターム", matches: sorted_matches[(quarter_size * 3)..-1] }
-          ]
-
-          rotations_stats = quarters.map do |quarter|
-            next if quarter[:matches].nil? || quarter[:matches].empty?
-
-            wins = quarter[:matches].count { |mp| mp.match.winning_team == mp.team_number }
-            total = quarter[:matches].size
-
-            {
-              rotation_name: quarter[:name],
-              wins: wins,
-              total: total,
-              losses: total - wins,
-              win_rate: total > 0 ? (wins.to_f / total * 100).round(1) : 0
-            }
-          end.compact
-        else
-          rotations_stats = []
-        end
+        []
       end
+
+      # ターム別データ（8等分）：ローテーションの有無に関わらず常に計算
+      sorted_matches = data[:all_matches].sort_by { |mp| mp.match.played_at }
+      term_stats = if sorted_matches.any?
+        n = sorted_matches.size
+        (1..8).map do |i|
+          start_idx = ((i - 1) * n / 8.0).round
+          end_idx   = (i * n / 8.0).round
+          slice = sorted_matches[start_idx...end_idx]
+          next if slice.nil? || slice.empty?
+
+          wins = slice.count { |mp| mp.match.winning_team == mp.team_number }
+          total = slice.size
+          {
+            rotation_name: "第#{i}ターム",
+            wins: wins,
+            total: total,
+            losses: total - wins,
+            win_rate: (wins.to_f / total * 100).round(1)
+          }
+        end.compact
+      else
+        []
+      end
+
+      all_total = data[:all_matches].size
+      all_wins  = data[:all_matches].count { |mp| mp.match.winning_team == mp.team_number }
 
       {
         event: data[:event],
         has_rotation: data[:has_rotation],
-        rotations: rotations_stats,
-        total_matches: rotations_stats.sum { |r| r[:total] },
-        overall_win_rate: rotations_stats.sum { |r| r[:total] } > 0 ?
-          (rotations_stats.sum { |r| r[:wins] }.to_f / rotations_stats.sum { |r| r[:total] } * 100).round(1) : 0
+        rotation_stats: rotation_stats,
+        term_stats: term_stats,
+        total_matches: all_total,
+        overall_win_rate: all_total > 0 ? (all_wins.to_f / all_total * 100).round(1) : 0
       }
-    end.select { |e| e[:rotations].any? }.sort_by { |e| e[:event].held_on }.reverse
+    end.select { |e| e[:term_stats].any? || e[:rotation_stats].any? }.sort_by { |e| e[:event].held_on }.reverse
   end
 
   def calculate_performance_stats
@@ -679,8 +699,7 @@ class StatisticsController < ApplicationController
     }
 
     # EXバースト活用分析のコミュニティ分布（ユーザー別率 → avg/min/max）
-    ex_loss_mps = MatchPlayer.joins(:match, :user).includes(:match)
-      .where(users: { is_guest: false })
+    ex_loss_mps = community_base_scope.includes(:match)
       .where("matches.winning_team IS NOT NULL AND matches.winning_team != match_players.team_number")
       .where("last_death_ex_available IS NOT NULL OR survive_loss_ex_available IS NOT NULL")
       .to_a
@@ -706,8 +725,7 @@ class StatisticsController < ApplicationController
     end
 
     # OL分析のコミュニティ分布（ユーザー別率 → avg/min/max）
-    ol_mps_all = MatchPlayer.joins(:match, :user).includes(:match)
-      .where(users: { is_guest: false })
+    ol_mps_all = community_base_scope.includes(:match)
       .where("matches.winning_team IS NOT NULL")
       .to_a
     if ol_mps_all.any?
@@ -746,8 +764,8 @@ class StatisticsController < ApplicationController
     # コミュニティ平均を算出（基本パフォーマンス統計テーブル用）
     has_stats_sql = "score IS NOT NULL AND kills IS NOT NULL AND deaths IS NOT NULL AND " \
                     "damage_dealt IS NOT NULL AND damage_received IS NOT NULL AND exburst_damage IS NOT NULL"
-    all_stats_mps = MatchPlayer.joins(:match, :user).includes(:match)
-      .where(has_stats_sql).where(users: { is_guest: false }).to_a
+    all_stats_mps = community_base_scope.includes(:match)
+      .where(has_stats_sql).to_a
     if all_stats_mps.any?
       by_user = all_stats_mps.group_by(&:user_id)
 
@@ -767,9 +785,11 @@ class StatisticsController < ApplicationController
           deaths:             (sf.call(:deaths)          / m).round(2),
           damage_dealt:       (sf.call(:damage_dealt)    / m).round(0),
           damage_received:    (sf.call(:damage_received) / m).round(0),
-          exburst_damage:     (sf.call(:exburst_damage)  / m).round(0),
-          exburst_count:      (sf.call(:exburst_count)   / m).round(2),
-          exburst_deaths:     (sf.call(:exburst_deaths)  / m).round(2),
+          exburst_damage:            (sf.call(:exburst_damage)            / m).round(0),
+          exburst_count:             (sf.call(:exburst_count)             / m).round(2),
+          first_unit_exburst_count:  (sf.call(:first_unit_exburst_count)  / m).round(2),
+          later_unit_exburst_count:  [ (sf.call(:exburst_count) - sf.call(:first_unit_exburst_count)) / m, 0 ].max.round(2),
+          exburst_deaths:            (sf.call(:exburst_deaths)            / m).round(2),
           exburst_death_rate: total_ex > 0 ? (total_ex_d * 100.0 / total_ex).round(1) : nil,
           ol_rate:            (ol_count * 100.0 / m).round(1)
         }
@@ -785,13 +805,15 @@ class StatisticsController < ApplicationController
           deaths:             (list.sum { |u| u[:deaths] }          / n).round(2),
           damage_dealt:       (list.sum { |u| u[:damage_dealt] }    / n).round(0),
           damage_received:    (list.sum { |u| u[:damage_received] } / n).round(0),
-          exburst_damage:     (list.sum { |u| u[:exburst_damage] }  / n).round(0),
-          exburst_count:      (list.sum { |u| u[:exburst_count] }   / n).round(2),
-          exburst_deaths:     (list.sum { |u| u[:exburst_deaths] }  / n).round(2),
+          exburst_damage:            (list.sum { |u| u[:exburst_damage] }           / n).round(0),
+          exburst_count:             (list.sum { |u| u[:exburst_count] }            / n).round(2),
+          first_unit_exburst_count:  (list.sum { |u| u[:first_unit_exburst_count] } / n).round(2),
+          later_unit_exburst_count:  (list.sum { |u| u[:later_unit_exburst_count] } / n).round(2),
+          exburst_deaths:            (list.sum { |u| u[:exburst_deaths] }           / n).round(2),
           exburst_death_rate: valid_dr.any? ? (valid_dr.sum / valid_dr.size).round(1) : nil,
           ol_rate:            (list.sum { |u| u[:ol_rate] }         / n).round(1)
         }
-        stat_keys = %i[score kills deaths damage_dealt damage_received exburst_damage exburst_count exburst_deaths ol_rate]
+        stat_keys = %i[score kills deaths damage_dealt damage_received exburst_damage exburst_count first_unit_exburst_count later_unit_exburst_count exburst_deaths ol_rate]
         min_h = stat_keys.to_h { |k| [ k, list.map { |u| u[k] }.compact.min ] }
         max_h = stat_keys.to_h { |k| [ k, list.map { |u| u[k] }.compact.max ] }
         if valid_dr.any?
@@ -850,9 +872,15 @@ class StatisticsController < ApplicationController
       deaths:          avg_field.call(:deaths)&.round(2),
       damage_dealt:    avg_field.call(:damage_dealt)&.round(0),
       damage_received: avg_field.call(:damage_received)&.round(0),
-      exburst_damage:  avg_field.call(:exburst_damage)&.round(0),
-      exburst_count:   avg_field.call(:exburst_count)&.round(2),
-      exburst_deaths:  avg_field.call(:exburst_deaths)&.round(2),
+      exburst_damage:           avg_field.call(:exburst_damage)&.round(0),
+      exburst_count:            avg_field.call(:exburst_count)&.round(2),
+      first_unit_exburst_count: avg_field.call(:first_unit_exburst_count)&.round(2),
+      later_unit_exburst_count: begin
+                                  ec = avg_field.call(:exburst_count)
+                                  fec = avg_field.call(:first_unit_exburst_count)
+                                  (ec && fec) ? [ (ec - fec).round(2), 0 ].max : nil
+                                end,
+      exburst_deaths:           avg_field.call(:exburst_deaths)&.round(2),
       exburst_death_rate: begin
                             total_count  = mps.sum { |mp| mp.exburst_count.to_i }
                             total_deaths = mps.sum { |mp| mp.exburst_deaths.to_i }
@@ -875,8 +903,7 @@ class StatisticsController < ApplicationController
     return [] if user_st_mps.empty?
 
     # コミュニティデータ（非ゲストかつ survival_times 存在）
-    community_q = MatchPlayer.joins(:match, :user)
-      .where(users: { is_guest: false })
+    community_q = community_base_scope
       .where("survival_times IS NOT NULL AND jsonb_array_length(survival_times) > 0")
     community_q = case community_scope
     when :wins   then community_q.where("matches.winning_team = match_players.team_number")
