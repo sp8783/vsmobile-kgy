@@ -291,16 +291,12 @@ class RotationsController < ApplicationController
       base_rotation_id: @rotation.id
     )
 
-    # Copy rotation matches
-    @rotation.rotation_matches.order(:match_index).each do |rm|
-      new_rotation.rotation_matches.create!(
-        match_index: rm.match_index,
-        team1_player1: rm.team1_player1,
-        team1_player2: rm.team1_player2,
-        team2_player1: rm.team2_player1,
-        team2_player2: rm.team2_player2
-      )
-    end
+    # Re-generate rotation matches with reshuffled player slots so that streaming
+    # patterns differ between rounds (same opponents/partners when streaming)
+    player_ids = @rotation.rotation_matches.flat_map { |rm|
+      [ rm.team1_player1_id, rm.team1_player2_id, rm.team2_player1_id, rm.team2_player2_id ]
+    }.uniq.compact
+    generate_rotation_matches(new_rotation, player_ids)
 
     # Deactivate all rotations for this event
     @rotation.event.rotations.update_all(is_active: false)
@@ -437,7 +433,8 @@ class RotationsController < ApplicationController
     return if players.size < 4
 
     # Use RotationGenerator service to create balanced matches
-    generator = RotationGenerator.new(players)
+    # Shuffle players so slot assignment (A, B, C...) is randomized each time
+    generator = RotationGenerator.new(players.shuffle)
     matches = generator.generate
 
     # Create rotation matches from generated data
