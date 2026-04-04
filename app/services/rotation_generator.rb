@@ -2,7 +2,7 @@ class RotationGenerator
   MAX_MATCHES_PER_ROTATION = 50
 
   def initialize(players)
-    @players = players.sort_by(&:id) # Ensure consistent ordering
+    @players = players
     @player_count = @players.size
     @matches = []
 
