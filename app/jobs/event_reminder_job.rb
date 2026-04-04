@@ -42,7 +42,7 @@ class EventReminderJob < ApplicationJob
       【事前準備のお願い】
 
       明日のイベントに向けて、以下の準備をお願いします！
-      ・アプリ設定
+      ・通知設定（ホーム画面に追加 & プッシュ通知ON）
       ・Cookieの共有
       ・お気に入り機体の設定
 
