@@ -179,8 +179,10 @@ class MatchesFilteredQuery
   def apply_damage_filter(scope, column_name, raw_value, direction)
     return scope if raw_value.blank?
 
-    operator = direction == "lte" ? "<=" : ">="
-    filtered_scope = scope.joins(:match_players).where("match_players.#{column_name} #{operator} ?", raw_value.to_i)
+    attribute = MatchPlayer.arel_table[column_name]
+    condition = direction == "lte" ? attribute.lteq(raw_value.to_i) : attribute.gteq(raw_value.to_i)
+
+    filtered_scope = scope.joins(:match_players).where(condition)
     filtered_scope = filtered_scope.where(match_players: { user_id: filter_state.filter_stat_player_id }) if filter_state.filter_stat_player_id
     filtered_scope.distinct
   end
