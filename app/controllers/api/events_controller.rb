@@ -1,7 +1,5 @@
 module Api
   class EventsController < BaseController
-    include MatchStatsImportable
-
     def timestamps
       event = Event.find_by(id: params[:id])
       return render json: { error: "Event not found" }, status: :not_found unless event
@@ -48,10 +46,8 @@ module Api
       end
 
       ActiveRecord::Base.transaction do
-        db_matches.each_with_index do |match, i|
-          @match = match
-          apply_timeline_data(matches_data[i])
-          recalculate_match_ranks
+        db_matches.each_with_index do |match, index|
+          MatchTimelineImporter.new(match: match, parsed: matches_data[index]).apply!
         end
       end
 
