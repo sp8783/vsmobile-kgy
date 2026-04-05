@@ -3,247 +3,22 @@ class MatchesController < ApplicationController
   before_action :require_admin, except: [ :index, :show ]
   before_action :set_event, only: [ :new, :create ]
   before_action :set_match, only: [ :show, :edit, :update, :destroy ]
+  before_action :load_form_options, only: [ :new, :edit ]
 
   def index
-    sort = params[:sort].presence_in(%w[latest oldest reactions]) || "latest"
-    @sort = sort
+    filter_state = MatchesFilterState.new(params: params)
+    assign_view_state(filter_state.to_h)
 
-    base_scope = case sort
-    when "reactions" then Match.by_reactions
-    when "oldest"    then Match.by_oldest
-    else                  Match.by_latest
-    end
-    @matches = base_scope.includes(:event, { match_players: [ :user, :mobile_suit ] }, { reactions: :user })
-
-    # フィルター: イベント（複数選択対応）
-    if params[:events].present?
-      event_ids = params[:events].reject(&:blank?).map(&:to_i)
-      @matches = @matches.where(event_id: event_ids) if event_ids.any?
-    end
-
-    # フィルター: 参加ユーザー（複数選択対応）
-    if params[:users].present?
-      user_ids = params[:users].reject(&:blank?).map(&:to_i)
-      if user_ids.any?
-        if params[:users_mode] == "and"
-          user_ids.each do |uid|
-            @matches = @matches.where(
-              "EXISTS (SELECT 1 FROM match_players mp WHERE mp.match_id = matches.id AND mp.user_id = ?)", uid
-            )
-          end
-        else
-          @matches = @matches.joins(:match_players).where(match_players: { user_id: user_ids }).distinct
-        end
-      end
-    end
-
-    # フィルター: 配信台ユーザー（複数選択対応）
-    if params[:streaming_users].present?
-      streaming_user_ids = params[:streaming_users].reject(&:blank?).map(&:to_i)
-      if streaming_user_ids.any?
-        if params[:streaming_users_mode] == "and"
-          streaming_user_ids.each do |uid|
-            @matches = @matches.where(
-              "EXISTS (SELECT 1 FROM match_players mp WHERE mp.match_id = matches.id AND mp.user_id = ? AND mp.team_number = 1 AND mp.position = 1)", uid
-            )
-          end
-        else
-          @matches = @matches.joins(:match_players).where(
-            match_players: { user_id: streaming_user_ids, team_number: 1, position: 1 }
-          ).distinct
-        end
-      end
-    end
-
-    # フィルター: 使用機体（複数選択対応）
-    suit_scope_mine = params[:suit_scope] == "mine" && viewing_as_user
-    if params[:mobile_suits].present?
-      mobile_suit_ids = params[:mobile_suits].reject(&:blank?).map(&:to_i)
-      if mobile_suit_ids.any?
-        if suit_scope_mine
-          @matches = @matches.joins(:match_players).where(
-            match_players: { mobile_suit_id: mobile_suit_ids, user_id: viewing_as_user.id }
-          ).distinct
-        else
-          @matches = @matches.joins(:match_players).where(match_players: { mobile_suit_id: mobile_suit_ids }).distinct
-        end
-      end
-    end
-
-    # フィルター: コスト（複数選択対応）
-    if params[:costs].present?
-      cost_values = params[:costs].reject(&:blank?).map(&:to_i)
-      if cost_values.any?
-        if suit_scope_mine
-          @matches = @matches.joins(match_players: :mobile_suit).where(
-            mobile_suits: { cost: cost_values }, match_players: { user_id: viewing_as_user.id }
-          ).distinct
-        else
-          @matches = @matches.joins(match_players: :mobile_suit).where(mobile_suits: { cost: cost_values }).distinct
-        end
-      end
-    end
-
-    # 統計条件フィルター共通: 対象プレイヤー
-    stat_player_id = params[:stat_player_id].present? ? params[:stat_player_id].to_i : nil
-
-    # フィルター: OL条件（排他選択）
-    ol_filter = params[:ol_filter].presence_in(%w[ol_unused_win ol_unused_loss])
-    case ol_filter
-    when "ol_unused_win"
-      # 勝利チームがOL未発動だった試合
-      scope = @matches.where(
-        "(winning_team = 1 AND team1_ex_overlimit_before_end = TRUE) OR " \
-        "(winning_team = 2 AND team2_ex_overlimit_before_end = TRUE)"
-      )
-      if stat_player_id
-        scope = scope.joins(:match_players).where(
-          "match_players.user_id = ? AND match_players.team_number = matches.winning_team",
-          stat_player_id
-        )
-        @matches = scope.distinct
-      else
-        @matches = scope
-      end
-    when "ol_unused_loss"
-      # 敗北チームがOL未発動だった試合
-      scope = @matches.where(
-        "(winning_team = 1 AND team2_ex_overlimit_before_end = TRUE) OR " \
-        "(winning_team = 2 AND team1_ex_overlimit_before_end = TRUE)"
-      )
-      if stat_player_id
-        scope = scope.joins(:match_players).where(
-          "match_players.user_id = ? AND match_players.team_number != matches.winning_team",
-          stat_player_id
-        )
-        @matches = scope.distinct
-      else
-        @matches = scope
-      end
-    end
-
-    # フィルター: EX条件（チェックボックス）
-    stat_filters = Array(params[:stat_filters]).reject(&:blank?)
-
-    if stat_filters.include?("ex_leftover_loss")
-      scope = @matches.joins(:match_players).where(
-        "match_players.team_number != matches.winning_team AND " \
-        "(match_players.last_death_ex_available = TRUE OR match_players.survive_loss_ex_available = TRUE)"
-      )
-      scope = scope.where(match_players: { user_id: stat_player_id }) if stat_player_id
-      @matches = scope.distinct
-    end
-
-    if stat_filters.include?("ex_leftover_win")
-      # 敗北チームにEXバースト残しプレイヤーがいる試合（= 勝利チームがEXを残させた試合）
-      scope = @matches.where(
-        "EXISTS (SELECT 1 FROM match_players mp WHERE mp.match_id = matches.id " \
-        "AND mp.team_number != matches.winning_team " \
-        "AND (mp.last_death_ex_available = TRUE OR mp.survive_loss_ex_available = TRUE))"
-      )
-      if stat_player_id
-        scope = scope.joins(:match_players).where(
-          "match_players.user_id = ? AND match_players.team_number = matches.winning_team",
-          stat_player_id
-        )
-        @matches = scope.distinct
-      else
-        @matches = scope
-      end
-    end
-
-    if stat_filters.include?("exburst_death")
-      scope = @matches.joins(:match_players).where("match_players.exburst_deaths > 0")
-      scope = scope.where(match_players: { user_id: stat_player_id }) if stat_player_id
-      @matches = scope.distinct
-    end
-
-    # フィルター: ダメージ閾値（以上/以下切り替え対応）
-    if params[:damage_dealt_val].present?
-      dealt_val = params[:damage_dealt_val].to_i
-      dealt_op = params[:damage_dealt_dir] == "lte" ? "<=" : ">="
-      scope = @matches.joins(:match_players).where("match_players.damage_dealt #{dealt_op} ?", dealt_val)
-      scope = scope.where(match_players: { user_id: stat_player_id }) if stat_player_id
-      @matches = scope.distinct
-    end
-
-    if params[:damage_received_val].present?
-      received_val = params[:damage_received_val].to_i
-      received_op = params[:damage_received_dir] == "lte" ? "<=" : ">="
-      scope = @matches.joins(:match_players).where("match_players.damage_received #{received_op} ?", received_val)
-      scope = scope.where(match_players: { user_id: stat_player_id }) if stat_player_id
-      @matches = scope.distinct
-    end
-
-    # フィルター: チーム指定（同一チームにいたユーザーの組み合わせ）
-    if params[:team_player_ids].present?
-      team_player_ids = params[:team_player_ids].reject(&:blank?).map(&:to_i)
-      if team_player_ids.length >= 2
-        uid1, uid2 = team_player_ids[0], team_player_ids[1]
-        @matches = @matches.where(
-          "EXISTS (" \
-          "SELECT 1 FROM match_players mp1 " \
-          "JOIN match_players mp2 ON mp1.match_id = mp2.match_id AND mp1.team_number = mp2.team_number " \
-          "WHERE mp1.match_id = matches.id AND mp1.user_id = ? AND mp2.user_id = ?" \
-          ")", uid1, uid2
-        )
-      elsif team_player_ids.length == 1
-        @matches = @matches.where(
-          "EXISTS (SELECT 1 FROM match_players mp WHERE mp.match_id = matches.id AND mp.user_id = ?)",
-          team_player_ids[0]
-        )
-      end
-    end
-
-    # フィルター: お気に入りのみ
-    if params[:only_favorites] == "1" && viewing_as_user
-      @matches = @matches.joins(:favorite_matches).where(favorite_matches: { user_id: viewing_as_user.id })
-    end
-
-    @per_page = [ 10, 20, 50 ].include?(params[:per].to_i) ? params[:per].to_i : 20
+    @matches = MatchesFilteredQuery.new(
+      filter_state: filter_state,
+      viewing_as_user: viewing_as_user
+    ).call
     @matches = @matches.page(params[:page]).per(@per_page)
     @emojis = MasterEmoji.active.ordered
     @latest_event = Event.order(held_on: :desc).first
+    @my_favorite_match_ids = favorite_match_ids_for(@matches)
 
-    @my_favorite_match_ids = if viewing_as_user
-      FavoriteMatch.where(user_id: viewing_as_user.id, match_id: @matches.map(&:id)).pluck(:match_id).to_set
-    else
-      Set.new
-    end
-
-    # フィルター用のデータ
-    @all_events = Event.order(held_on: :desc)
-    @all_mobile_suits = MobileSuit.all.order(Arel.sql("position IS NULL, position ASC, cost DESC, name ASC"))
-
-    # 選択されたフィルター値
-    @filter_events = params[:events].present? ? params[:events].reject(&:blank?).map(&:to_i) : []
-
-    all_users = User.regular_users.order(:nickname)
-    if @filter_events.any?
-      user_ids_in_events = MatchPlayer.joins(:match)
-                                      .where(matches: { event_id: @filter_events })
-                                      .distinct
-                                      .pluck(:user_id)
-      all_users = all_users.where(id: user_ids_in_events)
-    end
-    @all_users = all_users
-    @filter_users = params[:users].present? ? params[:users].reject(&:blank?).map(&:to_i) : []
-    @filter_users_mode = params[:users_mode].presence_in(%w[or and]) || "or"
-    @filter_streaming_users = params[:streaming_users].present? ? params[:streaming_users].reject(&:blank?).map(&:to_i) : []
-    @filter_streaming_users_mode = params[:streaming_users_mode].presence_in(%w[or and]) || "or"
-    @filter_mobile_suits = params[:mobile_suits].present? ? params[:mobile_suits].reject(&:blank?).map(&:to_i) : []
-    @filter_costs = params[:costs].present? ? params[:costs].reject(&:blank?).map(&:to_i) : []
-    @filter_suit_scope = params[:suit_scope].presence_in(%w[mine all]) || "all"
-    @flip_team = params[:flip_team] == "1"
-    @filter_stat_player_id = stat_player_id
-    @filter_ol_filter = ol_filter
-    @filter_stat_filters = stat_filters
-    @filter_damage_dealt_val = params[:damage_dealt_val].presence
-    @filter_damage_dealt_dir = params[:damage_dealt_dir].presence_in(%w[gte lte]) || "gte"
-    @filter_damage_received_val = params[:damage_received_val].presence
-    @filter_damage_received_dir = params[:damage_received_dir].presence_in(%w[gte lte]) || "gte"
-    @filter_only_favorites = params[:only_favorites] == "1"
-    @filter_team_player_ids = params[:team_player_ids].present? ? params[:team_player_ids].reject(&:blank?).map(&:to_i) : []
+    assign_view_state(MatchesFilterOptions.new(filter_events: @filter_events).to_h)
   end
 
   def show
@@ -253,8 +28,6 @@ class MatchesController < ApplicationController
   def new
     @match = @event.matches.build(played_at: Time.current)
     4.times { |i| @match.match_players.build(position: i + 1) }
-    @users = User.regular_users.order(:nickname)
-    @mobile_suits = MobileSuit.all.order(Arel.sql("position IS NULL, position ASC, cost DESC, name ASC"))
   end
 
   def create
@@ -264,23 +37,19 @@ class MatchesController < ApplicationController
     if @match.save
       redirect_to @event, notice: "対戦記録を登録しました。"
     else
-      @users = User.regular_users.order(:nickname)
-      @mobile_suits = MobileSuit.all.order(Arel.sql("position IS NULL, position ASC, cost DESC, name ASC"))
+      load_form_options
       render :new, status: :unprocessable_entity
     end
   end
 
   def edit
-    @users = User.regular_users.order(:nickname)
-    @mobile_suits = MobileSuit.all.order(Arel.sql("position IS NULL, position ASC, cost DESC, name ASC"))
   end
 
   def update
     if @match.update(match_params)
       redirect_to @match, notice: "対戦記録を更新しました。"
     else
-      @users = User.regular_users.order(:nickname)
-      @mobile_suits = MobileSuit.all.order(Arel.sql("position IS NULL, position ASC, cost DESC, name ASC"))
+      load_form_options
       render :edit, status: :unprocessable_entity
     end
   end
@@ -361,6 +130,23 @@ class MatchesController < ApplicationController
 
   def set_match
     @match = Match.includes(:event, :match_timeline, match_players: [ :user, :mobile_suit ]).find(params[:id])
+  end
+
+  def load_form_options
+    @users = User.regular_users.order(:nickname)
+    @mobile_suits = MobileSuit.order(Arel.sql("position IS NULL, position ASC, cost DESC, name ASC"))
+  end
+
+  def assign_view_state(attributes)
+    attributes.each do |name, value|
+      instance_variable_set("@#{name}", value)
+    end
+  end
+
+  def favorite_match_ids_for(matches)
+    return Set.new unless viewing_as_user
+
+    FavoriteMatch.where(user_id: viewing_as_user.id, match_id: matches.map(&:id)).pluck(:match_id).to_set
   end
 
   def match_params
