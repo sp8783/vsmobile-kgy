@@ -309,6 +309,11 @@ a {
   font-size: 0.9rem;
 }
 
+.app-brand--image-only {
+  justify-content: center;
+  width: 100%;
+}
+
 .app-nav-label {
   font-size: 0.72rem;
   font-weight: 700;
@@ -527,8 +532,9 @@ a {
   gap: 0.5rem;
   padding: 0.5rem 0.85rem;
   border-radius: 999px;
-  background: var(--accent-soft);
-  color: var(--accent-strong);
+  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+  color: #fff;
+  box-shadow: 0 12px 24px rgba(79, 57, 246, 0.18);
   font-size: 0.82rem;
   font-weight: 700;
 }
