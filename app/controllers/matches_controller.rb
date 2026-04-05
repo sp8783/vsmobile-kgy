@@ -55,38 +55,8 @@ class MatchesController < ApplicationController
   end
 
   def destroy
-    event = @match.event
-    rotation_match = RotationMatch.find_by(match_id: @match.id)
-
-    ActiveRecord::Base.transaction do
-      # rotation_matchesの参照を解除
-      RotationMatch.where(match_id: @match.id).update_all(match_id: nil)
-
-      # 試合を削除
-      @match.destroy
-
-      # ローテーションがある場合、current_match_indexを更新
-      if rotation_match && rotation_match.rotation
-        rotation = rotation_match.rotation
-        next_unrecorded_index = find_next_unrecorded_match_index(rotation)
-        if next_unrecorded_index
-          rotation.update!(current_match_index: next_unrecorded_index)
-        end
-      end
-    end
-
-    # ローテーションページから削除した場合はローテーションページに戻る
-    if rotation_match && rotation_match.rotation
-      redirect_to rotation_path(rotation_match.rotation), notice: "対戦記録を削除しました。"
-    else
-      redirect_to event_path(event), notice: "対戦記録を削除しました。"
-    end
-  rescue => e
-    if rotation_match && rotation_match.rotation
-      redirect_to rotation_path(rotation_match.rotation), alert: "削除に失敗しました: #{e.message}"
-    else
-      redirect_to event_path(event), alert: "削除に失敗しました: #{e.message}"
-    end
+    result = MatchDeletionWorkflow.new(matches: @match).call
+    redirect_after_destroy(result)
   end
 
   def bulk_destroy
@@ -97,29 +67,13 @@ class MatchesController < ApplicationController
       return
     end
 
-    # rotation_matchesの参照を解除してから削除
-    ActiveRecord::Base.transaction do
-      # 影響を受けるローテーションを取得
-      affected_rotations = RotationMatch.where(match_id: match_ids).includes(:rotation).map(&:rotation).compact.uniq
+    result = MatchDeletionWorkflow.new(matches: Match.includes(:event).where(id: match_ids)).call
 
-      # rotation_matchesのmatch_idをnullに設定
-      RotationMatch.where(match_id: match_ids).update_all(match_id: nil)
-
-      # 試合を削除
-      deleted_count = Match.where(id: match_ids).destroy_all.count
-
-      # 影響を受けた各ローテーションのcurrent_match_indexを更新
-      affected_rotations.each do |rotation|
-        next_unrecorded_index = find_next_unrecorded_match_index(rotation)
-        if next_unrecorded_index
-          rotation.update!(current_match_index: next_unrecorded_index)
-        end
-      end
-
-      redirect_to matches_path, notice: "#{deleted_count}件の対戦記録を削除しました。"
+    if result.success?
+      redirect_to matches_path, notice: "#{result.deleted_count}件の対戦記録を削除しました。"
+    else
+      redirect_to matches_path, alert: "削除に失敗しました: #{result.error_message}"
     end
-  rescue => e
-    redirect_to matches_path, alert: "削除に失敗しました: #{e.message}"
   end
 
   private
@@ -153,25 +107,17 @@ class MatchesController < ApplicationController
     params.require(:match).permit(:winning_team, :played_at, :video_timestamp_text, match_players_attributes: [ :id, :user_id, :mobile_suit_id, :team_number, :position ])
   end
 
-  # Find the next unrecorded match starting from current position
-  def find_next_unrecorded_match_index(rotation)
-    rotation_matches = rotation.rotation_matches.includes(:match).order(:match_index)
-
-    # Start searching from the current match index
-    rotation_matches.each do |rm|
-      if rm.match_index > rotation.current_match_index && rm.match.nil?
-        return rm.match_index
+  def redirect_after_destroy(result)
+    if result.success?
+      if result.rotation
+        redirect_to rotation_path(result.rotation), notice: "対戦記録を削除しました。"
+      else
+        redirect_to event_path(result.event), notice: "対戦記録を削除しました。"
       end
+    elsif result.rotation
+      redirect_to rotation_path(result.rotation), alert: "削除に失敗しました: #{result.error_message}"
+    else
+      redirect_to event_path(result.event), alert: "削除に失敗しました: #{result.error_message}"
     end
-
-    # If no unrecorded match found after current position, check from the beginning
-    rotation_matches.each do |rm|
-      if rm.match.nil?
-        return rm.match_index
-      end
-    end
-
-    # All matches are recorded, stay at the last match
-    rotation.rotation_matches.count - 1
   end
 end

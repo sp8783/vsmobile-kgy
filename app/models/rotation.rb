@@ -26,6 +26,27 @@ class Rotation < ApplicationRecord
     player_count == 8 ? 6 : 3
   end
 
+  def next_unrecorded_match_index
+    ordered_matches = rotation_matches.includes(:match).order(:match_index).to_a
+    return 0 if ordered_matches.empty?
+
+    ordered_matches.each do |rotation_match|
+      if rotation_match.match_index > current_match_index && rotation_match.match.nil?
+        return rotation_match.match_index
+      end
+    end
+
+    ordered_matches.each do |rotation_match|
+      return rotation_match.match_index if rotation_match.match.nil?
+    end
+
+    ordered_matches.last.match_index
+  end
+
+  def sync_current_match_index!
+    update!(current_match_index: next_unrecorded_match_index)
+  end
+
   # Calculate statistics for each player
   # rotation_matches_scope: preloaded scope (includes :match) to avoid N+1
   def player_statistics(rotation_matches_scope = nil)
