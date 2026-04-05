@@ -1,778 +1,626 @@
-<!-- All Matches Completed Modal -->
+<% completed_count = @rotation_matches.count { |rm| rm.match.present? } %>
+<% total_match_count = @rotation_matches.count %>
+<% progress = total_match_count.positive? ? (completed_count.to_f / total_match_count * 100) : 0 %>
+<% initial_edit_payload = if @current_match&.match.present? && !@show_completion_modal
+     initial_match = @current_match.match
+     mp1 = initial_match.match_players.find { |mp| mp.team_number == 1 && mp.position == 1 }
+     mp2 = initial_match.match_players.find { |mp| mp.team_number == 1 && mp.position == 2 }
+     mp3 = initial_match.match_players.find { |mp| mp.team_number == 2 && mp.position == 3 }
+     mp4 = initial_match.match_players.find { |mp| mp.team_number == 2 && mp.position == 4 }
+     {
+       matchIndex: @rotation.current_match_index,
+       matchId: initial_match.id,
+       winningTeam: initial_match.winning_team,
+       suit1: mp1&.mobile_suit_id,
+       suit2: mp2&.mobile_suit_id,
+       suit3: mp3&.mobile_suit_id,
+       suit4: mp4&.mobile_suit_id
+     }.to_json
+   else
+     "null"
+   end %>
+
 <% if @show_completion_modal %>
-  <div id="completion-modal" class="fixed inset-0 flex items-center justify-center z-50" style="background-color: rgba(0, 0, 0, 0.5);">
-    <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 animate-fade-in">
-      <div class="p-6">
-        <div class="flex items-center justify-center w-12 h-12 mx-auto bg-green-100 rounded-full mb-4">
-          <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-          </svg>
-        </div>
-        <h3 class="text-lg font-bold text-gray-900 text-center mb-2">全試合完了しました！</h3>
-        <p class="text-sm text-gray-600 text-center mb-6">
-          <%= @rotation.display_name %>の全試合が記録されました。<br>
-          同じローテーション設定で<%= @rotation.round_number + 1 %>周目を作成しますか？
+  <div id="completion-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 px-4 backdrop-blur-sm">
+    <div class="feature-surface w-full max-w-lg p-6 sm:p-7">
+      <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
+        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+        </svg>
+      </div>
+      <div class="mt-4 text-center">
+        <h2 class="text-xl font-bold text-slate-950">全試合完了しました</h2>
+        <p class="mt-2 text-sm leading-7 text-slate-600">
+          <%= @rotation.display_name %> の全試合が記録されました。<br>
+          同じ設定で <%= @rotation.round_number + 1 %> 周目を作成しますか？
         </p>
-        <div class="flex flex-col space-y-3">
-          <%= button_to "#{@rotation.round_number + 1}周目を作成する", copy_for_next_round_rotation_path(@rotation), method: :post, class: "w-full px-4 py-3 bg-indigo-600 text-white font-semibold rounded-md hover:bg-indigo-700", form: { data: { turbo: false } } %>
-          <button onclick="closeCompletionModal()" class="w-full px-4 py-2 bg-gray-200 text-gray-700 font-semibold rounded-md hover:bg-gray-300">
-            後で作成する
-          </button>
-        </div>
+      </div>
+      <div class="mt-6 grid gap-3">
+        <%= button_to "#{@rotation.round_number + 1}周目を作成する", copy_for_next_round_rotation_path(@rotation), method: :post, class: app_button_classes(variant: :primary, full_width: true), form: { data: { turbo: false } } %>
+        <button type="button" onclick="closeCompletionModal()" class="<%= app_button_classes(variant: :secondary, full_width: true) %>">
+          後で作成する
+        </button>
       </div>
     </div>
   </div>
-
-  <style>
-    @keyframes fadeIn {
-      from {
-        opacity: 0;
-        transform: scale(0.9);
-      }
-      to {
-        opacity: 1;
-        transform: scale(1);
-      }
-    }
-    .animate-fade-in {
-      animation: fadeIn 0.3s ease-out;
-    }
-  </style>
-
-  <script>
-    function closeCompletionModal() {
-      const modal = document.getElementById('completion-modal');
-      modal.style.opacity = '0';
-      setTimeout(() => {
-        modal.style.display = 'none';
-      }, 200);
-    }
-
-    // Prevent closing modal by clicking outside (optional)
-    document.getElementById('completion-modal').addEventListener('click', function(e) {
-      if (e.target === this) {
-        // Optionally allow closing by clicking backdrop
-        // closeCompletionModal();
-      }
-    });
-  </script>
 <% end %>
 
-<div class="py-8">
-  <!-- Header -->
-  <div class="mb-6">
-    <div class="flex justify-between items-start">
-      <div>
-        <h1 class="text-3xl font-bold text-gray-900"><%= @rotation.display_name %></h1>
-        <p class="mt-2 text-sm text-gray-600">
-          イベント: <%= link_to @rotation.event.name, @rotation.event, class: "text-blue-600 hover:text-blue-800" %>
-          (<%= @rotation.event.held_on.strftime('%Y/%m/%d') %>)
-        </p>
-        <div class="mt-2 flex items-center space-x-3">
-          <span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
-            <%= @rotation.round_number %>周目
-          </span>
-          <% if @rotation.is_active %>
-            <span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
-              🔴 アクティブ
-            </span>
+<div class="py-6 sm:py-8">
+  <div class="mb-4">
+    <%= link_to "← ローテーション一覧に戻る", rotations_path, class: "text-sm font-semibold text-indigo-600 transition hover:text-indigo-500" %>
+  </div>
+
+  <div class="feature-stack">
+    <section class="feature-hero feature-hero--accent px-5 py-6 sm:px-8 sm:py-8" <%= @rotation.is_active ? "data-controller=\"rotation-subscriber\" data-rotation-subscriber-rotation-id-value=\"#{@rotation.id}\"" : "" %>>
+      <div class="feature-hero__top">
+        <div>
+          <p class="feature-hero__eyebrow">Rotation Detail</p>
+          <h1 class="feature-hero__title"><%= @rotation.display_name %></h1>
+          <p class="feature-hero__description">
+            イベント:
+            <%= link_to @rotation.event.name, @rotation.event, class: "font-semibold text-white underline decoration-white/30 underline-offset-4" %>
+            <span class="text-white/70">(<%= @rotation.event.held_on.strftime("%Y/%m/%d") %>)</span>
+          </p>
+
+          <div class="feature-hero__meta">
+            <span class="feature-pill feature-pill--contrast"><%= @rotation.round_number %>周目</span>
+            <% if @rotation.is_active %>
+              <span class="feature-pill feature-pill--contrast">アクティブ</span>
+            <% else %>
+              <span class="feature-pill feature-pill--contrast">待機中</span>
+            <% end %>
+            <span class="feature-pill feature-pill--contrast"><%= completed_count %> / <%= total_match_count %> 試合完了</span>
+          </div>
+        </div>
+
+        <div class="feature-hero__actions">
+          <% if current_user.is_admin? %>
+            <% if @rotation.is_active %>
+              <%= button_to "非アクティブにする", deactivate_rotation_path(@rotation), method: :post, class: app_button_classes(variant: :neutral) %>
+            <% else %>
+              <%= button_to "アクティブにする", activate_rotation_path(@rotation), method: :post, class: app_button_classes(variant: :primary) %>
+            <% end %>
+
+            <div class="relative" data-controller="dropdown" data-action="click@window->dropdown#hide">
+              <button type="button" data-action="dropdown#toggle" class="<%= app_button_classes(variant: :secondary) %>">
+                その他
+                <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                </svg>
+              </button>
+
+              <div data-dropdown-target="menu" class="hidden absolute right-0 z-20 mt-2 w-60 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl">
+                <div class="p-2">
+                  <%= button_to copy_for_next_round_rotation_path(@rotation), method: :post, class: "flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-semibold text-slate-700 transition hover:bg-slate-50", form: { data: { turbo: false } } do %>
+                    <svg class="h-5 w-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                    </svg>
+                    周回をコピー
+                  <% end %>
+
+                  <%= button_to rotation_path(@rotation), method: :delete, data: { turbo_confirm: "ローテーション「#{@rotation.display_name}」を削除してもよろしいですか？関連する試合データは削除されません。" }, class: "flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-semibold text-red-700 transition hover:bg-red-50" do %>
+                    <svg class="h-5 w-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                    </svg>
+                    削除
+                  <% end %>
+                </div>
+              </div>
+            </div>
           <% end %>
         </div>
       </div>
 
-      <div class="flex flex-wrap gap-3">
+      <div class="mt-6 feature-metric-grid">
+        <div class="feature-metric">
+          <div class="feature-metric__label">進捗率</div>
+          <div class="feature-metric__value"><%= progress.round %>%</div>
+          <div class="feature-metric__meta">記録済み <%= completed_count %> 試合</div>
+        </div>
+        <div class="feature-metric">
+          <div class="feature-metric__label">現在位置</div>
+          <div class="feature-metric__value">第<%= @rotation.current_match_index + 1 %>試合</div>
+          <div class="feature-metric__meta">全 <%= total_match_count %> 試合</div>
+        </div>
+        <div class="feature-metric">
+          <div class="feature-metric__label">残り試合</div>
+          <div class="feature-metric__value"><%= [total_match_count - completed_count, 0].max %></div>
+          <div class="feature-metric__meta">この周回で未記録の件数</div>
+        </div>
+      </div>
+
+      <div class="mt-5 feature-progress">
+        <div class="feature-progress__bar" style="width: <%= progress %>%"></div>
+      </div>
+    </section>
+
+    <% if @current_match.present? %>
+      <div class="feature-grid xl:grid-cols-[minmax(0,0.84fr)_minmax(0,1.16fr)]">
+        <section class="feature-surface p-5 sm:p-6">
+          <div class="feature-section-head feature-section-head--row">
+            <div>
+              <h2 class="feature-section-head__title">現在の試合</h2>
+              <p class="feature-section-head__meta">第<%= @rotation.current_match_index + 1 %>試合の進行状況</p>
+            </div>
+            <% if @current_match.match.present? %>
+              <span class="feature-pill feature-pill--success">記録済み</span>
+            <% else %>
+              <span class="feature-pill feature-pill--warning">未記録</span>
+            <% end %>
+          </div>
+
+          <div class="feature-match-grid">
+            <div class="feature-match-team">
+              <div class="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">チーム1</div>
+              <div class="mt-3 space-y-2 text-sm">
+                <div class="font-semibold text-red-600">
+                  <%= @current_match.team1_player1.nickname %>
+                  <span class="ml-2 rounded-full bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-700">配信台</span>
+                </div>
+                <div class="font-medium text-slate-900"><%= @current_match.team1_player2.nickname %></div>
+              </div>
+            </div>
+
+            <div class="feature-match-vs">VS</div>
+
+            <div class="feature-match-team">
+              <div class="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">チーム2</div>
+              <div class="mt-3 space-y-2 text-sm">
+                <div class="font-medium text-slate-900"><%= @current_match.team2_player1.nickname %></div>
+                <div class="font-medium text-slate-900"><%= @current_match.team2_player2.nickname %></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         <% if current_user.is_admin? %>
-          <% if @rotation.is_active %>
-            <%= button_to "非アクティブにする", deactivate_rotation_path(@rotation), method: :post, class: "px-4 py-2 bg-gray-600 text-white font-semibold rounded-md hover:bg-gray-700" %>
-          <% else %>
-            <%= button_to "アクティブにする", activate_rotation_path(@rotation), method: :post, class: "px-4 py-2 bg-indigo-600 text-white font-semibold rounded-md hover:bg-indigo-700" %>
-          <% end %>
-
-          <!-- Actions Dropdown -->
-          <div class="relative inline-block text-left" data-controller="dropdown">
-            <button type="button" onclick="toggleDropdown()" class="inline-flex justify-center items-center px-4 py-2 bg-gray-600 text-white font-semibold rounded-md hover:bg-gray-700">
-              その他
-              <svg class="-mr-1 ml-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-              </svg>
-            </button>
-            <div id="dropdown-menu" class="hidden absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10">
-              <div class="py-1">
-                <%= button_to copy_for_next_round_rotation_path(@rotation), method: :post, class: "w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center", form: { data: { turbo: false } } do %>
-                  <svg class="mr-3 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
-                  </svg>
-                  周回をコピー
-                <% end %>
-                <%= button_to rotation_path(@rotation), method: :delete, data: { turbo_confirm: "ローテーション「#{@rotation.display_name}」を削除してもよろしいですか？関連する試合データは削除されません。" }, class: "w-full text-left px-4 py-2 text-sm text-red-700 hover:bg-gray-100 flex items-center" do %>
-                  <svg class="mr-3 h-5 w-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                  </svg>
-                  削除
-                <% end %>
-              </div>
-            </div>
-          </div>
-
-          <script>
-            function toggleDropdown() {
-              const menu = document.getElementById('dropdown-menu');
-              menu.classList.toggle('hidden');
-            }
-
-            // Close dropdown when clicking outside
-            document.addEventListener('click', function(event) {
-              const dropdown = document.querySelector('[data-controller="dropdown"]');
-              const menu = document.getElementById('dropdown-menu');
-              if (dropdown && !dropdown.contains(event.target)) {
-                menu.classList.add('hidden');
-              }
-            });
-          </script>
-        <% end %>
-        <%= link_to "一覧に戻る", rotations_path, class: "px-4 py-2 bg-gray-600 text-white font-semibold rounded-md hover:bg-gray-700" %>
-      </div>
-    </div>
-  </div>
-
-  <!-- Progress Bar -->
-  <div class="mb-6 bg-white shadow sm:rounded-lg p-6">
-    <% completed_count = @rotation_matches.count { |rm| rm.match.present? } %>
-    <div class="flex justify-between items-center mb-2">
-      <h3 class="text-lg font-semibold text-gray-900">進捗状況</h3>
-      <span class="text-sm text-gray-600">
-        <%= completed_count %> / <%= @rotation_matches.count %> 試合
-      </span>
-    </div>
-    <div class="w-full bg-gray-200 rounded-full h-4">
-      <% progress = @rotation_matches.count > 0 ? (completed_count.to_f / @rotation_matches.count * 100) : 0 %>
-      <div class="bg-blue-600 h-4 rounded-full transition-all duration-300" style="width: <%= progress %>%"></div>
-    </div>
-  </div>
-
-  <!-- Current Match -->
-  <% if @current_match.present? %>
-    <div class="mb-6 bg-indigo-100 shadow sm:rounded-lg p-6">
-      <div class="flex justify-between items-start mb-4">
-        <h3 class="text-xl font-bold text-gray-900">現在の試合（第<%= @rotation.current_match_index + 1 %>試合）</h3>
-        <% if @current_match.match.present? %>
-          <span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-            記録済み
-          </span>
-        <% else %>
-          <span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
-            未記録
-          </span>
-        <% end %>
-      </div>
-
-      <!-- Match Display -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <!-- Team 1 -->
-        <div class="bg-white rounded-lg p-4 shadow">
-          <h4 class="text-sm font-semibold text-gray-500 mb-3">チーム1</h4>
-          <div class="space-y-2">
-            <div class="flex items-center">
-              <span class="text-sm font-bold text-red-600"><%= @current_match.team1_player1.nickname %></span>
-              <span class="ml-2 px-2 py-0.5 bg-red-100 text-red-700 rounded text-xs font-semibold">配信台</span>
-            </div>
-            <div class="flex items-center">
-              <span class="text-sm font-medium text-gray-900"><%= @current_match.team1_player2.nickname %></span>
-            </div>
-          </div>
-        </div>
-
-        <!-- VS -->
-        <div class="flex items-center justify-center">
-          <span class="text-3xl font-bold text-gray-400">VS</span>
-        </div>
-
-        <!-- Team 2 -->
-        <div class="bg-white rounded-lg p-4 shadow">
-          <h4 class="text-sm font-semibold text-gray-500 mb-3">チーム2</h4>
-          <div class="space-y-2">
-            <div class="flex items-center">
-              <span class="text-sm font-medium text-gray-900"><%= @current_match.team2_player1.nickname %></span>
-            </div>
-            <div class="flex items-center">
-              <span class="text-sm font-medium text-gray-900"><%= @current_match.team2_player2.nickname %></span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Record Match Form -->
-      <% if current_user.is_admin? %>
-        <div class="bg-white rounded-lg p-6 shadow" id="match-record-container">
-          <div class="flex items-center justify-between mb-4">
-            <h4 class="text-lg font-semibold text-gray-900" id="form-title">
-              <% if @current_match.match.present? %>
-                試合結果を編集
-              <% else %>
-                試合結果を記録
-              <% end %>
-            </h4>
-            <span class="text-xs text-gray-500 hidden md:inline">💡 Tip: Tabキーで次の項目へ移動できます</span>
-          </div>
-          <form action="<% if @current_match.match.present? %><%= update_match_record_rotation_path(@rotation) %><% else %><%= record_match_rotation_path(@rotation) %><% end %>" method="post" data-turbo="false" id="match-record-form">
-            <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
-            <%= hidden_field_tag :match_index, @rotation.current_match_index, id: 'editing_match_index' %>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <!-- Team 1 Suits -->
+          <section class="feature-surface p-5 sm:p-6" id="match-record-container">
+            <div class="feature-section-head feature-section-head--row">
               <div>
-                <h5 class="text-sm font-semibold text-gray-700 mb-3">チーム1 使用機体</h5>
-                <div class="space-y-3">
-                  <div>
-                    <label class="block text-sm text-gray-600 mb-1"><%= @current_match.team1_player1.nickname %> <span class="text-red-500">*</span></label>
-                    <select name="team1_player1_suit" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" data-has-favorites="<%= @current_match.team1_player1.user_favorite_suits.any? %>">
-                      <option value="">機体を選択...</option>
-                      <%= mobile_suit_options_with_favorites(@all_mobile_suits, @current_match.team1_player1) %>
-                    </select>
-                  </div>
-                  <div>
-                    <label class="block text-sm text-gray-600 mb-1"><%= @current_match.team1_player2.nickname %> <span class="text-red-500">*</span></label>
-                    <select name="team1_player2_suit" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" data-has-favorites="<%= @current_match.team1_player2.user_favorite_suits.any? %>">
-                      <option value="">機体を選択...</option>
-                      <%= mobile_suit_options_with_favorites(@all_mobile_suits, @current_match.team1_player2) %>
-                    </select>
-                  </div>
-                </div>
+                <h2 class="feature-section-head__title" id="form-title">
+                  <% if @current_match.match.present? %>
+                    試合結果を編集
+                  <% else %>
+                    試合結果を記録
+                  <% end %>
+                </h2>
+                <p class="feature-section-head__meta">試合ごとの使用機体と勝敗をここで更新します</p>
               </div>
-
-              <!-- Team 2 Suits -->
-              <div>
-                <h5 class="text-sm font-semibold text-gray-700 mb-3">チーム2 使用機体</h5>
-                <div class="space-y-3">
-                  <div>
-                    <label class="block text-sm text-gray-600 mb-1"><%= @current_match.team2_player1.nickname %> <span class="text-red-500">*</span></label>
-                    <select name="team2_player1_suit" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" data-has-favorites="<%= @current_match.team2_player1.user_favorite_suits.any? %>">
-                      <option value="">機体を選択...</option>
-                      <%= mobile_suit_options_with_favorites(@all_mobile_suits, @current_match.team2_player1) %>
-                    </select>
-                  </div>
-                  <div>
-                    <label class="block text-sm text-gray-600 mb-1"><%= @current_match.team2_player2.nickname %> <span class="text-red-500">*</span></label>
-                    <select name="team2_player2_suit" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" data-has-favorites="<%= @current_match.team2_player2.user_favorite_suits.any? %>">
-                      <option value="">機体を選択...</option>
-                      <%= mobile_suit_options_with_favorites(@all_mobile_suits, @current_match.team2_player2) %>
-                    </select>
-                  </div>
-                </div>
-              </div>
+              <span class="feature-inline-note hidden md:inline-flex">Tab キーで入力を移動できます</span>
             </div>
 
-            <!-- Winning Team -->
-            <div class="mt-6">
-              <label class="block text-sm font-semibold text-gray-700 mb-3">勝利チーム <span class="text-red-500">*</span></label>
-              <div class="flex space-x-4">
-                <div class="flex items-center">
-                  <input type="radio" name="winning_team" value="1" id="team1_win" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
-                  <label for="team1_win" class="ml-2 block text-sm text-gray-900">チーム1</label>
-                </div>
-                <div class="flex items-center">
-                  <input type="radio" name="winning_team" value="2" id="team2_win" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
-                  <label for="team2_win" class="ml-2 block text-sm text-gray-900">チーム2</label>
-                </div>
-              </div>
-            </div>
+            <form action="<% if @current_match.match.present? %><%= update_match_record_rotation_path(@rotation) %><% else %><%= record_match_rotation_path(@rotation) %><% end %>" method="post" data-turbo="false" id="match-record-form">
+              <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
+              <%= hidden_field_tag :match_index, @rotation.current_match_index, id: "editing_match_index" %>
 
-            <!-- Submit Button -->
-            <div class="mt-6 flex justify-between items-center">
-              <div class="text-xs text-gray-500">
-                <span class="font-medium">必須項目：</span>各プレイヤーの機体 + 勝利チーム
+              <div class="grid gap-6 lg:grid-cols-2">
+                <div class="feature-surface feature-surface--muted p-4">
+                  <h3 class="text-sm font-semibold text-slate-700">チーム1 使用機体</h3>
+                  <div class="mt-4 space-y-4">
+                    <div>
+                      <label class="mb-1 block text-sm text-slate-600"><%= @current_match.team1_player1.nickname %> <span class="text-red-500">*</span></label>
+                      <select name="team1_player1_suit" class="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2.5 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100" data-has-favorites="<%= @current_match.team1_player1.user_favorite_suits.any? %>">
+                        <option value="">機体を選択...</option>
+                        <%= mobile_suit_options_with_favorites(@all_mobile_suits, @current_match.team1_player1) %>
+                      </select>
+                    </div>
+                    <div>
+                      <label class="mb-1 block text-sm text-slate-600"><%= @current_match.team1_player2.nickname %> <span class="text-red-500">*</span></label>
+                      <select name="team1_player2_suit" class="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2.5 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100" data-has-favorites="<%= @current_match.team1_player2.user_favorite_suits.any? %>">
+                        <option value="">機体を選択...</option>
+                        <%= mobile_suit_options_with_favorites(@all_mobile_suits, @current_match.team1_player2) %>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="feature-surface feature-surface--muted p-4">
+                  <h3 class="text-sm font-semibold text-slate-700">チーム2 使用機体</h3>
+                  <div class="mt-4 space-y-4">
+                    <div>
+                      <label class="mb-1 block text-sm text-slate-600"><%= @current_match.team2_player1.nickname %> <span class="text-red-500">*</span></label>
+                      <select name="team2_player1_suit" class="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2.5 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100" data-has-favorites="<%= @current_match.team2_player1.user_favorite_suits.any? %>">
+                        <option value="">機体を選択...</option>
+                        <%= mobile_suit_options_with_favorites(@all_mobile_suits, @current_match.team2_player1) %>
+                      </select>
+                    </div>
+                    <div>
+                      <label class="mb-1 block text-sm text-slate-600"><%= @current_match.team2_player2.nickname %> <span class="text-red-500">*</span></label>
+                      <select name="team2_player2_suit" class="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2.5 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100" data-has-favorites="<%= @current_match.team2_player2.user_favorite_suits.any? %>">
+                        <option value="">機体を選択...</option>
+                        <%= mobile_suit_options_with_favorites(@all_mobile_suits, @current_match.team2_player2) %>
+                      </select>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div class="flex space-x-3">
-                <button type="button" id="cancel-edit-btn" onclick="cancelEdit()" class="px-4 py-2 bg-gray-600 text-white font-semibold rounded-md hover:bg-gray-700" style="display: none;">
-                  キャンセル
-                </button>
-                <% unless @current_match.match.present? %>
-                  <button type="button" id="skip-match-btn" onclick="if(confirm('この試合をスキップしますか？')) { document.getElementById('skip-match-form').submit(); }" class="px-4 py-2 bg-gray-600 text-white font-semibold rounded-md hover:bg-gray-700">
-                    試合をスキップ
+
+              <div class="mt-6 feature-surface feature-surface--muted p-4">
+                <label class="block text-sm font-semibold text-slate-700">勝利チーム <span class="text-red-500">*</span></label>
+                <div class="mt-3 flex flex-wrap gap-4">
+                  <label class="inline-flex items-center gap-2 text-sm text-slate-900">
+                    <input type="radio" name="winning_team" value="1" id="team1_win" class="h-4 w-4 border-slate-300 text-indigo-600 focus:ring-indigo-500">
+                    チーム1
+                  </label>
+                  <label class="inline-flex items-center gap-2 text-sm text-slate-900">
+                    <input type="radio" name="winning_team" value="2" id="team2_win" class="h-4 w-4 border-slate-300 text-indigo-600 focus:ring-indigo-500">
+                    チーム2
+                  </label>
+                </div>
+              </div>
+
+              <div class="mt-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                <div class="text-xs text-slate-500">
+                  <span class="font-semibold text-slate-700">必須項目:</span>
+                  各プレイヤーの機体と勝利チーム
+                </div>
+
+                <div class="flex flex-wrap gap-3">
+                  <button type="button" id="cancel-edit-btn" onclick="cancelEdit()" class="<%= app_button_classes(variant: :secondary) %>" style="display: none;">
+                    キャンセル
                   </button>
-                <% end %>
-                <% if @current_match.match.present? && @rotation.current_match_index < @rotation_matches.count - 1 %>
-                  <%= button_to "次の試合へ →", next_match_rotation_path(@rotation), method: :post, id: "next-match-btn", class: "px-4 py-2 bg-green-600 text-white font-semibold rounded-md hover:bg-green-700", form: { data: { turbo: false } } %>
-                <% end %>
-                <button type="submit" id="submit-btn" class="px-6 py-3 bg-indigo-600 text-white font-semibold rounded-md hover:bg-indigo-700">
-                  <span id="submit-btn-text">
-                    <% if @current_match.match.present? %>
-                      ✓ 更新
-                    <% else %>
-                      ✓ 記録して次へ
-                    <% end %>
-                  </span>
-                </button>
+                  <% unless @current_match.match.present? %>
+                    <button type="button" id="skip-match-btn" onclick="if (confirm('この試合をスキップしますか？')) { document.getElementById('skip-match-form').submit(); }" class="<%= app_button_classes(variant: :neutral) %>">
+                      試合をスキップ
+                    </button>
+                  <% end %>
+                  <% if @current_match.match.present? && @rotation.current_match_index < @rotation_matches.count - 1 %>
+                    <%= button_to "次の試合へ", next_match_rotation_path(@rotation), method: :post, id: "next-match-btn", class: app_button_classes(variant: :success), form: { data: { turbo: false } } %>
+                  <% end %>
+                  <button type="submit" id="submit-btn" class="<%= app_button_classes(variant: :primary) %>">
+                    <span id="submit-btn-text">
+                      <% if @current_match.match.present? %>
+                        更新
+                      <% else %>
+                        記録して次へ
+                      <% end %>
+                    </span>
+                  </button>
+                </div>
               </div>
-            </div>
-          </form>
+            </form>
 
-          <!-- Skip Match Form (hidden) -->
-          <form id="skip-match-form" action="<%= next_match_rotation_path(@rotation) %>" method="post" style="display:none;" data-turbo="false">
-            <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
-          </form>
-
-          <script>
-            // Edit match function with simplified parameters
-            function editMatchById(matchIndex, matchId, winningTeam, suit1, suit2, suit3, suit4) {
-              console.log('Editing match:', matchIndex, matchId, winningTeam, suit1, suit2, suit3, suit4);
-
-              // Update form title
-              document.getElementById('form-title').textContent = '試合結果を編集（第' + (matchIndex + 1) + '試合）';
-
-              // Update form action to update endpoint
-              const form = document.getElementById('match-record-form');
-              form.action = '<%= update_match_record_rotation_path(@rotation) %>';
-
-              // Set match index
-              document.getElementById('editing_match_index').value = matchIndex;
-
-              // Set mobile suits using TomSelect
-              const select1 = document.querySelector('select[name="team1_player1_suit"]');
-              if (select1 && select1.tomselect) {
-                select1.tomselect.setValue(suit1.toString());
-              }
-
-              const select2 = document.querySelector('select[name="team1_player2_suit"]');
-              if (select2 && select2.tomselect) {
-                select2.tomselect.setValue(suit2.toString());
-              }
-
-              const select3 = document.querySelector('select[name="team2_player1_suit"]');
-              if (select3 && select3.tomselect) {
-                select3.tomselect.setValue(suit3.toString());
-              }
-
-              const select4 = document.querySelector('select[name="team2_player2_suit"]');
-              if (select4 && select4.tomselect) {
-                select4.tomselect.setValue(suit4.toString());
-              }
-
-              // Set winning team
-              if (winningTeam === 1) {
-                document.getElementById('team1_win').checked = true;
-              } else {
-                document.getElementById('team2_win').checked = true;
-              }
-
-              // Update button text and visibility
-              document.getElementById('submit-btn-text').textContent = '✓ 更新';
-
-              const skipBtn = document.getElementById('skip-match-btn');
-              if (skipBtn) {
-                skipBtn.style.display = 'none';
-              }
-
-              document.getElementById('cancel-edit-btn').style.display = 'inline-block';
-
-              // Hide "next match" button if editing a different match
-              const nextMatchBtn = document.getElementById('next-match-btn');
-              if (nextMatchBtn) {
-                nextMatchBtn.style.display = 'none';
-              }
-
-              // Scroll to form
-              document.getElementById('match-record-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-
-            // Cancel edit function
-            function cancelEdit() {
-              // Reload the page to reset to current match state
-              window.location.reload();
-            }
-
-            // Initialize Tom-Select for mobile suit selects
-            function initializeTomSelect() {
-              const selects = document.querySelectorAll('select[name*="_suit"]');
-              selects.forEach(function(select) {
-                // Skip if already initialized
-                if (select.tomselect) {
-                  return;
-                }
-
-                const optgroups = select.dataset.hasFavorites === 'true'
-                  ? [{ value: 'favorites', label: '★ お気に入り機体' }, { value: 'others', label: '── その他の機体 ──' }]
-                  : [];
-                new TomSelect(select, {
-                  placeholder: '機体を検索...',
-                  allowEmptyOption: true,
-                  plugins: ['clear_button'],
-                  optgroupField: 'optgroup',
-                  optgroups: optgroups,
-                  render: {
-                    no_results: function(data, escape) {
-                      return '<div class="no-results">該当する機体が見つかりません</div>';
-                    }
-                  }
-                });
-              });
-            }
-
-            function initializeFormValidation() {
-              const form = document.getElementById('match-record-form');
-              if (!form) return;
-
-              // Check if already initialized
-              if (form.dataset.validationInitialized === 'true') return;
-              form.dataset.validationInitialized = 'true';
-
-              // Form validation
-              form.addEventListener('submit', function(e) {
-                const team1p1 = document.querySelector('select[name="team1_player1_suit"]').value;
-                const team1p2 = document.querySelector('select[name="team1_player2_suit"]').value;
-                const team2p1 = document.querySelector('select[name="team2_player1_suit"]').value;
-                const team2p2 = document.querySelector('select[name="team2_player2_suit"]').value;
-                const winner = document.querySelector('input[name="winning_team"]:checked');
-
-                if (!team1p1 || !team1p2 || !team2p1 || !team2p2) {
-                  e.preventDefault();
-                  alert('すべてのプレイヤーの機体を選択してください');
-                  return false;
-                }
-
-                if (!winner) {
-                  e.preventDefault();
-                  alert('勝利チームを選択してください');
-                  return false;
-                }
-
-                return true;
-              });
-
-              // Keyboard shortcuts
-              document.addEventListener('keydown', function(e) {
-                // Ctrl/Cmd + Enter to submit form
-                if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-                  e.preventDefault();
-                  if (form.reportValidity()) {
-                    form.submit();
-                  }
-                }
-              });
-            }
-
-            // Initialize on both DOMContentLoaded and turbo:load
-            document.addEventListener('DOMContentLoaded', function() {
-              initializeTomSelect();
-              initializeFormValidation();
-
-              <% if @current_match.match.present? && !@show_completion_modal %>
-                // Load current match data for editing
-                <%
-                  mp1 = @current_match.match.match_players.find { |mp| mp.team_number == 1 && mp.position == 1 }
-                  mp2 = @current_match.match.match_players.find { |mp| mp.team_number == 1 && mp.position == 2 }
-                  mp3 = @current_match.match.match_players.find { |mp| mp.team_number == 2 && mp.position == 3 }
-                  mp4 = @current_match.match.match_players.find { |mp| mp.team_number == 2 && mp.position == 4 }
-                %>
-                setTimeout(function() {
-                  editMatchById(<%= @rotation.current_match_index %>, <%= @current_match.match.id %>, <%= @current_match.match.winning_team %>, <%= mp1&.mobile_suit_id %>, <%= mp2&.mobile_suit_id %>, <%= mp3&.mobile_suit_id %>, <%= mp4&.mobile_suit_id %>);
-                }, 100);
-              <% end %>
-            });
-
-            document.addEventListener('turbo:load', function() {
-              initializeTomSelect();
-              initializeFormValidation();
-
-              <% if @current_match.match.present? && !@show_completion_modal %>
-                // Load current match data for editing
-                <%
-                  mp1 = @current_match.match.match_players.find { |mp| mp.team_number == 1 && mp.position == 1 }
-                  mp2 = @current_match.match.match_players.find { |mp| mp.team_number == 1 && mp.position == 2 }
-                  mp3 = @current_match.match.match_players.find { |mp| mp.team_number == 2 && mp.position == 3 }
-                  mp4 = @current_match.match.match_players.find { |mp| mp.team_number == 2 && mp.position == 4 }
-                %>
-                setTimeout(function() {
-                  editMatchById(<%= @rotation.current_match_index %>, <%= @current_match.match.id %>, <%= @current_match.match.winning_team %>, <%= mp1&.mobile_suit_id %>, <%= mp2&.mobile_suit_id %>, <%= mp3&.mobile_suit_id %>, <%= mp4&.mobile_suit_id %>);
-                }, 100);
-              <% end %>
-            });
-
-            // Also initialize immediately in case the script runs after DOM is ready
-            if (document.readyState === 'loading') {
-              // DOM not ready, wait for event
-            } else {
-              // DOM is ready, initialize now
-              initializeTomSelect();
-              initializeFormValidation();
-
-              <% if @current_match.match.present? && !@show_completion_modal %>
-                // Load current match data for editing
-                <%
-                  mp1 = @current_match.match.match_players.find { |mp| mp.team_number == 1 && mp.position == 1 }
-                  mp2 = @current_match.match.match_players.find { |mp| mp.team_number == 1 && mp.position == 2 }
-                  mp3 = @current_match.match.match_players.find { |mp| mp.team_number == 2 && mp.position == 3 }
-                  mp4 = @current_match.match.match_players.find { |mp| mp.team_number == 2 && mp.position == 4 }
-                %>
-                setTimeout(function() {
-                  editMatchById(<%= @rotation.current_match_index %>, <%= @current_match.match.id %>, <%= @current_match.match.winning_team %>, <%= mp1&.mobile_suit_id %>, <%= mp2&.mobile_suit_id %>, <%= mp3&.mobile_suit_id %>, <%= mp4&.mobile_suit_id %>);
-                }, 100);
-              <% end %>
-            }
-          </script>
+            <form id="skip-match-form" action="<%= next_match_rotation_path(@rotation) %>" method="post" style="display: none;" data-turbo="false">
+              <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
+            </form>
+          </section>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="feature-surface p-5 sm:p-6">
+        <div class="empty-state">
+          <p class="empty-state__title">現在進行中の試合はありません</p>
+          <p class="empty-state__description mt-2">このローテーションの記録がすべて完了したか、まだ試合が開始されていません。</p>
         </div>
-<% end %>
-    </div>
-  <% end %>
+      </div>
+    <% end %>
 
-  <!-- All Matches List -->
-  <div class="bg-white shadow sm:rounded-lg">
-    <div class="px-6 py-5 border-b border-gray-200">
-      <div class="flex items-center justify-between">
-        <h3 class="text-lg font-semibold text-gray-900">全試合一覧</h3>
-        <div class="flex items-center space-x-2 text-xs text-gray-500">
-          <div class="flex items-center">
-            <span class="w-3 h-3 bg-blue-100 border border-blue-300 rounded mr-1"></span>
-            <span>記録済み</span>
+    <section class="feature-surface">
+      <div class="p-5 sm:p-6">
+        <div class="feature-section-head feature-section-head--row">
+          <div>
+            <h2 class="feature-section-head__title">全試合一覧</h2>
+            <p class="feature-section-head__meta">セット区切りと記録状態をまとめて確認できます</p>
           </div>
-          <div class="flex items-center ml-3">
-            <span class="w-3 h-3 bg-indigo-100 border border-indigo-300 rounded mr-1"></span>
-            <span>現在の試合</span>
-          </div>
-          <div class="flex items-center ml-3">
-            <span class="w-3 h-3 bg-gray-100 border border-gray-300 rounded mr-1"></span>
-            <span>スキップ</span>
+          <div class="flex flex-wrap gap-2">
+            <span class="feature-pill feature-pill--success">記録済み</span>
+            <span class="feature-pill feature-pill--accent">現在の試合</span>
+            <span class="feature-pill feature-pill--surface">スキップ済み</span>
           </div>
         </div>
       </div>
-    </div>
-    <div class="overflow-x-auto">
-      <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-50">
-          <tr>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              試合
-            </th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              チーム1
-            </th>
-            <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-              VS
-            </th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              チーム2
-            </th>
-            <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-              状態
-            </th>
-          </tr>
-        </thead>
-        <tbody class="bg-white">
+
+      <div class="px-5 pb-5 sm:px-6 sm:pb-6">
+        <ul class="feature-list">
           <% mps = @rotation.matches_per_set %>
           <% @rotation_matches.each_with_index do |rm, index| %>
             <%
-              # 人数に応じた1セットあたりの試合数（8人: 6試合、それ以外: 3試合）
               set_number = index / mps
               is_set_start = (index % mps == 0)
-              in_set_position = index % mps
-
-              # 背景色（現在の試合のみハイライト）
-              if index == @rotation.current_match_index
-                row_bg = "bg-indigo-100"  # 現在の試合
-              else
-                row_bg = "bg-white"
-              end
-
-              # セット間の境界線（セットの最初かつ最初の試合ではない場合）
-              border_class = (is_set_start && index > 0) ? "border-t-4 border-indigo-300" : "border-t border-gray-200"
+              mp1 = rm.match&.match_players&.find { |mp| mp.position == 1 }
+              mp2 = rm.match&.match_players&.find { |mp| mp.position == 2 }
+              mp3 = rm.match&.match_players&.find { |mp| mp.position == 3 }
+              mp4 = rm.match&.match_players&.find { |mp| mp.position == 4 }
+              state_pill =
+                if index == @rotation.current_match_index
+                  ['feature-pill feature-pill--accent', '現在の試合']
+                elsif rm.match.present?
+                  ['feature-pill feature-pill--success', '記録済み']
+                elsif index < @rotation.current_match_index
+                  ['feature-pill feature-pill--surface', 'スキップ']
+                else
+                  ['feature-pill feature-pill--warning', '未記録']
+                end
             %>
-            <tr class="<%= row_bg %> <%= border_class %> hover:bg-gray-100 transition <%= rm.match ? 'cursor-pointer' : '' %>" <% if rm.match %>onclick="window.location='<%= match_path(rm.match) %>'"<% end %>>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="flex items-center">
-                  <% if is_set_start %>
-                    <div class="flex flex-col items-start">
-                      <span class="text-xs font-semibold text-indigo-600 mb-1">第<%= set_number + 1 %>セット</span>
-                      <span class="text-sm font-medium text-gray-900">第<%= index + 1 %>試合</span>
+            <li>
+              <div class="feature-list-item <%= 'feature-list-item--clickable' if rm.match.present? %>"
+                   <% if rm.match.present? %>data-controller="card-link" data-card-link-url-value="<%= match_path(rm.match) %>" data-action="click->card-link#navigate"<% end %>>
+                <div class="flex flex-col gap-4">
+                  <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                      <% if is_set_start %>
+                        <div class="text-xs font-semibold uppercase tracking-[0.16em] text-indigo-600">第<%= set_number + 1 %>セット</div>
+                      <% end %>
+                      <div class="mt-1 text-lg font-semibold text-slate-950">第<%= index + 1 %>試合</div>
                     </div>
-                  <% else %>
-                    <span class="text-sm font-medium text-gray-900 ml-1">第<%= index + 1 %>試合</span>
-                  <% end %>
-                  <% if index == @rotation.current_match_index %>
-                    <span class="ml-2 px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-600 text-white">
-                      現在
-                    </span>
-                  <% end %>
-                </div>
-              </td>
-              <%
-                mp1 = rm.match&.match_players&.find { |mp| mp.position == 1 }
-                mp2 = rm.match&.match_players&.find { |mp| mp.position == 2 }
-                mp3 = rm.match&.match_players&.find { |mp| mp.position == 3 }
-                mp4 = rm.match&.match_players&.find { |mp| mp.position == 4 }
-              %>
-              <td class="px-6 py-4 whitespace-nowrap <%= rm.match ? (rm.match.winning_team == 1 ? 'bg-sky-50/70' : 'bg-red-50/70') : '' %>">
-                <div class="flex items-start justify-between gap-2">
-                  <div class="text-sm text-gray-900">
-                    <span class="font-bold text-red-600"><%= rm.team1_player1.nickname %></span>
-                    <span class="ml-1 px-1.5 py-0.5 bg-red-100 text-red-700 rounded text-xs font-semibold">配信台</span>
-                    <% if mp1&.mobile_suit %>
-                      <a href="<%= mobile_suit_path(mp1.mobile_suit) %>" class="ml-1 text-xs text-gray-500 hover:text-indigo-600 hover:underline" onclick="event.stopPropagation()">(<%= mp1.mobile_suit.name %>)</a>
-                    <% end %>
-                    <br>
-                    <%= rm.team1_player2.nickname %>
-                    <% if mp2&.mobile_suit %>
-                      <a href="<%= mobile_suit_path(mp2.mobile_suit) %>" class="ml-1 text-xs text-gray-500 hover:text-indigo-600 hover:underline" onclick="event.stopPropagation()">(<%= mp2.mobile_suit.name %>)</a>
-                    <% end %>
+                    <span class="<%= state_pill[0] %>"><%= state_pill[1] %></span>
                   </div>
-                  <% if rm.match %>
-                    <span class="shrink-0 px-2.5 py-1 rounded-full text-xs font-bold leading-none <%= rm.match.winning_team == 1 ? 'bg-sky-100 text-sky-700' : 'bg-red-100 text-red-600' %>">
-                      <%= rm.match.winning_team == 1 ? 'WIN' : 'LOSE' %>
-                    </span>
-                  <% end %>
-                </div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-center">
-                <span class="text-gray-400 font-semibold">VS</span>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap <%= rm.match ? (rm.match.winning_team == 2 ? 'bg-sky-50/70' : 'bg-red-50/70') : '' %>">
-                <div class="flex items-start justify-between gap-2">
-                  <div class="text-sm text-gray-900">
-                    <%= rm.team2_player1.nickname %>
-                    <% if mp3&.mobile_suit %>
-                      <a href="<%= mobile_suit_path(mp3.mobile_suit) %>" class="ml-1 text-xs text-gray-500 hover:text-indigo-600 hover:underline" onclick="event.stopPropagation()">(<%= mp3.mobile_suit.name %>)</a>
-                    <% end %>
-                    <br>
-                    <%= rm.team2_player2.nickname %>
-                    <% if mp4&.mobile_suit %>
-                      <a href="<%= mobile_suit_path(mp4.mobile_suit) %>" class="ml-1 text-xs text-gray-500 hover:text-indigo-600 hover:underline" onclick="event.stopPropagation()">(<%= mp4.mobile_suit.name %>)</a>
-                    <% end %>
-                  </div>
-                  <% if rm.match %>
-                    <span class="shrink-0 px-2.5 py-1 rounded-full text-xs font-bold leading-none <%= rm.match.winning_team == 2 ? 'bg-sky-100 text-sky-700' : 'bg-red-100 text-red-600' %>">
-                      <%= rm.match.winning_team == 2 ? 'WIN' : 'LOSE' %>
-                    </span>
-                  <% end %>
-                </div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-center">
-                <% if rm.match %>
-                  <div class="flex flex-col items-center space-y-2">
-                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                      記録済み
-                    </span>
-                    <% if current_user.is_admin? %>
-                      <div class="flex items-center justify-center space-x-2" onclick="event.stopPropagation()">
-                        <a href="#match-record-container"
-                           onclick="editMatchById(<%= index %>, <%= rm.match.id %>, <%= rm.match.winning_team %>, <%= rm.match.match_players.find { |mp| mp.team_number == 1 && mp.position == 1 }.mobile_suit_id %>, <%= rm.match.match_players.find { |mp| mp.team_number == 1 && mp.position == 2 }.mobile_suit_id %>, <%= rm.match.match_players.find { |mp| mp.team_number == 2 && mp.position == 3 }.mobile_suit_id %>, <%= rm.match.match_players.find { |mp| mp.team_number == 2 && mp.position == 4 }.mobile_suit_id %>); return false;"
-                           class="text-xs text-blue-600 hover:text-blue-800 underline cursor-pointer">
-                          編集
-                        </a>
-                        <span class="text-gray-300">|</span>
-                        <%= button_to "削除", match_path(rm.match), method: :delete, data: { turbo_confirm: "この試合記録を削除してもよろしいですか？" }, class: "text-xs text-red-600 hover:text-red-800 underline", form: { style: "display: inline;" } %>
-                      </div>
-                    <% end %>
-                  </div>
-                <% elsif index < @rotation.current_match_index %>
-                  <div class="flex flex-col items-center space-y-1">
-                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
-                      スキップ
-                    </span>
-                    <% if current_user.is_admin? %>
-                      <div onclick="event.stopPropagation()">
-                        <%= button_to "ここに戻る", go_to_match_rotation_path(@rotation, match_index: index), method: :post, class: "text-xs text-gray-500 hover:text-gray-700 underline", form: { data: { turbo: false } } %>
-                      </div>
-                    <% end %>
-                  </div>
-                <% else %>
-                  <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                    未記録
-                  </span>
-                <% end %>
-              </td>
-            </tr>
-          <% end %>
-        </tbody>
-      </table>
-    </div>
-  </div>
 
-  <!-- Player Statistics -->
-  <div class="mt-6 bg-white shadow sm:rounded-lg">
-    <div class="px-6 py-5 border-b border-gray-200">
-      <div class="flex items-center justify-between">
-        <div>
-          <h3 class="text-lg font-semibold text-gray-900">プレイヤー統計（平等性チェック）</h3>
-          <p class="mt-1 text-sm text-gray-500">各プレイヤーの試合数（記録済 / 計画）、ペア回数、対戦相手回数が均等に配分されているか確認できます</p>
-        </div>
-        <span class="text-xs text-gray-500" title="試合数の偏りがないか確認">ℹ️ 公平性</span>
-      </div>
-    </div>
-    <div class="overflow-x-auto">
-      <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-50">
-          <tr>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              プレイヤー
-            </th>
-            <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-              試合数<br><span class="normal-case font-normal">(記録済 / 計画)</span>
-            </th>
-            <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-              配信台回数<br><span class="normal-case font-normal">(記録済 / 計画)</span>
-            </th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              最もペアを組んだ相手
-            </th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              最も対戦した相手
-            </th>
-          </tr>
-        </thead>
-        <tbody class="bg-white divide-y divide-gray-200">
-          <% @player_statistics.each do |player_id, stats| %>
-            <tr class="hover:bg-gray-50">
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm font-medium text-gray-900">
-                  <%= stats[:user].nickname %>
-                  <% if stats[:user].id == current_user.id %>
-                    <span class="ml-2 px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                      あなた
-                    </span>
-                  <% end %>
-                </div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-center">
-                <span class="text-sm font-semibold text-gray-900"><%= stats[:registered_match_count] %></span>
-                <span class="text-xs text-gray-400"> / <%= stats[:match_count] %></span>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-center">
-                <span class="text-sm font-semibold text-gray-900"><%= stats[:registered_streaming_count] %></span>
-                <span class="text-xs text-gray-400"> / <%= stats[:streaming_count] %></span>
-              </td>
-              <td class="px-6 py-4">
-                <div class="text-sm text-gray-700">
-                  <% if stats[:pair_counts].any? %>
-                    <% top_pairs = stats[:pair_counts].sort_by { |_, count| -count }.first(3) %>
-                    <% top_pairs.each do |partner_id, count| %>
-                      <% partner = User.find(partner_id) %>
-                      <div class="text-xs">
-                        <%= partner.nickname %>: <span class="font-semibold"><%= count %>回</span>
+                  <div class="feature-match-grid">
+                    <div class="feature-match-team <%= rm.match ? (rm.match.winning_team == 1 ? 'bg-sky-50' : 'bg-rose-50') : '' %>">
+                      <div class="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">チーム1</div>
+                      <div class="mt-3 space-y-2 text-sm text-slate-900">
+                        <div>
+                          <span class="font-semibold text-red-600"><%= rm.team1_player1.nickname %></span>
+                          <span class="ml-2 rounded-full bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-700">配信台</span>
+                          <% if mp1&.mobile_suit %>
+                            <a href="<%= mobile_suit_path(mp1.mobile_suit) %>" class="ml-1 text-xs text-slate-500 transition hover:text-indigo-600 hover:underline" onclick="event.stopPropagation()">(<%= mp1.mobile_suit.name %>)</a>
+                          <% end %>
+                        </div>
+                        <div>
+                          <span class="font-medium"><%= rm.team1_player2.nickname %></span>
+                          <% if mp2&.mobile_suit %>
+                            <a href="<%= mobile_suit_path(mp2.mobile_suit) %>" class="ml-1 text-xs text-slate-500 transition hover:text-indigo-600 hover:underline" onclick="event.stopPropagation()">(<%= mp2.mobile_suit.name %>)</a>
+                          <% end %>
+                        </div>
                       </div>
-                    <% end %>
-                  <% else %>
-                    <span class="text-gray-400">-</span>
-                  <% end %>
-                </div>
-              </td>
-              <td class="px-6 py-4">
-                <div class="text-sm text-gray-700">
-                  <% if stats[:opponent_counts].any? %>
-                    <% top_opponents = stats[:opponent_counts].sort_by { |_, count| -count }.first(3) %>
-                    <% top_opponents.each do |opponent_id, count| %>
-                      <% opponent = User.find(opponent_id) %>
-                      <div class="text-xs">
-                        <%= opponent.nickname %>: <span class="font-semibold"><%= count %>回</span>
+                    </div>
+
+                    <div class="feature-match-vs">VS</div>
+
+                    <div class="feature-match-team <%= rm.match ? (rm.match.winning_team == 2 ? 'bg-sky-50' : 'bg-rose-50') : '' %>">
+                      <div class="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">チーム2</div>
+                      <div class="mt-3 space-y-2 text-sm text-slate-900">
+                        <div>
+                          <span class="font-medium"><%= rm.team2_player1.nickname %></span>
+                          <% if mp3&.mobile_suit %>
+                            <a href="<%= mobile_suit_path(mp3.mobile_suit) %>" class="ml-1 text-xs text-slate-500 transition hover:text-indigo-600 hover:underline" onclick="event.stopPropagation()">(<%= mp3.mobile_suit.name %>)</a>
+                          <% end %>
+                        </div>
+                        <div>
+                          <span class="font-medium"><%= rm.team2_player2.nickname %></span>
+                          <% if mp4&.mobile_suit %>
+                            <a href="<%= mobile_suit_path(mp4.mobile_suit) %>" class="ml-1 text-xs text-slate-500 transition hover:text-indigo-600 hover:underline" onclick="event.stopPropagation()">(<%= mp4.mobile_suit.name %>)</a>
+                          <% end %>
+                        </div>
                       </div>
-                    <% end %>
-                  <% else %>
-                    <span class="text-gray-400">-</span>
+                    </div>
+                  </div>
+
+                  <% if rm.match.present? && current_user.is_admin? %>
+                    <div class="flex flex-wrap gap-3 text-sm" onclick="event.stopPropagation()">
+                      <a href="#match-record-container"
+                         onclick="editMatchById(<%= index %>, <%= rm.match.id %>, <%= rm.match.winning_team %>, <%= rm.match.match_players.find { |mp| mp.team_number == 1 && mp.position == 1 }.mobile_suit_id %>, <%= rm.match.match_players.find { |mp| mp.team_number == 1 && mp.position == 2 }.mobile_suit_id %>, <%= rm.match.match_players.find { |mp| mp.team_number == 2 && mp.position == 3 }.mobile_suit_id %>, <%= rm.match.match_players.find { |mp| mp.team_number == 2 && mp.position == 4 }.mobile_suit_id %>); return false;"
+                         class="font-semibold text-indigo-600 transition hover:text-indigo-500">
+                        編集
+                      </a>
+                      <%= button_to "削除", match_path(rm.match), method: :delete, data: { turbo_confirm: "この試合記録を削除してもよろしいですか？" }, class: "font-semibold text-red-600 transition hover:text-red-500", form: { style: "display: inline;" } %>
+                    </div>
+                  <% elsif !rm.match.present? && index < @rotation.current_match_index && current_user.is_admin? %>
+                    <div onclick="event.stopPropagation()">
+                      <%= button_to "ここに戻る", go_to_match_rotation_path(@rotation, match_index: index), method: :post, class: app_button_classes(variant: :secondary, size: :sm), form: { data: { turbo: false } } %>
+                    </div>
                   <% end %>
                 </div>
-              </td>
-            </tr>
+              </div>
+            </li>
           <% end %>
-        </tbody>
-      </table>
-    </div>
+        </ul>
+      </div>
+    </section>
+
+    <section class="feature-surface">
+      <div class="p-5 sm:p-6">
+        <div class="feature-section-head feature-section-head--row">
+          <div>
+            <h2 class="feature-section-head__title">プレイヤー統計</h2>
+            <p class="feature-section-head__meta">平等性チェック用に、試合数と組み合わせの偏りを確認します</p>
+          </div>
+          <span class="feature-inline-note">試合配分の偏り確認</span>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto border-t border-slate-100">
+        <table class="min-w-full divide-y divide-slate-200">
+          <thead class="bg-slate-50/80">
+            <tr>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">プレイヤー</th>
+              <th scope="col" class="px-6 py-3 text-center text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">試合数<br><span class="normal-case font-normal">(記録済 / 計画)</span></th>
+              <th scope="col" class="px-6 py-3 text-center text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">配信台回数<br><span class="normal-case font-normal">(記録済 / 計画)</span></th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">最もペアを組んだ相手</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">最も対戦した相手</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 bg-white">
+            <% @player_statistics.each do |_player_id, stats| %>
+              <tr class="transition hover:bg-slate-50/80">
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="text-sm font-semibold text-slate-900">
+                    <%= stats[:user].nickname %>
+                    <% if stats[:user].id == current_user.id %>
+                      <span class="ml-2 rounded-full bg-indigo-100 px-2 py-0.5 text-xs font-semibold text-indigo-700">あなた</span>
+                    <% end %>
+                  </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-center">
+                  <span class="text-sm font-semibold text-slate-900"><%= stats[:registered_match_count] %></span>
+                  <span class="text-xs text-slate-400"> / <%= stats[:match_count] %></span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-center">
+                  <span class="text-sm font-semibold text-slate-900"><%= stats[:registered_streaming_count] %></span>
+                  <span class="text-xs text-slate-400"> / <%= stats[:streaming_count] %></span>
+                </td>
+                <td class="px-6 py-4">
+                  <div class="space-y-1 text-sm text-slate-700">
+                    <% if stats[:pair_counts].any? %>
+                      <% stats[:pair_counts].sort_by { |_, count| -count }.first(3).each do |partner_id, count| %>
+                        <% partner = User.find(partner_id) %>
+                        <div class="text-xs">
+                          <%= partner.nickname %>: <span class="font-semibold"><%= count %>回</span>
+                        </div>
+                      <% end %>
+                    <% else %>
+                      <span class="text-slate-400">-</span>
+                    <% end %>
+                  </div>
+                </td>
+                <td class="px-6 py-4">
+                  <div class="space-y-1 text-sm text-slate-700">
+                    <% if stats[:opponent_counts].any? %>
+                      <% stats[:opponent_counts].sort_by { |_, count| -count }.first(3).each do |opponent_id, count| %>
+                        <% opponent = User.find(opponent_id) %>
+                        <div class="text-xs">
+                          <%= opponent.nickname %>: <span class="font-semibold"><%= count %>回</span>
+                        </div>
+                      <% end %>
+                    <% else %>
+                      <span class="text-slate-400">-</span>
+                    <% end %>
+                  </div>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </section>
   </div>
 </div>
+
+<script>
+  function closeCompletionModal() {
+    const modal = document.getElementById("completion-modal")
+    if (modal) modal.classList.add("hidden")
+  }
+
+  function editMatchById(matchIndex, matchId, winningTeam, suit1, suit2, suit3, suit4) {
+    const form = document.getElementById("match-record-form")
+    if (!form) return
+
+    document.getElementById("form-title").textContent = `試合結果を編集（第${matchIndex + 1}試合）`
+    form.action = "<%= update_match_record_rotation_path(@rotation) %>"
+    document.getElementById("editing_match_index").value = matchIndex
+
+    const suitMappings = [
+      ["team1_player1_suit", suit1],
+      ["team1_player2_suit", suit2],
+      ["team2_player1_suit", suit3],
+      ["team2_player2_suit", suit4]
+    ]
+
+    suitMappings.forEach(([name, value]) => {
+      const select = document.querySelector(`select[name="${name}"]`)
+      if (!select) return
+
+      if (select.tomselect) {
+        select.tomselect.setValue(value ? value.toString() : "")
+      } else {
+        select.value = value || ""
+      }
+    })
+
+    document.getElementById("team1_win").checked = winningTeam === 1
+    document.getElementById("team2_win").checked = winningTeam === 2
+    document.getElementById("submit-btn-text").textContent = "更新"
+
+    const skipBtn = document.getElementById("skip-match-btn")
+    if (skipBtn) skipBtn.style.display = "none"
+
+    const cancelBtn = document.getElementById("cancel-edit-btn")
+    if (cancelBtn) cancelBtn.style.display = "inline-flex"
+
+    const nextMatchBtn = document.getElementById("next-match-btn")
+    if (nextMatchBtn) nextMatchBtn.style.display = "none"
+
+    document.getElementById("match-record-container")?.scrollIntoView({ behavior: "smooth", block: "start" })
+  }
+
+  function cancelEdit() {
+    window.location.reload()
+  }
+
+  function initializeTomSelect() {
+    const selects = document.querySelectorAll('select[name*="_suit"]')
+
+    selects.forEach((select) => {
+      if (select.tomselect) return
+
+      const optgroups = select.dataset.hasFavorites === "true"
+        ? [{ value: "favorites", label: "★ お気に入り機体" }, { value: "others", label: "── その他の機体 ──" }]
+        : []
+
+      new TomSelect(select, {
+        placeholder: "機体を検索...",
+        allowEmptyOption: true,
+        plugins: ["clear_button"],
+        optgroupField: "optgroup",
+        optgroups,
+        render: {
+          no_results: function() {
+            return '<div class="no-results">該当する機体が見つかりません</div>'
+          }
+        }
+      })
+    })
+  }
+
+  function initializeFormValidation() {
+    const form = document.getElementById("match-record-form")
+    if (!form || form.dataset.validationInitialized === "true") return
+
+    form.dataset.validationInitialized = "true"
+
+    form.addEventListener("submit", function(event) {
+      const team1p1 = document.querySelector('select[name="team1_player1_suit"]')?.value
+      const team1p2 = document.querySelector('select[name="team1_player2_suit"]')?.value
+      const team2p1 = document.querySelector('select[name="team2_player1_suit"]')?.value
+      const team2p2 = document.querySelector('select[name="team2_player2_suit"]')?.value
+      const winner = document.querySelector('input[name="winning_team"]:checked')
+
+      if (!team1p1 || !team1p2 || !team2p1 || !team2p2) {
+        event.preventDefault()
+        alert("すべてのプレイヤーの機体を選択してください")
+        return
+      }
+
+      if (!winner) {
+        event.preventDefault()
+        alert("勝利チームを選択してください")
+      }
+    })
+
+    if (document.body.dataset.rotationShortcutBound !== "true") {
+      document.body.dataset.rotationShortcutBound = "true"
+      document.addEventListener("keydown", function(event) {
+        if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+          const activeForm = document.getElementById("match-record-form")
+          if (!activeForm) return
+          event.preventDefault()
+          activeForm.requestSubmit()
+        }
+      })
+    }
+  }
+
+  function preloadInitialEdit() {
+    const payload = <%= raw(initial_edit_payload) %>
+    if (!payload) return
+
+    setTimeout(function() {
+      editMatchById(payload.matchIndex, payload.matchId, payload.winningTeam, payload.suit1, payload.suit2, payload.suit3, payload.suit4)
+    }, 100)
+  }
+
+  function initializeRotationPage() {
+    initializeTomSelect()
+    initializeFormValidation()
+    preloadInitialEdit()
+  }
+
+  if (document.readyState !== "loading") {
+    initializeRotationPage()
+  }
+
+  document.addEventListener("DOMContentLoaded", initializeRotationPage)
+  document.addEventListener("turbo:load", initializeRotationPage)
+</script>

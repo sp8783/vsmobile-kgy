@@ -1,296 +1,325 @@
-<div class="py-8">
-  <!-- Header -->
-  <div class="mb-8">
-    <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">管理ダッシュボード</h1>
-    <p class="mt-2 text-sm text-gray-600">システム全体の管理と運営</p>
-  </div>
+<div class="py-6 sm:py-8">
+  <div class="feature-stack">
+    <% if @today_event %>
+      <% active_progress = @active_rotation && @rotation_matches.present? ? ((@active_rotation.current_match_index + 1).to_f / @rotation_matches.count * 100) : 0 %>
+      <section class="feature-hero feature-hero--slate px-5 py-6 sm:px-8 sm:py-8" <%= @active_rotation ? "data-controller=\"rotation-subscriber\" data-rotation-subscriber-rotation-id-value=\"#{@active_rotation.id}\"" : "" %>>
+        <div class="feature-hero__top">
+          <div>
+            <p class="feature-hero__eyebrow">Admin Dashboard</p>
+            <h1 class="feature-hero__title">本日の運営状況</h1>
+            <p class="feature-hero__description">
+              <%= @today_event.name %> の進行状況、直近の試合、次の導線をここでまとめて確認できます。
+            </p>
 
-  <!-- 2カラムレイアウト -->
-  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-    <!-- 左カラム（メインコンテンツ） -->
-    <div class="lg:col-span-2 space-y-6">
-
-      <!-- 今日のイベント管理 -->
-      <% if @today_event %>
-        <div class="bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-lg rounded-lg p-6" <%= @active_rotation ? "data-controller=\"rotation-subscriber\" data-rotation-subscriber-rotation-id-value=\"#{@active_rotation.id}\"" : "" %>>
-          <div class="flex items-center justify-between mb-4">
-            <div>
-              <h2 class="text-xl font-bold">🎮 本日のイベント</h2>
-              <p class="text-sm text-white text-opacity-90 mt-1"><%= @today_event.name %></p>
-            </div>
-            <div class="flex items-center space-x-2">
+            <div class="feature-hero__meta">
+              <span class="feature-pill feature-pill--contrast"><%= @today_event.held_on.strftime("%Y/%m/%d") %></span>
               <% if @active_rotation %>
-                <div class="inline-flex items-center px-2 py-1 bg-red-100 border border-red-300 rounded-full">
-                  <span class="w-2 h-2 bg-red-500 rounded-full mr-1 animate-pulse"></span>
-                  <span class="text-xs font-medium text-red-800">リアルタイム更新中</span>
-                </div>
+                <span class="feature-pill feature-pill--contrast">リアルタイム更新中</span>
+                <span class="feature-pill feature-pill--contrast"><%= @rotation_matches.count %> 試合構成</span>
+              <% else %>
+                <span class="feature-pill feature-pill--contrast">アクティブなローテーションなし</span>
               <% end %>
-              <span class="bg-white text-purple-600 px-3 py-1 rounded-full text-sm font-semibold">
-                <%= @today_event.held_on.strftime('%Y/%m/%d') %>
-              </span>
             </div>
           </div>
 
-          <% if @active_rotation %>
-            <!-- アクティブなローテーション -->
-            <div class="bg-white text-gray-900 rounded-lg p-4 mb-4 shadow-sm">
-              <div class="text-sm font-semibold mb-2 text-purple-700">🔴 アクティブなローテーション</div>
-              <div class="text-2xl font-bold text-gray-900"><%= @active_rotation.display_name %></div>
-              <div class="text-sm mt-1 text-gray-600">
+          <div class="feature-hero__actions">
+            <% if @active_rotation %>
+              <%= link_to "ローテーション管理", rotation_path(@active_rotation), class: app_button_classes(variant: :primary) %>
+            <% else %>
+              <%= link_to "ローテーション作成", new_event_rotation_path(@today_event), class: app_button_classes(variant: :primary) %>
+            <% end %>
+            <%= link_to "イベントを開く", event_path(@today_event), class: app_button_classes(variant: :secondary) %>
+          </div>
+        </div>
+
+        <div class="mt-6 feature-metric-grid">
+          <div class="feature-metric">
+            <div class="feature-metric__label">総イベント数</div>
+            <div class="feature-metric__value"><%= @total_events %></div>
+            <div class="feature-metric__meta">登録済みイベント</div>
+          </div>
+          <div class="feature-metric">
+            <div class="feature-metric__label">総試合数</div>
+            <div class="feature-metric__value"><%= @total_matches %></div>
+            <div class="feature-metric__meta">記録済み試合</div>
+          </div>
+          <div class="feature-metric">
+            <div class="feature-metric__label">登録ユーザー数</div>
+            <div class="feature-metric__value"><%= @total_users %></div>
+            <div class="feature-metric__meta">regular user</div>
+          </div>
+        </div>
+
+        <% if @active_rotation %>
+          <div class="mt-5 feature-progress">
+            <div class="feature-progress__bar" style="width: <%= active_progress %>%"></div>
+          </div>
+
+          <div class="mt-6 feature-grid lg:grid-cols-[minmax(0,0.88fr)_minmax(0,1.12fr)]">
+            <div class="feature-surface p-4 sm:p-5">
+              <div class="text-sm font-semibold text-indigo-700">アクティブなローテーション</div>
+              <div class="mt-2 text-2xl font-bold text-slate-950"><%= @active_rotation.display_name %></div>
+              <div class="mt-2 text-sm text-slate-600">
                 進捗: <%= @active_rotation.current_match_index + 1 %> / <%= @rotation_matches.count %> 試合
               </div>
             </div>
 
-            <!-- 現在の試合 -->
             <% if @current_rotation_match %>
-              <div class="bg-white text-gray-900 rounded-lg p-4 mb-4 shadow-sm">
-                <div class="text-sm font-semibold mb-3 text-gray-700">📍 現在の試合</div>
-                <div class="text-3xl font-bold text-gray-900 mb-3 text-center">第<%= @active_rotation.current_match_index + 1 %>試合</div>
-                <div class="grid grid-cols-3 gap-3 text-sm">
-                  <div class="bg-gray-50 rounded p-2">
-                    <div class="text-xs text-gray-500 mb-1">チーム1</div>
-                    <div class="flex items-center">
-                      <span class="font-bold text-red-600"><%= @current_rotation_match.team1_player1.nickname %></span>
-                      <span class="ml-2 px-2 py-0.5 bg-red-100 text-red-700 rounded text-xs font-semibold">配信台</span>
-                    </div>
-                    <div class="text-gray-700 mt-1"><%= @current_rotation_match.team1_player2.nickname %></div>
-                  </div>
-                  <div class="flex items-center justify-center">
-                    <span class="text-xl font-bold text-gray-400">VS</span>
-                  </div>
-                  <div class="bg-gray-50 rounded p-2">
-                    <div class="text-xs text-gray-500 mb-1">チーム2</div>
-                    <div class="font-medium text-gray-900"><%= @current_rotation_match.team2_player1.nickname %></div>
-                    <div class="text-gray-700 mt-1"><%= @current_rotation_match.team2_player2.nickname %></div>
-                  </div>
-                </div>
-              </div>
-            <% end %>
-
-            <!-- 次の試合 -->
-            <% if @upcoming_rotation_matches.any? %>
-              <div class="bg-white text-gray-900 rounded-lg p-4 mb-4 shadow-sm">
-                <div class="text-sm font-semibold mb-3 text-gray-700">📋 次の試合</div>
-                <div class="space-y-2">
-                  <% @upcoming_rotation_matches.each do |rm| %>
-                    <div class="flex items-center justify-between text-xs border-b border-gray-200 pb-2 last:border-b-0">
-                      <div class="text-gray-500">第<%= rm.match_index + 1 %>試合</div>
-                      <div class="flex-1 mx-2 text-gray-700">
-                        <span class="text-red-600 font-bold"><%= rm.team1_player1.nickname %></span> & <%= rm.team1_player2.nickname %>
-                        <span class="text-gray-400 mx-1">vs</span>
-                        <%= rm.team2_player1.nickname %> & <%= rm.team2_player2.nickname %>
+              <div class="feature-surface p-4 sm:p-5">
+                <div class="text-sm font-semibold text-slate-700">現在の試合</div>
+                <div class="mt-2 text-xl font-bold text-slate-950">第<%= @active_rotation.current_match_index + 1 %>試合</div>
+                <div class="mt-4 feature-match-grid">
+                  <div class="feature-match-team">
+                    <div class="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">チーム1</div>
+                    <div class="mt-3 space-y-2 text-sm">
+                      <div class="font-semibold text-red-600">
+                        <%= @current_rotation_match.team1_player1.nickname %>
+                        <span class="ml-2 rounded-full bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-700">配信台</span>
                       </div>
+                      <div class="font-medium text-slate-900"><%= @current_rotation_match.team1_player2.nickname %></div>
                     </div>
-                  <% end %>
+                  </div>
+                  <div class="feature-match-vs">VS</div>
+                  <div class="feature-match-team">
+                    <div class="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">チーム2</div>
+                    <div class="mt-3 space-y-2 text-sm">
+                      <div class="font-medium text-slate-900"><%= @current_rotation_match.team2_player1.nickname %></div>
+                      <div class="font-medium text-slate-900"><%= @current_rotation_match.team2_player2.nickname %></div>
+                    </div>
+                  </div>
                 </div>
               </div>
             <% end %>
-
-            <!-- アクションボタン -->
-            <%= link_to "ローテーション管理", rotation_path(@active_rotation), class: "block w-full bg-gray-600 text-white text-center font-semibold py-3 px-4 rounded hover:bg-gray-700 transition" %>
-          <% else %>
-            <div class="bg-white text-gray-900 rounded-lg p-4 text-center shadow-sm">
-              <p class="text-purple-700 mb-3">アクティブなローテーションがありません</p>
-              <%= link_to "ローテーション作成", new_event_rotation_path(@today_event), class: "inline-block bg-indigo-600 text-white font-semibold py-2 px-4 rounded hover:bg-indigo-700 transition shadow-sm" %>
-            </div>
-          <% end %>
-        </div>
-      <% else %>
-        <!-- 今日のイベントがない場合 -->
-        <div class="bg-white shadow rounded-lg p-6">
-          <h2 class="text-xl font-bold text-purple-900 mb-2">📅 本日のイベント</h2>
-          <p class="text-sm text-purple-700 mb-4">本日はイベントが設定されていません</p>
-          <%= link_to "新しいイベントを作成", new_event_path, class: "inline-block bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded transition" %>
-        </div>
-      <% end %>
-
-      <!-- クイックアクション -->
-      <div class="bg-white shadow rounded-lg p-6">
-        <h2 class="text-lg font-bold text-gray-900 mb-4">⚡ クイックアクション</h2>
-        <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
-          <%= link_to new_event_path, class: "flex flex-col items-center p-4 border-2 border-gray-200 rounded-lg hover:border-indigo-500 hover:bg-indigo-50 transition" do %>
-            <svg class="h-8 w-8 text-indigo-600 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-            </svg>
-            <span class="text-sm font-medium text-gray-900">新規イベント</span>
-          <% end %>
-
-          <%= link_to events_path, class: "flex flex-col items-center p-4 border-2 border-gray-200 rounded-lg hover:border-indigo-500 hover:bg-indigo-50 transition" do %>
-            <svg class="h-8 w-8 text-indigo-600 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-            <span class="text-sm font-medium text-gray-900">イベント一覧</span>
-          <% end %>
-
-          <%= link_to rotations_path, class: "flex flex-col items-center p-4 border-2 border-gray-200 rounded-lg hover:border-indigo-500 hover:bg-indigo-50 transition" do %>
-            <svg class="h-8 w-8 text-indigo-600 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
-            </svg>
-            <span class="text-sm font-medium text-gray-900">ローテーション</span>
-          <% end %>
-
-          <%= link_to matches_path, class: "flex flex-col items-center p-4 border-2 border-gray-200 rounded-lg hover:border-indigo-500 hover:bg-indigo-50 transition" do %>
-            <svg class="h-8 w-8 text-indigo-600 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-            <span class="text-sm font-medium text-gray-900">試合一覧</span>
-          <% end %>
-
-          <%= link_to admin_mobile_suits_path, class: "flex flex-col items-center p-4 border-2 border-gray-200 rounded-lg hover:border-indigo-500 hover:bg-indigo-50 transition" do %>
-            <svg class="h-8 w-8 text-indigo-600 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
-            </svg>
-            <span class="text-sm font-medium text-gray-900">機体マスタ</span>
-          <% end %>
-
-          <%= link_to admin_users_path, class: "flex flex-col items-center p-4 border-2 border-gray-200 rounded-lg hover:border-indigo-500 hover:bg-indigo-50 transition" do %>
-            <svg class="h-8 w-8 text-indigo-600 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-            </svg>
-            <span class="text-sm font-medium text-gray-900">ユーザー管理</span>
-          <% end %>
-        </div>
-      </div>
-
-      <!-- 最近の試合 -->
-      <div class="bg-white shadow rounded-lg">
-        <div class="px-6 py-5 border-b border-gray-200">
-          <h2 class="text-lg font-bold text-gray-900">🕐 最近の試合</h2>
-        </div>
-        <div class="divide-y divide-gray-200">
-          <% if @recent_matches.any? %>
-            <% @recent_matches.each do |match| %>
-              <%
-                _all_mp = match.match_players.sort_by { |mp| [mp.team_number, mp.position] }
-                _team1  = _all_mp.select { |mp| mp.team_number == 1 }
-                _team2  = _all_mp.select { |mp| mp.team_number == 2 }
-              %>
-              <div class="px-5 py-4">
-                <%# メタ行 %>
-                <div class="flex items-center flex-wrap gap-2 mb-3">
-                  <%= link_to match_path(match), class: "text-sm text-gray-400 hover:text-blue-600 transition-colors", data: { turbo_frame: "_top" } do %>
-                    <%= match.played_at.strftime('%Y年%m月%d日') %>
-                  <% end %>
-                  <span class="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-indigo-50 text-indigo-600">
-                    <%= match.event.name %>
-                  </span>
-                </div>
-                <%# 対戦カード %>
-                <div class="block cursor-pointer"
-                     data-controller="card-link"
-                     data-card-link-url-value="<%= match_path(match) %>"
-                     data-action="click->card-link#navigate">
-                  <%= render "matches/match_teams",
-                        left_players:  _team1,
-                        right_players: _team2,
-                        left_wins:     match.winning_team == 1,
-                        left_label:    "チーム1",
-                        right_label:   "チーム2" %>
-                </div>
-              </div>
-            <% end %>
-          <% else %>
-            <div class="px-6 py-8 text-center">
-              <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-              <p class="mt-2 text-sm text-gray-500">まだ試合記録がありません</p>
-            </div>
-          <% end %>
-        </div>
-        <% if @recent_matches.any? %>
-          <div class="px-6 py-4 bg-gray-50 text-center">
-            <%= link_to "すべて見る →", matches_path, class: "text-sm text-blue-600 hover:text-blue-500" %>
           </div>
         <% end %>
-      </div>
-
-    </div>
-
-    <!-- 右カラム（統計・情報） -->
-    <div class="lg:col-span-1 space-y-6">
-
-      <!-- システム統計 -->
-      <div class="bg-white shadow rounded-lg">
-        <div class="px-6 py-5 border-b border-gray-200">
-          <h2 class="text-lg font-bold text-gray-900">📊 システム統計</h2>
-        </div>
-        <div class="px-6 py-5">
-          <div class="space-y-4">
-            <div class="flex items-center justify-between">
-              <div class="text-sm text-gray-600">総イベント数</div>
-              <div class="text-2xl font-bold text-blue-600"><%= @total_events %></div>
-            </div>
-            <div class="flex items-center justify-between">
-              <div class="text-sm text-gray-600">総試合数</div>
-              <div class="text-2xl font-bold text-green-600"><%= @total_matches %></div>
-            </div>
-            <div class="flex items-center justify-between">
-              <div class="text-sm text-gray-600">登録ユーザー数</div>
-              <div class="text-2xl font-bold text-purple-600"><%= @total_users %></div>
-            </div>
+      </section>
+    <% else %>
+      <section class="feature-hero feature-hero--slate px-5 py-6 sm:px-8 sm:py-8">
+        <div class="feature-hero__top">
+          <div>
+            <p class="feature-hero__eyebrow">Admin Dashboard</p>
+            <h1 class="feature-hero__title">本日のイベントは未設定です</h1>
+            <p class="feature-hero__description">
+              イベントを作成すると、ここに進行状況と導線がまとまって表示されます。
+            </p>
+          </div>
+          <div class="feature-hero__actions">
+            <%= link_to "新しいイベントを作成", new_event_path, class: app_button_classes(variant: :primary) %>
           </div>
         </div>
-      </div>
+      </section>
+    <% end %>
 
-      <!-- 今後のイベント -->
-      <div class="bg-white shadow rounded-lg">
-        <div class="px-6 py-5 border-b border-gray-200">
-          <h2 class="text-lg font-bold text-gray-900">📅 今後のイベント</h2>
-        </div>
-        <div class="divide-y divide-gray-200">
-          <% if @upcoming_events.any? %>
-            <% @upcoming_events.each do |event| %>
-              <%= link_to event_path(event), class: "block hover:bg-gray-50 px-6 py-4" do %>
-                <div class="flex items-center justify-between">
-                  <div class="flex-1">
-                    <div class="text-sm font-medium text-gray-900"><%= event.name %></div>
-                    <div class="text-xs text-gray-500 mt-1"><%= event.held_on.strftime('%Y年%m月%d日') %></div>
+    <div class="feature-grid xl:grid-cols-[minmax(0,1.1fr)_minmax(20rem,0.9fr)]">
+      <div class="feature-stack">
+        <section class="feature-surface p-5 sm:p-6">
+          <div class="feature-section-head">
+            <h2 class="feature-section-head__title">クイックアクション</h2>
+            <p class="feature-section-head__meta">日々の運営フローに必要な導線をまとめています</p>
+          </div>
+
+          <div class="feature-action-grid">
+            <%= link_to new_event_path, class: "feature-action-link" do %>
+              <div class="feature-action-link__icon">+</div>
+              <div class="feature-action-link__title">新規イベント</div>
+              <div class="feature-action-link__meta">イベントを追加</div>
+            <% end %>
+
+            <%= link_to events_path, class: "feature-action-link" do %>
+              <div class="feature-action-link__icon">日</div>
+              <div class="feature-action-link__title">イベント一覧</div>
+              <div class="feature-action-link__meta">開催履歴を確認</div>
+            <% end %>
+
+            <%= link_to rotations_path, class: "feature-action-link" do %>
+              <div class="feature-action-link__icon">回</div>
+              <div class="feature-action-link__title">ローテーション</div>
+              <div class="feature-action-link__meta">進行を管理</div>
+            <% end %>
+
+            <%= link_to matches_path, class: "feature-action-link" do %>
+              <div class="feature-action-link__icon">試</div>
+              <div class="feature-action-link__title">試合一覧</div>
+              <div class="feature-action-link__meta">対戦記録へ移動</div>
+            <% end %>
+
+            <%= link_to admin_mobile_suits_path, class: "feature-action-link" do %>
+              <div class="feature-action-link__icon">機</div>
+              <div class="feature-action-link__title">機体マスタ</div>
+              <div class="feature-action-link__meta">機体データ更新</div>
+            <% end %>
+
+            <%= link_to admin_users_path, class: "feature-action-link" do %>
+              <div class="feature-action-link__icon">人</div>
+              <div class="feature-action-link__title">ユーザー管理</div>
+              <div class="feature-action-link__meta">利用者設定</div>
+            <% end %>
+          </div>
+        </section>
+
+        <% if @upcoming_rotation_matches&.any? %>
+          <section class="feature-surface p-5 sm:p-6">
+            <div class="feature-section-head">
+              <h2 class="feature-section-head__title">次の試合</h2>
+              <p class="feature-section-head__meta">直近 3 試合の並び</p>
+            </div>
+
+            <div class="feature-list">
+              <% @upcoming_rotation_matches.each do |rm| %>
+                <div class="feature-list-item">
+                  <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div class="text-sm font-semibold text-slate-900">第<%= rm.match_index + 1 %>試合</div>
+                    <div class="text-sm text-slate-600">
+                      <span class="font-semibold text-red-600"><%= rm.team1_player1.nickname %></span> & <%= rm.team1_player2.nickname %>
+                      <span class="mx-2 text-slate-300">vs</span>
+                      <%= rm.team2_player1.nickname %> & <%= rm.team2_player2.nickname %>
+                    </div>
                   </div>
-                  <% if event.held_on == Time.zone.today %>
-                    <span class="ml-2 px-2 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded">本日</span>
-                  <% end %>
                 </div>
               <% end %>
-            <% end %>
+            </div>
+          </section>
+        <% end %>
+
+        <section class="feature-surface">
+          <div class="p-5 sm:p-6">
+            <div class="feature-section-head feature-section-head--row">
+              <div>
+                <h2 class="feature-section-head__title">最近の試合</h2>
+                <p class="feature-section-head__meta">直近の試合記録を確認</p>
+              </div>
+              <%= link_to "すべて見る", matches_path, class: "text-sm font-semibold text-indigo-600 transition hover:text-indigo-500" %>
+            </div>
+          </div>
+
+          <% if @recent_matches.any? %>
+            <ul class="divide-y divide-slate-100">
+              <% @recent_matches.each do |match| %>
+                <%
+                  _all_mp = match.match_players.sort_by { |mp| [mp.team_number, mp.position] }
+                  _team1 = _all_mp.select { |mp| mp.team_number == 1 }
+                  _team2 = _all_mp.select { |mp| mp.team_number == 2 }
+                %>
+                <li class="px-5 py-5 transition hover:bg-slate-50/80">
+                  <div class="flex flex-wrap items-center gap-2">
+                    <%= link_to match.played_at.strftime("%Y年%m月%d日"), match_path(match), class: "text-sm font-semibold text-slate-400 transition hover:text-indigo-600", data: { turbo_frame: "_top" } %>
+                    <span class="feature-pill feature-pill--surface"><%= match.event.name %></span>
+                  </div>
+                  <div class="mt-4 cursor-pointer"
+                       data-controller="card-link"
+                       data-card-link-url-value="<%= match_path(match) %>"
+                       data-action="click->card-link#navigate">
+                    <%= render "matches/match_teams",
+                          left_players: _team1,
+                          right_players: _team2,
+                          left_wins: match.winning_team == 1,
+                          left_label: "チーム1",
+                          right_label: "チーム2" %>
+                  </div>
+                </li>
+              <% end %>
+            </ul>
           <% else %>
-            <div class="px-6 py-8 text-center">
-              <p class="text-sm text-gray-500">予定されているイベントはありません</p>
+            <div class="px-5 pb-5 sm:px-6 sm:pb-6">
+              <div class="empty-state">
+                <p class="empty-state__title">まだ試合記録がありません</p>
+                <p class="empty-state__description mt-2">イベントのローテーションが始まると、ここに対戦が並びます。</p>
+              </div>
             </div>
           <% end %>
-        </div>
-        <div class="px-6 py-4 bg-gray-50 text-center">
-          <%= link_to "すべて見る →", events_path, class: "text-sm text-blue-600 hover:text-blue-500" %>
-        </div>
+        </section>
       </div>
 
-      <!-- 人気の機体 -->
-      <div class="bg-white shadow rounded-lg">
-        <div class="px-6 py-5 border-b border-gray-200">
-          <h2 class="text-lg font-bold text-gray-900">🔥 人気の機体 TOP5</h2>
-        </div>
-        <div class="divide-y divide-gray-200">
+      <div class="feature-stack">
+        <section class="feature-surface p-5 sm:p-6">
+          <div class="feature-section-head">
+            <h2 class="feature-section-head__title">システム統計</h2>
+            <p class="feature-section-head__meta">全体のボリューム感をざっと確認</p>
+          </div>
+
+          <div class="feature-metric-grid">
+            <div class="feature-metric">
+              <div class="feature-metric__label">イベント</div>
+              <div class="feature-metric__value"><%= @total_events %></div>
+              <div class="feature-metric__meta">累計開催数</div>
+            </div>
+            <div class="feature-metric">
+              <div class="feature-metric__label">試合</div>
+              <div class="feature-metric__value"><%= @total_matches %></div>
+              <div class="feature-metric__meta">記録済み試合</div>
+            </div>
+            <div class="feature-metric">
+              <div class="feature-metric__label">ユーザー</div>
+              <div class="feature-metric__value"><%= @total_users %></div>
+              <div class="feature-metric__meta">登録プレイヤー</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="feature-surface p-5 sm:p-6">
+          <div class="feature-section-head feature-section-head--row">
+            <div>
+              <h2 class="feature-section-head__title">今後のイベント</h2>
+              <p class="feature-section-head__meta">次に控えている開催予定</p>
+            </div>
+            <%= link_to "一覧へ", events_path, class: "text-sm font-semibold text-indigo-600 transition hover:text-indigo-500" %>
+          </div>
+
+          <% if @upcoming_events.any? %>
+            <div class="feature-list">
+              <% @upcoming_events.each do |event| %>
+                <%= link_to event_path(event), class: "feature-list-item feature-list-item--clickable" do %>
+                  <div class="flex items-center justify-between gap-3">
+                    <div>
+                      <div class="text-sm font-semibold text-slate-900"><%= event.name %></div>
+                      <div class="mt-1 text-xs text-slate-500"><%= event.held_on.strftime("%Y年%m月%d日") %></div>
+                    </div>
+                    <% if event.held_on == Time.zone.today %>
+                      <span class="feature-pill feature-pill--success">本日</span>
+                    <% end %>
+                  </div>
+                <% end %>
+              <% end %>
+            </div>
+          <% else %>
+            <div class="empty-state">
+              <p class="empty-state__title">予定されているイベントはありません</p>
+              <p class="empty-state__description mt-2">新しいイベントを作成するとここに表示されます。</p>
+            </div>
+          <% end %>
+        </section>
+
+        <section class="feature-surface p-5 sm:p-6">
+          <div class="feature-section-head">
+            <h2 class="feature-section-head__title">人気の機体 TOP5</h2>
+            <p class="feature-section-head__meta">利用頻度の高い機体を確認</p>
+          </div>
+
           <% if @popular_mobile_suits.any? %>
-            <% @popular_mobile_suits.each_with_index do |suit, index| %>
-              <div class="px-6 py-4 flex items-center justify-between">
-                <div class="flex items-center">
-                  <span class="text-2xl font-bold text-gray-300 mr-3"><%= index + 1 %></span>
-                  <div>
-                    <div class="text-sm font-medium text-gray-900"><%= suit.name %></div>
-                    <div class="text-xs text-gray-500"><%= suit.series %></div>
+            <div class="feature-list">
+              <% @popular_mobile_suits.each_with_index do |suit, index| %>
+                <div class="feature-list-item">
+                  <div class="flex items-center justify-between gap-3">
+                    <div class="flex items-center gap-3">
+                      <span class="text-2xl font-bold text-slate-300"><%= index + 1 %></span>
+                      <div>
+                        <div class="text-sm font-semibold text-slate-900"><%= suit.name %></div>
+                        <div class="mt-1 text-xs text-slate-500"><%= suit.series %></div>
+                      </div>
+                    </div>
+                    <span class="feature-pill feature-pill--surface"><%= suit.usage_count %>回</span>
                   </div>
                 </div>
-                <span class="text-sm text-blue-600 font-semibold"><%= suit.usage_count %>回</span>
-              </div>
-            <% end %>
+              <% end %>
+            </div>
           <% else %>
-            <div class="px-6 py-8 text-center">
-              <p class="text-sm text-gray-500">データがありません</p>
+            <div class="empty-state">
+              <p class="empty-state__title">データがありません</p>
+              <p class="empty-state__description mt-2">試合記録が増えると使用回数が集計されます。</p>
             </div>
           <% end %>
-        </div>
+        </section>
       </div>
-
     </div>
   </div>
 </div>

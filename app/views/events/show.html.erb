@@ -1,125 +1,136 @@
-<div class="py-8">
-  <div class="mb-6">
-    <%= link_to "← イベント一覧に戻る", events_path, class: "text-blue-600 hover:text-blue-500" %>
+<div class="py-6 sm:py-8">
+  <% broadcast_url = safe_external_url(@event.broadcast_url) %>
+  <div class="mb-4">
+    <%= link_to "← イベント一覧に戻る", events_path, class: "text-sm font-semibold text-indigo-600 transition hover:text-indigo-500" %>
   </div>
 
-  <div class="bg-white shadow overflow-hidden sm:rounded-lg mb-6">
-    <div class="px-4 py-5 sm:px-6">
-      <div class="flex items-center gap-3 mb-1">
-        <h1 class="text-2xl font-bold text-gray-900"><%= @event.name %></h1>
-        <% if @event.broadcast_url.present? %>
-          <%= link_to @event.broadcast_url, target: "_blank", rel: "noopener noreferrer", class: "inline-flex items-center gap-1 px-3 py-1 rounded-full bg-red-50 text-red-700 text-sm font-semibold hover:bg-red-100 transition-colors flex-shrink-0" do %>
-            <img src="/youtube_social_icon_red.png" alt="YouTube" class="h-4">
-            配信を見る
-          <% end %>
-          <% if current_user.is_admin? %>
-            <%= button_to post_broadcast_to_discord_event_path(@event), method: :post, data: { turbo_confirm: "「#{@event.name}」の配信URLをDiscordへ投稿しますか？" }, class: "inline-flex items-center gap-1 px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 text-sm font-semibold hover:bg-indigo-100 transition-colors flex-shrink-0 border-0 cursor-pointer" do %>
-              <img src="/discord_logo_blurple.png" alt="Discord" class="h-4">
-              Discordへ共有
+  <div class="feature-stack">
+    <section class="feature-hero feature-hero--slate px-5 py-6 sm:px-8 sm:py-8">
+      <div class="feature-hero__top">
+        <div>
+          <p class="feature-hero__eyebrow">Event Detail</p>
+          <h1 class="feature-hero__title"><%= @event.name %></h1>
+          <p class="feature-hero__description">
+            <%= @event.description.presence || "イベントのローテーション進行、対戦記録、配信導線をここからまとめて管理できます。" %>
+          </p>
+
+          <div class="feature-hero__meta">
+            <span class="feature-pill feature-pill--contrast">
+              <%= @event.held_on.strftime("%Y年%m月%d日") %>
+            </span>
+            <span class="feature-pill feature-pill--contrast">
+              ローテーション <%= @rotations.count %> 件
+            </span>
+            <span class="feature-pill feature-pill--contrast">
+              対戦記録 <%= @matches.total_count %> 試合
+            </span>
+            <% if broadcast_url.present? %>
+              <%= link_to broadcast_url, target: "_blank", rel: "noopener noreferrer", class: "feature-pill feature-pill--danger transition hover:opacity-90" do %>
+                <img src="/youtube_social_icon_red.png" alt="YouTube" class="h-4">
+                配信を見る
+              <% end %>
             <% end %>
-          <% end %>
-        <% end %>
+          </div>
+        </div>
       </div>
-      <p class="text-sm text-gray-500">
-        <%= @event.held_on.strftime('%Y年%m月%d日') %>
-      </p>
+
       <% if current_user.is_admin? %>
-        <div class="flex flex-wrap gap-2 mt-4">
-          <%= link_to "試合を登録", new_event_match_path(@event), class: "bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded text-sm" %>
-          <%= link_to "ローテーション作成", new_event_rotation_path(@event), class: "bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded text-sm" %>
+        <div class="mt-6 feature-action-grid">
+          <%= link_to "試合を登録", new_event_match_path(@event), class: app_button_classes(variant: :primary) %>
+          <%= link_to "ローテーション作成", new_event_rotation_path(@event), class: app_button_classes(variant: :secondary) %>
           <% if @event.broadcast_url.present? %>
-            <%= link_to "タイムスタンプ一括設定", edit_timestamps_event_path(@event), class: "bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded text-sm" %>
-            <%= button_to "タイムスタンプ解析開始", trigger_analysis_event_path(@event), method: :post, data: { turbo_confirm: "GitHub Actions で動画解析を開始しますか？完了後にタイムスタンプが自動登録されます。" }, class: "bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded text-sm" %>
+            <%= link_to "タイムスタンプ一括設定", edit_timestamps_event_path(@event), class: app_button_classes(variant: :secondary) %>
+            <%= button_to "配信URLをDiscordへ共有", post_broadcast_to_discord_event_path(@event), method: :post, data: { turbo_confirm: "「#{@event.name}」の配信URLをDiscordへ投稿しますか？" }, class: app_button_classes(variant: :secondary) %>
+            <%= button_to "タイムスタンプ解析開始", trigger_analysis_event_path(@event), method: :post, data: { turbo_confirm: "GitHub Actions で動画解析を開始しますか？完了後にタイムスタンプが自動登録されます。" }, class: app_button_classes(variant: :success) %>
           <% end %>
-          <%= button_to "統計取得開始", trigger_scraping_event_path(@event), method: :post, data: { turbo_confirm: "GitHub Actions で統計スクレイピングを開始しますか？完了後に統計データが自動登録されます。" }, class: "bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded text-sm" %>
-          <%= link_to "編集", edit_event_path(@event), class: "bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded text-sm" %>
-          <%= button_to "削除", event_path(@event), method: :delete, data: { turbo_confirm: "イベント「#{@event.name}」を削除してもよろしいですか？関連する試合やローテーションもすべて削除されます。" }, class: "bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded text-sm" %>
+          <%= button_to "統計取得開始", trigger_scraping_event_path(@event), method: :post, data: { turbo_confirm: "GitHub Actions で統計スクレイピングを開始しますか？完了後に統計データが自動登録されます。" }, class: app_button_classes(variant: :success) %>
+          <%= link_to "編集", edit_event_path(@event), class: app_button_classes(variant: :neutral) %>
+          <%= button_to "削除", event_path(@event), method: :delete, data: { turbo_confirm: "イベント「#{@event.name}」を削除してもよろしいですか？関連する試合やローテーションもすべて削除されます。" }, class: app_button_classes(variant: :danger) %>
         </div>
       <% end %>
-    </div>
-    <% if @event.description.present? %>
-      <div class="border-t border-gray-200 px-4 py-5 sm:px-6">
-        <p class="text-sm text-gray-700"><%= @event.description %></p>
-      </div>
-    <% end %>
-  </div>
+    </section>
 
-  <div class="space-y-6">
-    <div class="bg-white shadow overflow-hidden sm:rounded-lg">
-      <div class="px-4 py-5 sm:px-6">
-        <h2 class="text-lg font-medium text-gray-900">ローテーション</h2>
-        <p class="mt-1 text-sm text-gray-500">全 <%= @rotations.count %> 個</p>
-      </div>
-      <div class="border-t border-gray-200">
+    <div class="feature-grid xl:grid-cols-[minmax(0,0.86fr)_minmax(0,1.14fr)]">
+      <section class="feature-surface p-5 sm:p-6">
+        <div class="feature-section-head feature-section-head--row">
+          <div>
+            <h2 class="feature-section-head__title">ローテーション</h2>
+            <p class="feature-section-head__meta">全 <%= @rotations.count %> 件の進行状況</p>
+          </div>
+          <% if current_user.is_admin? %>
+            <%= link_to "ローテーション作成", new_event_rotation_path(@event), class: app_button_classes(variant: :secondary, size: :sm) %>
+          <% end %>
+        </div>
+
         <% if @rotations.any? %>
-          <ul class="divide-y divide-gray-200">
+          <ul class="feature-list">
             <% @rotations.each do |rotation| %>
-              <%= link_to rotation_path(rotation), class: "block hover:bg-gray-50" do %>
-                <li class="px-4 py-3">
-                  <div class="flex items-center justify-between">
-                    <div>
-                      <p class="text-sm font-medium text-gray-900"><%= rotation.display_name %></p>
-                      <div class="mt-1 flex items-center space-x-2">
-                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
-                          <%= rotation.round_number %>周目
-                        </span>
-                        <% if rotation.is_active %>
-                          <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
-                            アクティブ
-                          </span>
-                        <% end %>
+              <% progress = rotation.rotation_matches.count.positive? ? ((rotation.current_match_index + 1).to_f / rotation.rotation_matches.count * 100) : 0 %>
+              <li>
+                <%= link_to rotation_path(rotation), class: "feature-list-item feature-list-item--clickable" do %>
+                  <div class="flex flex-col gap-4">
+                    <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                      <div>
+                        <div class="text-base font-semibold text-slate-950"><%= rotation.display_name %></div>
+                        <div class="mt-2 flex flex-wrap gap-2">
+                          <span class="feature-pill feature-pill--surface"><%= rotation.round_number %>周目</span>
+                          <% if rotation.is_active %>
+                            <span class="feature-pill feature-pill--accent">アクティブ</span>
+                          <% end %>
+                        </div>
+                      </div>
+
+                      <div class="text-sm text-slate-500">
+                        <div><%= rotation.current_match_index + 1 %> / <%= rotation.rotation_matches.count %> 試合</div>
                       </div>
                     </div>
-                    <div class="text-right">
-                      <p class="text-xs text-gray-500">
-                        <%= rotation.current_match_index + 1 %> / <%= rotation.rotation_matches.count %> 試合
-                      </p>
-                      <div class="w-24 bg-gray-200 rounded-full h-1.5 mt-1">
-                        <% progress = rotation.rotation_matches.count > 0 ? ((rotation.current_match_index + 1).to_f / rotation.rotation_matches.count * 100) : 0 %>
-                        <div class="bg-blue-600 h-1.5 rounded-full" style="width: <%= progress %>%"></div>
-                      </div>
+
+                    <div class="feature-progress">
+                      <div class="feature-progress__bar" style="width: <%= progress %>%"></div>
                     </div>
                   </div>
-                </li>
-              <% end %>
+                <% end %>
+              </li>
             <% end %>
           </ul>
         <% else %>
-          <div class="px-4 py-3 text-center">
-            <p class="text-sm text-gray-500">まだローテーションがありません</p>
+          <div class="empty-state">
+            <p class="empty-state__title">まだローテーションがありません</p>
+            <p class="empty-state__description mt-2">イベントの進行管理はローテーション作成から始めます。</p>
             <% if current_user.is_admin? %>
-              <%= link_to "ローテーションを作成", new_event_rotation_path(@event), class: "mt-2 inline-block text-sm text-blue-600 hover:text-blue-500" %>
+              <div class="mt-4">
+                <%= link_to "ローテーションを作成", new_event_rotation_path(@event), class: app_button_classes(variant: :primary, size: :sm) %>
+              </div>
             <% end %>
           </div>
         <% end %>
-      </div>
-    </div>
+      </section>
 
-    <div class="bg-white shadow overflow-hidden sm:rounded-lg">
-      <div class="px-4 py-5 sm:px-6">
-        <div class="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <h2 class="text-lg font-medium text-gray-900">対戦記録</h2>
-            <p class="mt-1 text-sm text-gray-500">全 <%= @matches.total_count %> 試合</p>
-            <div class="flex items-center gap-2 text-sm text-gray-600 mt-2">
-              <span>ソート:</span>
-              <% [["oldest", "試合順"], ["reactions", "リアクション順"]].each do |value, label| %>
-                <% if value == @sort %>
-                  <span class="px-3 py-1 text-sm font-semibold text-white bg-indigo-600 border border-indigo-600 rounded-lg"><%= label %></span>
-                <% else %>
-                  <%= link_to label,
-                        event_path(@event, sort: value, per: @per_page),
-                        class: "px-3 py-1 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-300 transition" %>
+      <section class="feature-surface">
+        <div class="p-5 sm:p-6">
+          <div class="feature-section-head feature-section-head--row">
+            <div>
+              <h2 class="feature-section-head__title">対戦記録</h2>
+              <p class="feature-section-head__meta">全 <%= @matches.total_count %> 試合</p>
+            </div>
+
+            <div class="feature-toolbar">
+              <div class="feature-toolbar__group">
+                <% [["oldest", "試合順"], ["reactions", "リアクション順"]].each do |value, label| %>
+                  <% if value == @sort %>
+                    <span class="ui-chip ui-chip--accent"><%= label %></span>
+                  <% else %>
+                    <%= link_to label, event_path(@event, sort: value, per: @per_page), class: "ui-chip ui-chip--muted" %>
+                  <% end %>
                 <% end %>
-              <% end %>
+              </div>
+              <%= render "shared/per_page_selector", per_page: @per_page, url_builder: ->(n) { event_path(@event, sort: @sort, per: n) } %>
             </div>
           </div>
-          <%= render "shared/per_page_selector", per_page: @per_page, url_builder: ->(n) { event_path(@event, sort: @sort, per: n) } %>
         </div>
-      </div>
-      <div class="border-t border-gray-200">
+
         <% if @matches.any? %>
-          <ul class="divide-y divide-gray-100">
+          <ul class="divide-y divide-slate-100">
             <% @matches.each do |match| %>
               <%
                 _team1 = match.match_players.to_a.select { |p| p.team_number == 1 }.sort_by(&:position)
@@ -127,61 +138,65 @@
                 _streaming_id = _team1.first&.id
               %>
               <%= turbo_stream_from "match_#{match.id}_reactions_compact" %>
-              <li class="px-5 py-5 hover:bg-gray-50 cursor-pointer"
+              <li class="px-5 py-5 transition hover:bg-slate-50/80 cursor-pointer"
                   data-controller="card-link"
                   data-card-link-url-value="<%= match_path(match) %>"
                   data-action="click->card-link#navigate">
-
-                <%# メタ行 %>
-                <div class="flex items-center justify-between gap-2 mb-3">
-                  <div class="flex items-center flex-wrap gap-2">
-                    <span class="text-sm font-semibold text-gray-800">第<%= @match_numbers[match.id] %>試合</span>
+                <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                  <div class="flex flex-wrap items-center gap-2">
+                    <span class="text-sm font-semibold text-slate-900">第<%= @match_numbers[match.id] %>試合</span>
                     <% if match.rotation_match&.started_at %>
-                      <span class="text-sm text-gray-400"><%= match.rotation_match.started_at.strftime('%H:%M') %> 開始</span>
+                      <span class="text-sm text-slate-400"><%= match.rotation_match.started_at.strftime("%H:%M") %> 開始</span>
                     <% elsif match.played_at %>
-                      <span class="text-sm text-gray-400"><%= match.played_at.strftime('%H:%M') %> 終了</span>
+                      <span class="text-sm text-slate-400"><%= match.played_at.strftime("%H:%M") %> 終了</span>
                     <% end %>
                     <% if match.video_url %>
                       <span onclick="event.stopPropagation()">
-                        <%= link_to match.video_url, target: "_blank", rel: "noopener noreferrer",
-                            class: "inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-red-50 text-red-600 text-xs font-semibold hover:bg-red-100 transition-colors" do %>
+                        <%= link_to match.video_url, target: "_blank", rel: "noopener noreferrer", class: "feature-pill feature-pill--danger transition hover:opacity-90" do %>
                           <img src="/youtube_social_icon_red.png" alt="YouTube" class="h-3.5">
                           配信
                         <% end %>
                       </span>
                     <% end %>
                   </div>
+
                   <span onclick="event.stopPropagation()">
                     <%= render "favorite_matches/favorite_button", match: match, is_favorited: @my_favorite_match_ids.include?(match.id) %>
                   </span>
                 </div>
 
-                <%# チームグリッド %>
-                <%= render "matches/match_teams",
-                      left_players: _team1,
-                      right_players: _team2,
-                      left_wins: match.winning_team == 1,
-                      streaming_player_id: _streaming_id %>
+                <div class="mt-4">
+                  <%= render "matches/match_teams",
+                        left_players: _team1,
+                        right_players: _team2,
+                        left_wins: match.winning_team == 1,
+                        streaming_player_id: _streaming_id %>
+                </div>
 
-                <%# リアクションバー %>
-                <div class="mt-3" onclick="event.stopPropagation()">
+                <div class="mt-4" onclick="event.stopPropagation()">
                   <%= render "reactions/reaction_bar", match: match, compact: true, emojis: @emojis %>
                 </div>
               </li>
             <% end %>
           </ul>
+
           <% if @matches.respond_to?(:total_pages) && @matches.total_pages > 1 %>
-            <div class="px-4 py-4 flex flex-col items-center gap-4 border-t border-gray-200">
-              <%= paginate @matches, params: { per: @per_page, sort: @sort } %>
-              <%= render "shared/per_page_selector", per_page: @per_page, url_builder: ->(n) { event_path(@event, sort: @sort, per: n) } %>
+            <div class="border-t border-slate-100 px-5 py-5">
+              <div class="flex flex-col items-center gap-4">
+                <%= paginate @matches, params: { per: @per_page, sort: @sort } %>
+                <%= render "shared/per_page_selector", per_page: @per_page, url_builder: ->(n) { event_path(@event, sort: @sort, per: n) } %>
+              </div>
             </div>
           <% end %>
         <% else %>
-          <div class="px-4 py-3 text-center">
-            <p class="text-sm text-gray-500">まだ対戦記録がありません</p>
+          <div class="px-5 pb-5 sm:px-6 sm:pb-6">
+            <div class="empty-state">
+              <p class="empty-state__title">まだ対戦記録がありません</p>
+              <p class="empty-state__description mt-2">ローテーションから試合結果を記録すると、ここに並びます。</p>
+            </div>
           </div>
         <% end %>
-      </div>
+      </section>
     </div>
   </div>
 </div>
