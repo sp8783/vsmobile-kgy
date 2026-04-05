@@ -159,4 +159,20 @@ module ApplicationHelper
       "案内"
     end
   end
+
+  def app_notice_classes(tone = :info)
+    class_names("app-notice", "app-notice--#{tone.to_sym}")
+  end
+
+  def app_notice_icon_classes(tone = :info)
+    class_names("app-notice__icon", "app-notice__icon--#{tone.to_sym}")
+  end
+
+  def app_button_classes(variant: :primary, size: :md, full_width: false)
+    class_names(
+      (variant.to_sym == :primary ? "ui-button-primary" : "ui-button-secondary"),
+      ("ui-button--sm" if size.to_sym == :sm),
+      ("w-full" if full_width)
+    )
+  end
 end

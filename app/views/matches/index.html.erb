@@ -8,9 +8,9 @@
     <% if current_user.is_admin? %>
       <div class="flex flex-wrap gap-2">
         <% if @latest_event %>
-          <%= link_to "新規登録", new_event_match_path(@latest_event), class: "bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded", data: { turbo_frame: "_top" } %>
+          <%= link_to "新規登録", new_event_match_path(@latest_event), class: app_button_classes, data: { turbo_frame: "_top" } %>
         <% end %>
-        <%= link_to "CSVインポート", new_admin_import_path, class: "bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded", data: { turbo_frame: "_top" } %>
+        <%= link_to "CSVインポート", new_admin_import_path, class: app_button_classes(variant: :secondary), data: { turbo_frame: "_top" } %>
       </div>
     <% end %>
   </div>

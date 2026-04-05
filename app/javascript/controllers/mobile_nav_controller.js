@@ -5,7 +5,9 @@ export default class extends Controller {
 
   connect() {
     this._keydownHandler = this._handleKeydown.bind(this)
+    this._resizeHandler = this._handleResize.bind(this)
     this._closeTimer = null
+    window.addEventListener("resize", this._resizeHandler)
   }
 
   toggle() {
@@ -43,6 +45,7 @@ export default class extends Controller {
     clearTimeout(this._closeTimer)
     document.body.classList.remove("overflow-hidden")
     document.removeEventListener("keydown", this._keydownHandler)
+    window.removeEventListener("resize", this._resizeHandler)
   }
 
   isOpen() {
@@ -51,6 +54,10 @@ export default class extends Controller {
 
   _handleKeydown(event) {
     if (event.key === "Escape") this.close()
+  }
+
+  _handleResize() {
+    if (window.innerWidth >= 1024 && this.isOpen()) this.close()
   }
 
   _setExpanded(expanded) {
