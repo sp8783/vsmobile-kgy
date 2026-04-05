@@ -83,12 +83,8 @@ class RotationWorkflowManager
       end
 
       rotation_match.update!(match: match)
-
-      next_unrecorded_index = next_unrecorded_match_index(rotation)
-      if next_unrecorded_index
-        rotation.update!(current_match_index: next_unrecorded_index)
-        mark_current_match_started(rotation)
-      end
+      rotation.sync_current_match_index!
+      mark_current_match_started(rotation)
 
       completed = rotation.rotation_matches.where(match_id: nil).none?
       rotation.update!(is_active: false) if completed
@@ -171,20 +167,6 @@ class RotationWorkflowManager
         position: attributes[:position]
       )
     end
-  end
-
-  def next_unrecorded_match_index(target_rotation)
-    ordered_matches = target_rotation.rotation_matches.includes(:match).order(:match_index)
-
-    ordered_matches.each do |rotation_match|
-      return rotation_match.match_index if rotation_match.match_index > target_rotation.current_match_index && rotation_match.match.nil?
-    end
-
-    ordered_matches.each do |rotation_match|
-      return rotation_match.match_index if rotation_match.match.nil?
-    end
-
-    target_rotation.rotation_matches.count - 1
   end
 
   def notify_upcoming_players(target_rotation)

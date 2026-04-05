@@ -106,20 +106,13 @@ class EventsController < ApplicationController
   end
 
   def destroy
-    name = @event.name
+    result = EventDeletionWorkflow.new(event: @event).call
 
-    ActiveRecord::Base.transaction do
-      # イベントに関連する試合のrotation_matchesの参照を解除
-      match_ids = @event.matches.pluck(:id)
-      RotationMatch.where(match_id: match_ids).update_all(match_id: nil) if match_ids.any?
-
-      # イベントを削除（dependent: destroyでmatchesとrotationsも削除される）
-      @event.destroy
+    if result.success?
+      redirect_to events_path, notice: "イベント「#{result.event_name}」を削除しました。"
+    else
+      redirect_to event_path(@event), alert: "削除に失敗しました: #{result.error_message}"
     end
-
-    redirect_to events_path, notice: "イベント「#{name}」を削除しました。"
-  rescue => e
-    redirect_to event_path(@event), alert: "削除に失敗しました: #{e.message}"
   end
 
   private
