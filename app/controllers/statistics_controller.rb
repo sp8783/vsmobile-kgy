@@ -1,4 +1,6 @@
 class StatisticsController < ApplicationController
+  PERSONAL_TABS = %w[overview performance events event_progression mobile_suits opponent_suits partners opponents].freeze
+
   before_action :authenticate_user!
   before_action :set_regular_users
   before_action :set_filters
@@ -8,8 +10,7 @@ class StatisticsController < ApplicationController
     @active_tab = params[:tab] || "overall"
 
     # ゲストユーザー（または管理者がゲスト視点切り替え中）は個人統計タブにアクセス不可
-    personal_tabs = %w[overview performance events event_progression mobile_suits opponent_suits partners opponents]
-    if viewing_as_user.is_guest && personal_tabs.include?(@active_tab)
+    if viewing_as_user.is_guest && PERSONAL_TABS.include?(@active_tab)
       redirect_to statistics_path(tab: "overall"), alert: "ゲストユーザーには個人統計データがありません"
       return
     end
@@ -69,10 +70,10 @@ class StatisticsController < ApplicationController
   end
 
   def set_filters
-    @filter_events = params[:events].present? ? params[:events].map(&:to_i) : []
-    @filter_mobile_suits = params[:mobile_suits].present? ? params[:mobile_suits].map(&:to_i) : []
-    @filter_partners = params[:partners].present? ? params[:partners].map(&:to_i) : []
-    @filter_costs = params[:costs].present? ? params[:costs].map(&:to_i) : []
+    @filter_events = selected_ids(:events)
+    @filter_mobile_suits = selected_ids(:mobile_suits)
+    @filter_partners = selected_ids(:partners)
+    @filter_costs = selected_ids(:costs)
   end
 
   def apply_filters
@@ -98,23 +99,11 @@ class StatisticsController < ApplicationController
 
     # パートナーフィルター
     if @filter_partners.any?
-      # パートナーが参加している試合を取得
-      partner_match_ids = MatchPlayer.where(user_id: @filter_partners)
-                                     .pluck(:match_id)
-                                     .uniq
-
       # ログインユーザーとパートナーが同じチームの試合に絞り込む
       filtered_match_ids = []
       @filtered_matches.each do |my_mp|
-        match = my_mp.match
-        my_team = my_mp.team_number
-
-        # この試合にパートナーが同じチームで参加しているか確認
-        partner_in_same_team = match.match_players.any? do |mp|
-          @filter_partners.include?(mp.user_id) && mp.team_number == my_team
-        end
-
-        filtered_match_ids << match.id if partner_in_same_team
+        partner_mp = my_mp.partner
+        filtered_match_ids << my_mp.match_id if partner_mp && @filter_partners.include?(partner_mp.user_id)
       end
 
       @filtered_matches = @filtered_matches.where(matches: { id: filtered_match_ids.uniq })
@@ -133,7 +122,7 @@ class StatisticsController < ApplicationController
     @total_matches = @filtered_matches.count
 
     wins = @filtered_matches.count do |mp|
-      mp.match.winning_team == mp.team_number
+      mp.won?
     end
     @total_wins = wins
     @win_rate = @total_matches > 0 ? (wins.to_f / @total_matches * 100).round(1) : 0
@@ -159,7 +148,7 @@ class StatisticsController < ApplicationController
     current_streak = 0
 
     all_matches.each do |mp|
-      if mp.match.winning_team == mp.team_number
+      if mp.won?
         current_streak += 1
         max_streak = [ max_streak, current_streak ].max
       else
@@ -184,7 +173,7 @@ class StatisticsController < ApplicationController
       }
 
       events_data[event_id][:total] += 1
-      events_data[event_id][:wins] += 1 if mp.match.winning_team == mp.team_number
+      events_data[event_id][:wins] += 1 if mp.won?
     end
 
     events_data.map do |event_id, data|
@@ -204,15 +193,13 @@ class StatisticsController < ApplicationController
       my_team = my_mp.team_number
       my_cost = my_mp.mobile_suit.cost
 
-      partner_mp = match.match_players.find do |mp|
-        mp.team_number == my_team && mp.user_id != viewing_as_user.id
-      end
+      partner_mp = my_mp.partner
 
       partner_cost = partner_mp&.mobile_suit&.cost
       cost_key = [ my_cost, partner_cost ]
 
       cost_data[cost_key][:total] += 1
-      cost_data[cost_key][:wins] += 1 if match.winning_team == my_team
+      cost_data[cost_key][:wins] += 1 if match.won_by?(my_team)
     end
 
     cost_data.map do |cost_key, data|
@@ -242,7 +229,7 @@ class StatisticsController < ApplicationController
         round_number = match.rotation_match.rotation.round_number
 
         round_data[round_number][:total] += 1
-        round_data[round_number][:wins] += 1 if match.winning_team == my_mp.team_number
+        round_data[round_number][:wins] += 1 if my_mp.won?
       end
     end
 
@@ -270,19 +257,16 @@ class StatisticsController < ApplicationController
 
     @filtered_matches.each do |my_mp|
       match = my_mp.match
-      my_team = my_mp.team_number
 
       # パートナーを見つける
-      partner_mp = match.match_players.find do |mp|
-        mp.team_number == my_team && mp.user_id != viewing_as_user.id
-      end
+      partner_mp = my_mp.partner
 
       next unless partner_mp
 
       partner_id = partner_mp.user_id
       partner_data[partner_id][:user] = partner_mp.user
       partner_data[partner_id][:total] += 1
-      partner_data[partner_id][:wins] += 1 if match.winning_team == my_team
+      partner_data[partner_id][:wins] += 1 if my_mp.won?
 
       # 機体の組み合わせを記録
       combo_key = "#{my_mp.mobile_suit.name} & #{partner_mp.mobile_suit.name}"
@@ -333,17 +317,14 @@ class StatisticsController < ApplicationController
       match = my_mp.match
       my_team = my_mp.team_number
       suit_id = my_mp.mobile_suit_id
-      opponent_team = my_team == 1 ? 2 : 1
 
       # 使用機体の統計
       suit_data[suit_id][:mobile_suit] = my_mp.mobile_suit
       suit_data[suit_id][:total] += 1
-      suit_data[suit_id][:wins] += 1 if match.winning_team == my_team
+      suit_data[suit_id][:wins] += 1 if match.won_by?(my_team)
 
       # パートナーの機体を記録
-      partner_mp = match.match_players.find do |mp|
-        mp.team_number == my_team && mp.user_id != viewing_as_user.id
-      end
+      partner_mp = my_mp.partner
 
       if partner_mp
         suit_data[suit_id][:partner_suits][partner_mp.mobile_suit.name] += 1
@@ -358,11 +339,11 @@ class StatisticsController < ApplicationController
       end
 
       # 対戦機体の統計
-      match.match_players.select { |mp| mp.team_number == opponent_team }.each do |opponent_mp|
+      my_mp.opponents.each do |opponent_mp|
         opp_suit_id = opponent_mp.mobile_suit_id
         opponent_suit_data[opp_suit_id][:mobile_suit] = opponent_mp.mobile_suit
         opponent_suit_data[opp_suit_id][:total] += 1
-        opponent_suit_data[opp_suit_id][:wins] += 1 if match.winning_team == my_team
+        opponent_suit_data[opp_suit_id][:wins] += 1 if match.won_by?(my_team)
 
         # 最終対戦日を更新
         if opponent_suit_data[opp_suit_id][:last_faced_at].nil? || match.played_at > opponent_suit_data[opp_suit_id][:last_faced_at]
@@ -416,13 +397,11 @@ class StatisticsController < ApplicationController
 
       event_data[event_id][:event] = match.event
       event_data[event_id][:total] += 1
-      event_data[event_id][:wins] += 1 if match.winning_team == my_team
+      event_data[event_id][:wins] += 1 if match.won_by?(my_team)
       event_data[event_id][:suits_used][my_mp.mobile_suit.name] += 1
 
       # パートナーを記録
-      partner_mp = match.match_players.find do |mp|
-        mp.team_number == my_team && mp.user_id != viewing_as_user.id
-      end
+      partner_mp = my_mp.partner
 
       if partner_mp
         event_data[event_id][:partners][partner_mp.user.nickname] += 1
@@ -454,15 +433,13 @@ class StatisticsController < ApplicationController
 
     @filtered_matches.each do |my_mp|
       match = my_mp.match
-      my_team = my_mp.team_number
-      opponent_team = my_team == 1 ? 2 : 1
 
       # 対戦相手を取得
-      match.match_players.select { |mp| mp.team_number == opponent_team }.each do |opponent_mp|
+      my_mp.opponents.each do |opponent_mp|
         opponent_id = opponent_mp.user_id
         opponent_data[opponent_id][:user] = opponent_mp.user
         opponent_data[opponent_id][:total] += 1
-        opponent_data[opponent_id][:wins] += 1 if match.winning_team == my_team
+        opponent_data[opponent_id][:wins] += 1 if my_mp.won?
         opponent_data[opponent_id][:suits_used][opponent_mp.mobile_suit.name] += 1
 
         # 最終対戦日を更新
@@ -511,7 +488,7 @@ class StatisticsController < ApplicationController
 
         event_progression_data[event_id][:rotations][rotation_id][:rotation_name] = "#{round_number}周目"
         event_progression_data[event_id][:rotations][rotation_id][:total] += 1
-        event_progression_data[event_id][:rotations][rotation_id][:wins] += 1 if match.winning_team == my_team
+        event_progression_data[event_id][:rotations][rotation_id][:wins] += 1 if match.won_by?(my_team)
         event_progression_data[event_id][:rotations][rotation_id][:matches] << my_mp
       end
     end
@@ -543,7 +520,7 @@ class StatisticsController < ApplicationController
           slice = sorted_matches[start_idx...end_idx]
           next if slice.nil? || slice.empty?
 
-          wins = slice.count { |mp| mp.match.winning_team == mp.team_number }
+          wins = slice.count(&:won?)
           total = slice.size
           {
             rotation_name: "第#{i}ターム",
@@ -558,7 +535,7 @@ class StatisticsController < ApplicationController
       end
 
       all_total = data[:all_matches].size
-      all_wins  = data[:all_matches].count { |mp| mp.match.winning_team == mp.team_number }
+      all_wins  = data[:all_matches].count(&:won?)
 
       {
         event: data[:event],
@@ -573,8 +550,8 @@ class StatisticsController < ApplicationController
 
   def calculate_performance_stats
     stats_mps = @filtered_matches.select(&:has_stats?)
-    win_mps  = stats_mps.select { |mp| mp.match.winning_team == mp.team_number }
-    loss_mps = stats_mps.reject { |mp| mp.match.winning_team == mp.team_number }
+    win_mps  = stats_mps.select(&:won?)
+    loss_mps = stats_mps.reject(&:won?)
 
     # 機体/コストフィルター適用時: フィルターなしの自分の全体平均・同コスト帯平均を算出（比較用）
     if @filter_mobile_suits.any? || @filter_costs.any?
@@ -586,11 +563,11 @@ class StatisticsController < ApplicationController
       all_user_records = all_user_mps.to_a
       all_stats = all_user_records.select(&:has_stats?)
       @user_overall_avg    = calc_perf_stats(all_stats)
-      @user_overall_wins   = calc_perf_stats(all_stats.select { |mp| mp.match.winning_team == mp.team_number })
-      @user_overall_losses = calc_perf_stats(all_stats.reject { |mp| mp.match.winning_team == mp.team_number })
+      @user_overall_wins   = calc_perf_stats(all_stats.select(&:won?))
+      @user_overall_losses = calc_perf_stats(all_stats.reject(&:won?))
 
       # EXバースト活用分析の自己比較用データ（フィルターなし全体）
-      all_loss_stats = all_stats.reject { |mp| mp.match.winning_team == mp.team_number }
+      all_loss_stats = all_stats.reject(&:won?)
       if all_loss_stats.any?
         n = all_loss_stats.size
         @user_overall_ex_remaining_rate  = (all_loss_stats.count { |mp| mp.last_death_ex_available || mp.survive_loss_ex_available } * 100.0 / n).round(1)
@@ -599,8 +576,8 @@ class StatisticsController < ApplicationController
       end
 
       # OL分析の自己比較用データ（フィルターなし全体）
-      all_user_losses_ol = all_user_records.reject { |mp| mp.match.winning_team == mp.team_number }
-      all_user_wins_ol   = all_user_records.select { |mp| mp.match.winning_team == mp.team_number }
+      all_user_losses_ol = all_user_records.reject(&:won?)
+      all_user_wins_ol   = all_user_records.select(&:won?)
       if all_user_losses_ol.any?
         no_ol = all_user_losses_ol.count { |mp|
           flag = mp.team_number == 1 ? mp.match.team1_ex_overlimit_before_end : mp.match.team2_ex_overlimit_before_end
@@ -627,12 +604,12 @@ class StatisticsController < ApplicationController
       # 絞り込み済みデータと実質同一になる場合（例: コストのみフィルター）は表示しない
       if same_cost_stats.size != stats_mps.select(&:has_stats?).size
         @user_same_cost_avg    = calc_perf_stats(same_cost_stats)
-        @user_same_cost_wins   = calc_perf_stats(same_cost_stats.select { |mp| mp.match.winning_team == mp.team_number })
-        @user_same_cost_losses = calc_perf_stats(same_cost_stats.reject { |mp| mp.match.winning_team == mp.team_number })
+        @user_same_cost_wins   = calc_perf_stats(same_cost_stats.select(&:won?))
+        @user_same_cost_losses = calc_perf_stats(same_cost_stats.reject(&:won?))
         @same_cost_label = same_costs.sort.reverse.map { |c| "#{c}" }.join("・") + "コスト"
 
         # EXバースト - 同コスト帯
-        sc_loss_stats = same_cost_stats.reject { |mp| mp.match.winning_team == mp.team_number }
+        sc_loss_stats = same_cost_stats.reject(&:won?)
         if sc_loss_stats.any?
           n = sc_loss_stats.size
           @user_same_cost_ex_remaining_rate  = (sc_loss_stats.count { |mp| mp.last_death_ex_available || mp.survive_loss_ex_available } * 100.0 / n).round(1)
@@ -641,8 +618,8 @@ class StatisticsController < ApplicationController
         end
 
         # OL分析 - 同コスト帯
-        sc_losses_ol = same_cost_records.reject { |mp| mp.match.winning_team == mp.team_number }
-        sc_wins_ol   = same_cost_records.select { |mp| mp.match.winning_team == mp.team_number }
+        sc_losses_ol = same_cost_records.reject(&:won?)
+        sc_wins_ol   = same_cost_records.select(&:won?)
         if sc_losses_ol.any?
           no_ol = sc_losses_ol.count { |mp|
             flag = mp.team_number == 1 ? mp.match.team1_ex_overlimit_before_end : mp.match.team2_ex_overlimit_before_end
@@ -678,8 +655,8 @@ class StatisticsController < ApplicationController
     @survive_loss_ex_on_loss = loss_mps.count { |mp| mp.survive_loss_ex_available }
 
     # OL分析（全試合対象）
-    all_losses = @filtered_matches.reject { |mp| mp.match.winning_team == mp.team_number }
-    all_wins   = @filtered_matches.select { |mp| mp.match.winning_team == mp.team_number }
+    all_losses = @filtered_matches.reject(&:won?)
+    all_wins   = @filtered_matches.select(&:won?)
 
     @my_team_no_ol_losses = all_losses.count do |mp|
       team_ol = mp.team_number == 1 ? mp.match.team1_ex_overlimit_before_end : mp.match.team2_ex_overlimit_before_end
@@ -732,7 +709,7 @@ class StatisticsController < ApplicationController
       no_ol_loss_rates    = []
       opp_no_ol_win_rates = []
       ol_mps_all.group_by(&:user_id).each do |_uid, mps|
-        loss_mps = mps.select { |mp| mp.match.winning_team != mp.team_number }
+        loss_mps = mps.reject(&:won?)
         if loss_mps.any?
           no_ol = loss_mps.count { |mp|
             flag = mp.team_number == 1 ? mp.match.team1_ex_overlimit_before_end : mp.match.team2_ex_overlimit_before_end
@@ -740,7 +717,7 @@ class StatisticsController < ApplicationController
           }
           no_ol_loss_rates << (no_ol * 100.0 / loss_mps.size).round(1)
         end
-        win_mps = mps.select { |mp| mp.match.winning_team == mp.team_number }
+        win_mps = mps.select(&:won?)
         if win_mps.any?
           opp_no_ol = win_mps.count { |mp|
             flag = mp.team_number == 1 ? mp.match.team2_ex_overlimit_before_end : mp.match.team1_ex_overlimit_before_end
@@ -828,8 +805,8 @@ class StatisticsController < ApplicationController
       user_losses_list = []
       by_user.each do |_uid, mps|
         overall  = build_perf.call(mps)
-        win_mps  = mps.select { |mp| mp.match.winning_team == mp.team_number }
-        loss_mps = mps.select { |mp| mp.match.winning_team && mp.match.winning_team != mp.team_number }
+        win_mps  = mps.select(&:won?)
+        loss_mps = mps.reject(&:won?).select { |mp| mp.match.winning_team.present? }
         user_perf_list   << overall                    if overall
         user_wins_list   << build_perf.call(win_mps)   if win_mps.any?
         user_losses_list << build_perf.call(loss_mps)  if loss_mps.any?
@@ -1083,7 +1060,7 @@ class StatisticsController < ApplicationController
       suit_id = mp.mobile_suit_id
       suit_stats[suit_id] ||= { wins: 0, total: 0 }
       suit_stats[suit_id][:total] += 1
-      suit_stats[suit_id][:wins] += 1 if mp.match.winning_team == mp.team_number
+      suit_stats[suit_id][:wins] += 1 if mp.won?
     end
 
     @high_winrate_suits = suit_stats
@@ -1105,7 +1082,7 @@ class StatisticsController < ApplicationController
       cost = mp.mobile_suit.cost
       cost_stats[cost] ||= { wins: 0, total: 0 }
       cost_stats[cost][:total] += 1
-      cost_stats[cost][:wins] += 1 if mp.match.winning_team == mp.team_number
+      cost_stats[cost][:wins] += 1 if mp.won?
     end
 
     total_usage = cost_stats.values.sum { |s| s[:total] }
@@ -1155,5 +1132,9 @@ class StatisticsController < ApplicationController
         player_count: player_count
       }
     end
+  end
+
+  def selected_ids(param_key)
+    params[param_key].present? ? params[param_key].map(&:to_i) : []
   end
 end

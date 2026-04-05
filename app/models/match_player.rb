@@ -14,4 +14,16 @@ class MatchPlayer < ApplicationRecord
     score.present? || kills.present? || deaths.present? ||
       damage_dealt.present? || damage_received.present? || exburst_damage.present?
   end
+
+  def won?
+    match.won_by?(team_number)
+  end
+
+  def partner
+    match.partner_for(self)
+  end
+
+  def opponents
+    match.opponents_for(self)
+  end
 end

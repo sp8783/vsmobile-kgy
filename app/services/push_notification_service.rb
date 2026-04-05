@@ -108,9 +108,7 @@ class PushNotificationService
     end
 
     def collect_player_ids(rotation)
-      rotation.rotation_matches.flat_map do |rm|
-        [ rm.team1_player1_id, rm.team1_player2_id, rm.team2_player1_id, rm.team2_player2_id ]
-      end.compact.uniq
+      rotation.rotation_matches.flat_map(&:player_ids).uniq
     end
   end
 end

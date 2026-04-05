@@ -123,7 +123,7 @@ class DashboardController < ApplicationController
     user_suit_stats = Hash.new { |h, k| h[k] = { count: 0, wins: 0 } }
     @all_user_matches.each do |mp|
       user_suit_stats[mp.mobile_suit][:count] += 1
-      user_suit_stats[mp.mobile_suit][:wins] += 1 if mp.match.winning_team == mp.team_number
+      user_suit_stats[mp.mobile_suit][:wins] += 1 if mp.won?
     end
     @user_favorite_suits = user_suit_stats.sort_by { |_, stats| -stats[:count] }
                                           .take(3)
@@ -194,10 +194,7 @@ class DashboardController < ApplicationController
     # 現在のユーザーの次の試合を取得（メモリ内で検索）
     @user_next_rotation_match = @active_rotation.rotation_matches.find do |rm|
       rm.match_index >= @active_rotation.current_match_index &&
-      (rm.team1_player1_id == viewing_as_user.id ||
-       rm.team1_player2_id == viewing_as_user.id ||
-       rm.team2_player1_id == viewing_as_user.id ||
-       rm.team2_player2_id == viewing_as_user.id)
+      rm.includes_player?(viewing_as_user.id)
     end
 
     if @user_next_rotation_match
@@ -207,7 +204,7 @@ class DashboardController < ApplicationController
       @opponent_players = @match_info[:opponents]
 
       # 配信担当かどうか
-      @is_streaming = (@user_next_rotation_match.team1_player1_id == viewing_as_user.id)
+      @is_streaming = @user_next_rotation_match.streaming_for?(viewing_as_user.id)
     end
   end
 
@@ -241,12 +238,12 @@ class DashboardController < ApplicationController
 
     # 直近5試合の勝敗を計算（新しい順）
     @recent_5_results = recent_match_players.take(5).map do |mp|
-      mp.match.winning_team == mp.team_number
+      mp.won?
     end
 
     # 直近10試合の勝率
     recent_10_results = recent_match_players.map do |mp|
-      mp.match.winning_team == mp.team_number
+      mp.won?
     end
 
     if recent_10_results.any?
@@ -268,7 +265,7 @@ class DashboardController < ApplicationController
       next if streak_seen_match_ids.include?(mp.match_id)
       streak_seen_match_ids.add(mp.match_id)
 
-      is_win = mp.match.winning_team == mp.team_number
+      is_win = mp.won?
 
       if @streak_type.nil?
         # 最新の試合で連勝/連敗のタイプを決定
@@ -292,9 +289,8 @@ class DashboardController < ApplicationController
       match = my_mp.match
       my_team = my_mp.team_number
 
-      # 同じチームのパートナーを見つける（既にincludesで読み込み済み）
-      # .to_aで配列化してメモリ内で検索
-      partner_mp = match.match_players.to_a.find { |mp| mp.team_number == my_team && mp.user_id != viewing_as_user.id }
+      # 同じチームのパートナーを取得（既にincludesで読み込み済み）
+      partner_mp = my_mp.partner
       next unless partner_mp
 
       partner_id = partner_mp.user_id
@@ -306,7 +302,7 @@ class DashboardController < ApplicationController
       }
 
       # 勝敗判定
-      is_win = (match.winning_team == my_team)
+      is_win = match.won_by?(my_team)
       partners_stats[partner_id][:wins] += 1 if is_win
       partners_stats[partner_id][:total] += 1
 
@@ -352,7 +348,7 @@ class DashboardController < ApplicationController
 
       suit_stats[suit_id][:usage] += 1
 
-      is_win = (mp.match.winning_team == mp.team_number)
+      is_win = mp.won?
       suit_stats[suit_id][:wins] += 1 if is_win
     end
 
@@ -379,7 +375,7 @@ class DashboardController < ApplicationController
       event_matches = @all_user_matches.select { |mp| mp.match.event_id == event.id }
 
       total = event_matches.size
-      wins = event_matches.count { |mp| mp.match.winning_team == mp.team_number }
+      wins = event_matches.count(&:won?)
 
       stats_mps = event_matches.select(&:has_stats?)
       avg_damage = stats_mps.any? ? (stats_mps.sum { |mp| mp.damage_dealt.to_i }.to_f / stats_mps.size).round(0).to_i : nil
@@ -406,8 +402,7 @@ class DashboardController < ApplicationController
       my_cost = my_mp.mobile_suit.cost
 
       # パートナーのコストを取得（既にincludesで読み込み済み）
-      # .to_aで配列化してメモリ内で検索
-      partner_mp = match.match_players.to_a.find { |mp| mp.team_number == my_team && mp.user_id != viewing_as_user.id }
+      partner_mp = my_mp.partner
       next unless partner_mp
 
       partner_cost = partner_mp.mobile_suit.cost
@@ -418,7 +413,7 @@ class DashboardController < ApplicationController
 
       cost_stats[cost_key][:total] += 1
 
-      is_win = (match.winning_team == my_team)
+      is_win = match.won_by?(my_team)
       cost_stats[cost_key][:wins] += 1 if is_win
     end
 
@@ -514,18 +509,13 @@ class DashboardController < ApplicationController
       my_matches.each do |my_mp|
         match = my_mp.match
         my_team = my_mp.team_number
-        opponent_team = my_team == 1 ? 2 : 1
-
         # 相手チームの機体を取得（既にincludesで読み込み済み）
-        # .to_aで配列化してメモリ内で検索
-        match.match_players.to_a.each do |opp_mp|
-          next unless opp_mp.team_number == opponent_team
-
+        my_mp.opponents.each do |opp_mp|
           opp_suit_id = opp_mp.mobile_suit_id
           opponent_stats[opp_suit_id][:mobile_suit] = opp_mp.mobile_suit
           opponent_stats[opp_suit_id][:total] += 1
 
-          is_win = (match.winning_team == my_team)
+          is_win = match.won_by?(my_team)
           opponent_stats[opp_suit_id][:wins] += 1 if is_win
         end
       end
