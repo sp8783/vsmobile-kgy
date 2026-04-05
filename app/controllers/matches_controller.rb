@@ -134,7 +134,7 @@ class MatchesController < ApplicationController
 
   def load_form_options
     @users = User.regular_users.order(:nickname)
-    @mobile_suits = MobileSuit.order(Arel.sql("position IS NULL, position ASC, cost DESC, name ASC"))
+    @mobile_suits = MobileSuit.catalog_order
   end
 
   def assign_view_state(attributes)

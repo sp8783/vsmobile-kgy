@@ -9,7 +9,7 @@ class MyPageController < ApplicationController
                                      .index_by(&:slot)
     @selected_suit_ids = (0..11).filter_map { |s| @favorites_by_slot[s]&.mobile_suit_id }
 
-    @all_suits      = MobileSuit.all.order(:position)
+    @all_suits      = MobileSuit.position_order
     @costs          = COSTS
     @counts_by_cost = MobileSuit.group(:cost).count
 

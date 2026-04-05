@@ -6,7 +6,7 @@ class MatchesFilterOptions
   def to_h
     {
       all_events: Event.order(held_on: :desc),
-      all_mobile_suits: MobileSuit.order(Arel.sql("position IS NULL, position ASC, cost DESC, name ASC")),
+      all_mobile_suits: MobileSuit.catalog_order,
       all_users: all_users
     }
   end
