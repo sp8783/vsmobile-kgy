@@ -1,4 +1,7 @@
 class MobileSuit < ApplicationRecord
+  scope :catalog_order, -> { order(Arel.sql("position IS NULL, position ASC, cost DESC, name ASC")) }
+  scope :position_order, -> { order(:position) }
+
   # Validations
   validates :name, presence: true
   validates :series, presence: true

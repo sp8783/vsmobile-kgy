@@ -3,7 +3,7 @@ module Admin
     before_action :set_mobile_suit, only: [ :edit, :update, :destroy ]
 
     def index
-      @mobile_suits = MobileSuit.all.order(Arel.sql("position IS NULL, position ASC, cost DESC, name ASC"))
+      @mobile_suits = MobileSuit.catalog_order
     end
 
     def new
