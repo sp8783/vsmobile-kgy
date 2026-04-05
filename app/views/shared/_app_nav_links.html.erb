@@ -1,0 +1,10 @@
+<% compact = local_assigns.fetch(:compact, false) %>
+
+<div class="space-y-1.5">
+  <% items.each do |item| %>
+    <%= link_to item[:path], class: app_nav_link_classes(active: item[:active], compact: compact) do %>
+      <span><%= item[:label] %></span>
+      <span class="app-nav-link__dot" aria-hidden="true"></span>
+    <% end %>
+  <% end %>
+</div>

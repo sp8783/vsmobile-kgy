@@ -1,0 +1,52 @@
+<header class="app-topbar-wrap">
+  <div class="page-container">
+    <div class="app-topbar">
+      <div class="app-topbar__start">
+        <button type="button"
+                class="app-mobile-menu-button lg:hidden"
+                data-action="mobile-nav#toggle"
+                data-mobile-nav-target="toggleButton"
+                aria-controls="mobile-navigation-panel"
+                aria-expanded="false">
+          <span class="sr-only">メニューを開く</span>
+          <svg data-mobile-nav-target="openIcon" class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7h16M4 12h16M4 17h16"/>
+          </svg>
+          <svg data-mobile-nav-target="closeIcon" class="hidden h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m6 6 12 12M18 6 6 18"/>
+          </svg>
+        </button>
+
+        <div class="min-w-0">
+          <p class="app-topbar__eyebrow">VS.Mobile for KGY</p>
+          <p class="app-topbar__title">
+            <%= viewing_as_someone_else? ? "#{viewing_as_user.nickname}の視点で表示中" : "KGY 対戦ログ" %>
+          </p>
+        </div>
+      </div>
+
+      <div class="app-topbar__end">
+        <% if viewing_as_someone_else? %>
+          <span class="status-pill hidden sm:inline-flex">
+            <span class="status-pill__dot" aria-hidden="true"></span>
+            <span><%= viewing_as_user.nickname %>の視点</span>
+          </span>
+        <% end %>
+
+        <% if current_user.is_admin? %>
+          <div class="hidden lg:block">
+            <%= render "shared/user_switcher_menu" %>
+          </div>
+        <% end %>
+
+        <div class="app-inline-user">
+          <span class="app-inline-user__avatar"><%= user_avatar_initial(current_user) %></span>
+          <div class="hidden sm:block min-w-0">
+            <p class="app-inline-user__name"><%= current_user.nickname %></p>
+            <p class="app-inline-user__meta"><%= current_user.username %></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>

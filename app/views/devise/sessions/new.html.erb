@@ -1,48 +1,48 @@
-<div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-  <div class="max-w-md w-full space-y-8">
-    <div class="text-center">
-      <img src="/logo-login.png" alt="VS.Mobile for KGY" class="mx-auto max-h-48 sm:max-h-60 w-auto">
-    </div>
+<% content_for :title, "ログイン | VS.Mobile for KGY" %>
 
-    <%= form_for(resource, as: resource_name, url: session_path(resource_name), html: { class: "mt-8 space-y-6" }) do |f| %>
+<div class="auth-layout">
+  <section class="auth-card">
+    <div class="auth-card__logo">
+      <img src="/logo-login.png" alt="VS.Mobile for KGY" class="max-h-36 w-auto sm:max-h-40">
+    </div>
+    <p class="auth-card__eyebrow">VS.Mobile for KGY</p>
+    <h1 class="auth-card__title">ログイン</h1>
+
+    <%= form_for(resource, as: resource_name, url: session_path(resource_name), html: { class: "auth-form" }) do |f| %>
       <%= render "devise/shared/error_messages", resource: resource %>
 
-      <div class="rounded-md shadow-sm -space-y-px">
-        <div>
-          <%= f.label :username, "ユーザー名", class: "sr-only" %>
-          <%= f.text_field :username, autofocus: true, autocomplete: "username", placeholder: "ユーザー名", class: "appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm" %>
-        </div>
-        <div>
-          <%= f.label :password, "パスワード", class: "sr-only" %>
-          <%= f.password_field :password, autocomplete: "current-password", placeholder: "パスワード", class: "appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm" %>
-        </div>
+      <div class="auth-field">
+        <%= f.label :username, "ユーザー名", class: "auth-label" %>
+        <%= f.text_field :username, autofocus: true, autocomplete: "username", class: "auth-input" %>
+      </div>
+
+      <div class="auth-field">
+        <%= f.label :password, "パスワード", class: "auth-label" %>
+        <%= f.password_field :password, autocomplete: "current-password", class: "auth-input" %>
       </div>
 
       <% if devise_mapping.rememberable? %>
-        <div class="flex items-center">
-          <%= f.check_box :remember_me, class: "h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" %>
-          <%= f.label :remember_me, "ログイン状態を保持", class: "ml-2 block text-sm text-gray-900" %>
-        </div>
+        <label class="auth-remember">
+          <%= f.check_box :remember_me, class: "auth-checkbox" %>
+          <span>ログイン状態を保持</span>
+        </label>
       <% end %>
 
-      <div>
-        <%= f.submit "ログイン", class: "group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" %>
-      </div>
+      <%= f.submit "ログイン", class: app_button_classes(full_width: true) %>
     <% end %>
 
-    <div class="mt-4">
-      <div class="relative">
-        <div class="absolute inset-0 flex items-center">
-          <div class="w-full border-t border-gray-300"></div>
-        </div>
-        <div class="relative flex justify-center text-sm">
-          <span class="px-2 bg-gray-50 text-gray-500">または</span>
-        </div>
-      </div>
-
-      <div class="mt-4">
-        <%= button_to "ゲストとしてログイン", guest_login_path, method: :post, data: { turbo: false }, class: "group relative w-full flex justify-center py-2 px-4 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" %>
-      </div>
+    <div class="auth-divider">
+      <span>ゲストログイン</span>
     </div>
-  </div>
+
+    <%= button_to "ゲストとしてログイン", guest_login_path,
+        method: :post,
+        data: { turbo: false },
+        class: app_button_classes(variant: :secondary, full_width: true),
+        form_class: "mt-4 w-full" %>
+
+    <p class="auth-card__footnote">
+      ゲストでは閲覧中心の機能を試せます。個人戦績などの機能を使う場合は、管理者にアカウント発行を依頼してください。
+    </p>
+  </section>
 </div>

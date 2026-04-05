@@ -7,13 +7,20 @@
   <div class="bg-white shadow sm:rounded-lg p-6">
     <%= form_with model: @rotation, url: event_rotations_path(@event), local: true do |f| %>
       <% if @rotation.errors.any? %>
-        <div class="mb-4 bg-red-50 border border-red-200 text-red-800 rounded-lg p-4">
-          <h3 class="font-semibold mb-2"><%= pluralize(@rotation.errors.count, "件のエラー") %>があります:</h3>
-          <ul class="list-disc list-inside">
-            <% @rotation.errors.full_messages.each do |message| %>
-              <li><%= message %></li>
-            <% end %>
-          </ul>
+        <div class="mb-4 <%= app_notice_classes(:danger) %>">
+          <div class="<%= app_notice_icon_classes(:danger) %>">
+            <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+            </svg>
+          </div>
+          <div class="min-w-0">
+            <p class="app-notice__title"><%= pluralize(@rotation.errors.count, "件のエラー") %>があります</p>
+            <ul class="app-notice__list">
+              <% @rotation.errors.full_messages.each do |message| %>
+                <li><%= message %></li>
+              <% end %>
+            </ul>
+          </div>
         </div>
       <% end %>
 
@@ -56,15 +63,21 @@
   </div>
 
   <!-- Help Section -->
-  <div class="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
-    <h3 class="text-sm font-semibold text-blue-900 mb-2">ローテーション表について</h3>
-    <ul class="text-sm text-blue-800 space-y-1">
-      <li>• <strong>平等性重視:</strong> 各プレイヤーが全プレイヤーと対戦・ペアを組む回数が均等になるように生成されます</li>
-      <li>• <strong>試合数上限:</strong> 1つのローテーション表あたり最大50試合程度に制限されます</li>
-      <li>• <strong>リアルタイム確認:</strong> 参加者はスマホから「プレイヤー画面」で自分の次の出番を確認できます</li>
-      <li>• <strong>通知機能:</strong> 出番が近づくとブラウザ通知が送信されます（2〜3試合前）</li>
-      <li>• <strong>統計表示:</strong> 詳細ページで各プレイヤーの試合数、ペア回数、対戦回数を確認できます</li>
-      <li>• <strong>周回コピー:</strong> 同じ組み合わせで次の周回を作成できます</li>
-    </ul>
+  <div class="mt-6 <%= app_notice_classes(:info) %>">
+    <div class="<%= app_notice_icon_classes(:info) %>">
+      <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+      </svg>
+    </div>
+    <div class="min-w-0">
+      <p class="app-notice__title">ローテーション表について</p>
+      <ul class="app-notice__list">
+        <li>各プレイヤーが全プレイヤーと対戦・ペアを組む回数が均等になるように生成されます。</li>
+        <li>1つのローテーション表あたり最大50試合程度に制限されます。</li>
+        <li>参加者はスマホからプレイヤー画面で自分の次の出番を確認できます。</li>
+        <li>出番が近づくとブラウザ通知が送信されます。</li>
+        <li>詳細ページで試合数、ペア回数、対戦回数を確認できます。</li>
+      </ul>
+    </div>
   </div>
 </div>

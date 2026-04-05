@@ -1,0 +1,54 @@
+<div data-mobile-nav-target="backdrop"
+     class="app-mobile-nav-backdrop hidden opacity-0 lg:hidden"
+     data-action="click->mobile-nav#close"></div>
+
+<div id="mobile-navigation-panel"
+     data-mobile-nav-target="panel"
+     class="app-mobile-nav-panel hidden opacity-0 -translate-x-6 lg:hidden">
+  <div class="app-mobile-nav-panel__surface">
+    <div class="flex items-start justify-between gap-4">
+      <%= render "shared/app_logo", image_only: true %>
+
+      <button type="button" class="app-mobile-close-button" data-action="mobile-nav#close">
+        <span class="sr-only">メニューを閉じる</span>
+        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m6 6 12 12M18 6 6 18"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="mt-8 space-y-7">
+      <section class="space-y-2">
+        <p class="app-nav-label">Main</p>
+        <%= render "shared/app_nav_links", items: app_primary_navigation_items, compact: true %>
+      </section>
+
+      <% if app_admin_navigation_items.any? %>
+        <section class="space-y-2">
+          <p class="app-nav-label">Admin</p>
+          <%= render "shared/app_nav_links", items: app_admin_navigation_items, compact: true %>
+        </section>
+      <% end %>
+
+      <section>
+        <div class="app-account-card">
+          <span class="app-avatar"><%= user_avatar_initial(current_user) %></span>
+          <div class="min-w-0">
+            <p class="app-account-card__name"><%= current_user.nickname %></p>
+            <p class="app-account-card__meta"><%= current_user.username %></p>
+          </div>
+        </div>
+
+        <% if current_user.is_admin? %>
+          <div class="mt-4">
+            <%= render "shared/user_switcher_menu" %>
+          </div>
+        <% end %>
+
+        <div class="mt-4">
+          <%= render "shared/account_actions", compact: true %>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>

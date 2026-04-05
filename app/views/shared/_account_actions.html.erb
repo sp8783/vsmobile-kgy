@@ -1,0 +1,10 @@
+<% compact = local_assigns.fetch(:compact, false) %>
+
+<div class="space-y-1.5">
+  <%= render "shared/app_nav_links", items: app_account_navigation_items, compact: compact %>
+  <%= button_to "ログアウト",
+      destroy_user_session_path,
+      method: :delete,
+      form_class: "contents",
+      class: app_nav_link_classes(compact: compact, accent: :logout) %>
+</div>

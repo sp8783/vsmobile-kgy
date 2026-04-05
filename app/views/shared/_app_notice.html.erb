@@ -1,7 +1,7 @@
-<% tone = flash_banner_tone(type) %>
+<% tone = local_assigns.fetch(:tone, :info).to_sym %>
 
-<div class="<%= flash_banner_classes(type) %>" data-controller="auto-dismiss">
-  <div class="<%= flash_banner_icon_classes(type) %>">
+<div class="<%= app_notice_classes(tone) %>">
+  <div class="<%= app_notice_icon_classes(tone) %>">
     <% case tone %>
     <% when :success, :info %>
       <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
@@ -19,7 +19,11 @@
   </div>
 
   <div class="min-w-0">
-    <p class="flash-banner__title"><%= flash_banner_title(type) %></p>
-    <p class="flash-banner__message"><%= message %></p>
+    <% if local_assigns[:title].present? %>
+      <p class="app-notice__title"><%= title %></p>
+    <% end %>
+    <% if local_assigns[:message].present? %>
+      <p class="app-notice__message"><%= message %></p>
+    <% end %>
   </div>
 </div>

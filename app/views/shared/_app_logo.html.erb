@@ -1,0 +1,18 @@
+<% compact = local_assigns.fetch(:compact, false) %>
+<% image_only = local_assigns.fetch(:image_only, false) %>
+<% brand_classes = class_names("app-brand", ("app-brand--compact" if compact), ("app-brand--image-only" if image_only)) %>
+<% media_classes = class_names("app-brand__media", ("app-brand__media--plate" if compact || image_only)) %>
+
+<%= link_to root_path, class: brand_classes do %>
+  <span class="<%= media_classes %>">
+    <img src="/logo-header.png" srcset="/logo-header.png 2x" alt="VS.Mobile for KGY" class="h-10 w-auto sm:h-11">
+  </span>
+  <% unless image_only %>
+    <span class="app-brand__copy">
+      <span class="app-brand__title">VS.Mobile for KGY</span>
+      <% unless compact %>
+        <span class="app-brand__caption">対戦ログと進行を、見やすくひとつに。</span>
+      <% end %>
+    </span>
+  <% end %>
+<% end %>
