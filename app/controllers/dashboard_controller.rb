@@ -13,10 +13,7 @@ class DashboardController < ApplicationController
   private
 
   def render_admin_dashboard
-    # 基本統計
-    @total_matches = Match.count
-    @total_events = Event.count
-    @total_users = User.regular_users.count
+    set_global_totals
 
     # 今日のイベント
     @today_event = Event.where(held_on: Time.zone.today).first
@@ -63,77 +60,20 @@ class DashboardController < ApplicationController
   end
 
   def render_player_dashboard
-    # 基本統計
-    @total_matches = Match.count
-    @total_events = Event.count
-    @total_users = User.regular_users.count
+    set_global_totals
 
     # 全試合データを一度だけ読み込み（Eager Loading）
     load_all_user_matches
 
-    # 個人統計
-    calculate_personal_stats
-
-    # リアルタイム待機状況（今日のイベント）
-    calculate_realtime_status
+    assign_view_state(
+      PlayerDashboardSnapshot.new(user: viewing_as_user, match_players: @all_user_matches).to_h
+    )
+    assign_view_state(
+      PlayerRealtimeStatus.new(user: viewing_as_user).to_h
+    )
 
     # 通知/アラート
     generate_notifications
-
-    # 調子メーター
-    calculate_condition_meter
-
-    # ベストパートナー
-    calculate_best_partners
-
-    # 機体使用トレンド（直近のイベント）—— パーソナルハイライトのフォールバック用
-    calculate_event_mobile_suit_trend
-
-    # 対戦会クイック比較
-    calculate_event_comparison
-
-    # コスト帯分析 —— EXバーストサマリーのフォールバック用
-    calculate_cost_analysis
-
-    # 対面相性マトリクス —— パフォーマンススナップショットのフォールバック用
-    calculate_matchup_matrix
-
-    # パフォーマンス スナップショット（新規）
-    calculate_performance_snapshot
-
-    # パーソナル ハイライト（新規）
-    calculate_personal_highlights
-
-    # EXバースト サマリー（新規）
-    calculate_exburst_summary
-
-    # 最近の試合（キャッシュ済みデータから取得）
-    # IDでユニーク化して順序を保つ
-    seen_match_ids = Set.new
-    @recent_matches = []
-    @all_user_matches.each do |mp|
-      unless seen_match_ids.include?(mp.match_id)
-        seen_match_ids.add(mp.match_id)
-        @recent_matches << mp.match
-        break if @recent_matches.size >= 5
-      end
-    end
-
-    # ユーザーのお気に入り機体（勝率付き）
-    user_suit_stats = Hash.new { |h, k| h[k] = { count: 0, wins: 0 } }
-    @all_user_matches.each do |mp|
-      user_suit_stats[mp.mobile_suit][:count] += 1
-      user_suit_stats[mp.mobile_suit][:wins] += 1 if mp.won?
-    end
-    @user_favorite_suits = user_suit_stats.sort_by { |_, stats| -stats[:count] }
-                                          .take(3)
-                                          .map do |suit, stats|
-                                            win_rate = stats[:count] > 0 ? (stats[:wins].to_f / stats[:count] * 100).round(1) : 0
-                                            suit.tap do |s|
-                                              s.define_singleton_method(:usage_count) { stats[:count] }
-                                              s.define_singleton_method(:win_rate) { win_rate }
-                                            end
-                                          end
 
     @upcoming_events = Event.where("held_on >= ?", Time.zone.today).order(held_on: :asc).limit(3)
 
@@ -155,59 +95,6 @@ class DashboardController < ApplicationController
                                        .to_a # 配列にキャッシュ
   end
 
-  def calculate_personal_stats
-    @user_total_matches = viewing_as_user.match_players.count
-    @user_wins = viewing_as_user.match_players.joins(:match).where(
-      "(matches.winning_team = 1 AND match_players.team_number = 1) OR (matches.winning_team = 2 AND match_players.team_number = 2)"
-    ).count
-    @user_win_rate = @user_total_matches > 0 ? (@user_wins.to_f / @user_total_matches * 100).round(1) : 0
-
-    # パフォーマンスデータのある試合から平均を計算
-    stats_mps = @all_user_matches.select(&:has_stats?)
-    @user_has_stats = stats_mps.any?
-    if @user_has_stats
-      total = stats_mps.size
-      total_kills = stats_mps.sum { |mp| mp.kills.to_i }
-      total_deaths = stats_mps.sum { |mp| mp.deaths.to_i }
-      @user_avg_damage = (stats_mps.sum { |mp| mp.damage_dealt.to_i }.to_f / total).round(0).to_i
-      @user_avg_kd = total_deaths > 0 ? (total_kills.to_f / total_deaths).round(2) : nil
-    end
-  end
-
-  def calculate_realtime_status
-    # 今日のイベントを取得
-    @today_event = Event.where(held_on: Time.zone.today).first
-    return unless @today_event
-
-    # 今日のイベントのアクティブなローテーション表を取得（rotation_matchesを事前ロード）
-    @active_rotation = @today_event.rotations.includes(
-      rotation_matches: [ :team1_player1, :team1_player2, :team2_player1, :team2_player2 ]
-    ).find_by(is_active: true)
-    return unless @active_rotation
-
-    # ローテーション表から情報を取得（既にロード済み）
-    @rotation_matches = @active_rotation.rotation_matches.sort_by(&:match_index)
-    @rotation_total_matches = @rotation_matches.size
-    @rotation_current_match_index = @active_rotation.current_match_index
-    @current_rotation_match = @rotation_matches[@rotation_current_match_index]
-
-    # 現在のユーザーの次の試合を取得（メモリ内で検索）
-    @user_next_rotation_match = @active_rotation.rotation_matches.find do |rm|
-      rm.match_index >= @active_rotation.current_match_index &&
-      rm.includes_player?(viewing_as_user.id)
-    end
-
-    if @user_next_rotation_match
-      @matches_until_user_turn = @user_next_rotation_match.match_index - @active_rotation.current_match_index
-      @match_info = @active_rotation.match_info_for_player(@user_next_rotation_match, viewing_as_user.id)
-      @user_partner = @match_info[:partner]
-      @opponent_players = @match_info[:opponents]
-
-      # 配信担当かどうか
-      @is_streaming = @user_next_rotation_match.streaming_for?(viewing_as_user.id)
-    end
-  end
-
   def generate_notifications
     @notifications = []
 
@@ -224,323 +111,15 @@ class DashboardController < ApplicationController
     @notifications = @notifications.take(3)
   end
 
-  def calculate_condition_meter
-    # キャッシュ済みデータを使用して、ユニークな試合のみを取得
-    seen_match_ids = Set.new
-    recent_match_players = []
-    @all_user_matches.each do |mp|
-      unless seen_match_ids.include?(mp.match_id)
-        seen_match_ids.add(mp.match_id)
-        recent_match_players << mp
-        break if recent_match_players.size >= 10
-      end
-    end
-
-    # 直近5試合の勝敗を計算（新しい順）
-    @recent_5_results = recent_match_players.take(5).map do |mp|
-      mp.won?
-    end
-
-    # 直近10試合の勝率
-    recent_10_results = recent_match_players.map do |mp|
-      mp.won?
-    end
-
-    if recent_10_results.any?
-      recent_10_wins = recent_10_results.count(true)
-      @recent_10_win_rate = (recent_10_wins.to_f / recent_10_results.count * 100).round(1)
-      @recent_10_diff = @recent_10_win_rate - @user_win_rate
-    else
-      @recent_10_win_rate = 0
-      @recent_10_diff = 0
-    end
-
-    # 連勝/連敗状況（最新の試合から順番にカウント）
-    # 全試合データを使用して正確にカウント
-    @current_streak = 0
-    @streak_type = nil
-    streak_seen_match_ids = Set.new
-
-    @all_user_matches.each do |mp|
-      next if streak_seen_match_ids.include?(mp.match_id)
-      streak_seen_match_ids.add(mp.match_id)
-
-      is_win = mp.won?
-
-      if @streak_type.nil?
-        # 最新の試合で連勝/連敗のタイプを決定
-        @streak_type = is_win ? "win" : "lose"
-        @current_streak = 1
-      elsif (@streak_type == "win" && is_win) || (@streak_type == "lose" && !is_win)
-        # 連勝/連敗が続いている
-        @current_streak += 1
-      else
-        # 連勝/連敗が途切れた
-        break
-      end
-    end
+  def set_global_totals
+    @total_matches = Match.count
+    @total_events = Event.count
+    @total_users = User.regular_users.count
   end
 
-  def calculate_best_partners
-    # キャッシュ済みデータを使用してパートナーごとに集計
-    partners_stats = {}
-
-    @all_user_matches.each do |my_mp|
-      match = my_mp.match
-      my_team = my_mp.team_number
-
-      # 同じチームのパートナーを取得（既にincludesで読み込み済み）
-      partner_mp = my_mp.partner
-      next unless partner_mp
-
-      partner_id = partner_mp.user_id
-      partners_stats[partner_id] ||= {
-        user: partner_mp.user,
-        wins: 0,
-        total: 0,
-        suit_combinations: Hash.new(0)
-      }
-
-      # 勝敗判定
-      is_win = match.won_by?(my_team)
-      partners_stats[partner_id][:wins] += 1 if is_win
-      partners_stats[partner_id][:total] += 1
-
-      # 機体の組み合わせを記録
-      combo_key = "#{my_mp.mobile_suit.name} & #{partner_mp.mobile_suit.name}"
-      partners_stats[partner_id][:suit_combinations][combo_key] += 1
-    end
-
-    # 3試合以上のパートナーのみフィルタリングして勝率でソート
-    @best_partners = partners_stats
-                      .select { |_, stats| stats[:total] >= 3 }
-                      .map do |partner_id, stats|
-                        {
-                          user: stats[:user],
-                          win_rate: (stats[:wins].to_f / stats[:total] * 100).round(1),
-                          wins: stats[:wins],
-                          total: stats[:total],
-                          best_combo: stats[:suit_combinations].max_by { |_, count| count }&.first
-                        }
-                      end
-                      .sort_by { |p| -p[:win_rate] }
-                      .take(3)
-  end
-
-  def calculate_event_mobile_suit_trend
-    # 対象イベントを決定（今日のイベントがあればそれ、なければ直近のイベント）
-    target_event = Event.where(held_on: Time.zone.today).first || Event.order(held_on: :desc).first
-
-    return unless target_event
-
-    # キャッシュ済みデータから該当イベントの試合をフィルタ
-    event_matches = @all_user_matches.select { |mp| mp.match.event_id == target_event.id }
-
-    suit_stats = {}
-
-    event_matches.each do |mp|
-      suit_id = mp.mobile_suit_id
-      suit_stats[suit_id] ||= {
-        mobile_suit: mp.mobile_suit,
-        usage: 0,
-        wins: 0
-      }
-
-      suit_stats[suit_id][:usage] += 1
-
-      is_win = mp.won?
-      suit_stats[suit_id][:wins] += 1 if is_win
-    end
-
-    @event_suit_trend = suit_stats.map do |suit_id, stats|
-      win_rate = stats[:usage] > 0 ? (stats[:wins].to_f / stats[:usage] * 100).round(1) : 0
-      {
-        mobile_suit: stats[:mobile_suit],
-        usage: stats[:usage],
-        win_rate: win_rate,
-        recommended: win_rate >= 60
-      }
-    end.sort_by { |s| -s[:usage] }
-
-    @trend_event = target_event
-    @is_today_event = (target_event.held_on == Time.zone.today)
-  end
-
-  def calculate_event_comparison
-    # 直近3イベント
-    recent_events = Event.order(held_on: :desc).limit(3)
-
-    @event_comparison = recent_events.map do |event|
-      # キャッシュ済みデータから該当イベントの試合をフィルタ
-      event_matches = @all_user_matches.select { |mp| mp.match.event_id == event.id }
-
-      total = event_matches.size
-      wins = event_matches.count(&:won?)
-
-      stats_mps = event_matches.select(&:has_stats?)
-      avg_damage = stats_mps.any? ? (stats_mps.sum { |mp| mp.damage_dealt.to_i }.to_f / stats_mps.size).round(0).to_i : nil
-
-      {
-        event: event,
-        total: total,
-        wins: wins,
-        losses: total - wins,
-        win_rate: total > 0 ? (wins.to_f / total * 100).round(1) : 0,
-        is_today: event.held_on == Time.zone.today,
-        avg_damage: avg_damage
-      }
-    end
-  end
-
-  def calculate_cost_analysis
-    # キャッシュ済みデータを使用してコスト組み合わせを集計
-    cost_stats = Hash.new { |h, k| h[k] = { wins: 0, total: 0 } }
-
-    @all_user_matches.each do |my_mp|
-      match = my_mp.match
-      my_team = my_mp.team_number
-      my_cost = my_mp.mobile_suit.cost
-
-      # パートナーのコストを取得（既にincludesで読み込み済み）
-      partner_mp = my_mp.partner
-      next unless partner_mp
-
-      partner_cost = partner_mp.mobile_suit.cost
-
-      # コスト組み合わせのキー（小さい方を先に）
-      costs = [ my_cost, partner_cost ].sort.reverse
-      cost_key = "#{costs[0]}+#{costs[1]}"
-
-      cost_stats[cost_key][:total] += 1
-
-      is_win = match.won_by?(my_team)
-      cost_stats[cost_key][:wins] += 1 if is_win
-    end
-
-    # 3試合以上の組み合わせのみ表示
-    @cost_analysis = cost_stats
-                      .select { |_, stats| stats[:total] >= 3 }
-                      .map do |cost_key, stats|
-                        win_rate = (stats[:wins].to_f / stats[:total] * 100).round(1)
-                        {
-                          cost_combo: cost_key,
-                          wins: stats[:wins],
-                          total: stats[:total],
-                          losses: stats[:total] - stats[:wins],
-                          win_rate: win_rate,
-                          judgment: win_rate >= 60 ? "得意" : (win_rate >= 40 ? "普通" : "苦手")
-                        }
-                      end
-                      .sort_by { |c| -c[:win_rate] }
-  end
-
-  def calculate_performance_snapshot
-    stats_mps = @all_user_matches.select(&:has_stats?)
-    return if stats_mps.empty?
-
-    total = stats_mps.size
-    total_kills = stats_mps.sum { |mp| mp.kills.to_i }
-    total_deaths = stats_mps.sum { |mp| mp.deaths.to_i }
-
-    @performance_snapshot = {
-      avg_score: (stats_mps.sum { |mp| mp.score.to_i }.to_f / total).round(1),
-      avg_damage: (stats_mps.sum { |mp| mp.damage_dealt.to_i }.to_f / total).round(0).to_i,
-      kd_ratio: total_deaths > 0 ? (total_kills.to_f / total_deaths).round(2) : nil,
-      avg_exburst_damage: (stats_mps.sum { |mp| mp.exburst_damage.to_i }.to_f / total).round(0).to_i
-    }
-
-    # コミュニティ平均（ゲスト以外・stats あり）
-    community_base = MatchPlayer.joins(:user).where(users: { is_guest: false }).where.not(damage_dealt: nil)
-    if community_base.exists?
-      @community_snapshot = {
-        avg_score: community_base.average(:score)&.round(1),
-        avg_damage: community_base.average(:damage_dealt)&.round(0)&.to_i,
-        avg_exburst_damage: community_base.average(:exburst_damage)&.round(0)&.to_i
-      }
-    end
-  end
-
-  def calculate_personal_highlights
-    stats_mps = @all_user_matches.select { |mp| mp.has_stats? && mp.damage_dealt.to_i > 0 }
-    return if stats_mps.empty?
-
-    @highlight_best_damage_mp = stats_mps.max_by { |mp| mp.damage_dealt.to_i }
-
-    kd_mps = stats_mps.select { |mp| mp.kills.to_i > 0 || mp.deaths.to_i > 0 }
-    @highlight_best_kd_mp = kd_mps.max_by { |mp| mp.kills.to_f / [ mp.deaths.to_i, 1 ].max } if kd_mps.any?
-  end
-
-  def calculate_exburst_summary
-    ex_mps = @all_user_matches.select { |mp| mp.exburst_count.present? }
-    return if ex_mps.empty?
-
-    total = ex_mps.size
-    total_deaths = ex_mps.sum { |mp| mp.deaths.to_i }
-
-    @exburst_summary = {
-      avg_count: (ex_mps.sum { |mp| mp.exburst_count.to_i }.to_f / total).round(2),
-      avg_damage: (ex_mps.sum { |mp| mp.exburst_damage.to_i }.to_f / total).round(0).to_i,
-      death_rate: total_deaths > 0 ? (ex_mps.sum { |mp| mp.exburst_deaths.to_i }.to_f / total_deaths * 100).round(1) : 0.0
-    }
-
-    # コミュニティ平均
-    community_avg = MatchPlayer.joins(:user).where(users: { is_guest: false }).where.not(exburst_count: nil).average(:exburst_count)
-    @exburst_summary[:community_avg_count] = community_avg&.round(2)
-  end
-
-  def calculate_matchup_matrix
-    # キャッシュ済みデータから使用頻度TOP3の機体を集計
-    suit_usage = Hash.new(0)
-    @all_user_matches.each { |mp| suit_usage[mp.mobile_suit_id] += 1 }
-    top_suits = suit_usage.sort_by { |_, count| -count }.take(3).map { |suit_id, _| suit_id }
-
-    @matchup_matrix = []
-
-    top_suits.each do |my_suit_id|
-      # この機体を使った試合をフィルタ
-      my_matches = @all_user_matches.select { |mp| mp.mobile_suit_id == my_suit_id }
-      next if my_matches.empty?
-
-      my_suit = my_matches.first.mobile_suit
-
-      # 対戦相手の機体ごとに勝率を計算
-      opponent_stats = Hash.new { |h, k| h[k] = { wins: 0, total: 0, mobile_suit: nil } }
-
-      my_matches.each do |my_mp|
-        match = my_mp.match
-        my_team = my_mp.team_number
-        # 相手チームの機体を取得（既にincludesで読み込み済み）
-        my_mp.opponents.each do |opp_mp|
-          opp_suit_id = opp_mp.mobile_suit_id
-          opponent_stats[opp_suit_id][:mobile_suit] = opp_mp.mobile_suit
-          opponent_stats[opp_suit_id][:total] += 1
-
-          is_win = match.won_by?(my_team)
-          opponent_stats[opp_suit_id][:wins] += 1 if is_win
-        end
-      end
-
-      # 2試合以上対戦した機体のみ
-      matchups = opponent_stats
-                  .select { |_, stats| stats[:total] >= 2 }
-                  .map do |opp_suit_id, stats|
-                    win_rate = (stats[:wins].to_f / stats[:total] * 100).round(1)
-                    {
-                      opponent_suit: stats[:mobile_suit],
-                      wins: stats[:wins],
-                      total: stats[:total],
-                      losses: stats[:total] - stats[:wins],
-                      win_rate: win_rate,
-                      compatibility: win_rate >= 60 ? "得意" : (win_rate >= 40 ? "普通" : "苦手")
-                    }
-                  end
-                  .sort_by { |m| -m[:win_rate] }
-                  .take(5)
-
-      @matchup_matrix << {
-        my_suit: my_suit,
-        matchups: matchups
-      } if matchups.any?
+  def assign_view_state(attributes)
+    attributes.each do |name, value|
+      instance_variable_set("@#{name}", value)
     end
   end
 end

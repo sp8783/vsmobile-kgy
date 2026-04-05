@@ -38,19 +38,7 @@ class StatisticsController < ApplicationController
       calculate_highlights
     end
 
-    # フィルター用のデータ
-    @all_events = Event.order(held_on: :desc)
-    @all_mobile_suits = MobileSuit.order(:name)
-    all_partners = User.regular_users.where.not(id: viewing_as_user.id).order(:nickname)
-    if @filter_events.any?
-      partner_ids_in_events = MatchPlayer.joins(:match)
-                                         .where(matches: { event_id: @filter_events })
-                                         .where.not(user_id: viewing_as_user.id)
-                                         .distinct
-                                         .pluck(:user_id)
-      all_partners = all_partners.where(id: partner_ids_in_events)
-    end
-    @all_partners = all_partners
+    set_filter_options
   end
 
   private
@@ -77,37 +65,13 @@ class StatisticsController < ApplicationController
   end
 
   def apply_filters
-    # ログインユーザーの試合を基準に開始
-    @filtered_matches = MatchPlayer.where(user_id: viewing_as_user.id)
-                                   .joins(:match)
-                                   .includes(:match, :mobile_suit, :user, match: { rotation_match: :rotation })
-
-    # イベントフィルター
-    if @filter_events.any?
-      @filtered_matches = @filtered_matches.where(matches: { event_id: @filter_events })
-    end
-
-    # 機体フィルター（ログインユーザーが使用した機体）
-    if @filter_mobile_suits.any?
-      @filtered_matches = @filtered_matches.where(mobile_suit_id: @filter_mobile_suits)
-    end
-
-    # コストフィルター（ログインユーザーが使用した機体のコスト）
-    if @filter_costs.any?
-      @filtered_matches = @filtered_matches.where(mobile_suit_id: MobileSuit.where(cost: @filter_costs))
-    end
-
-    # パートナーフィルター
-    if @filter_partners.any?
-      # ログインユーザーとパートナーが同じチームの試合に絞り込む
-      filtered_match_ids = []
-      @filtered_matches.each do |my_mp|
-        partner_mp = my_mp.partner
-        filtered_match_ids << my_mp.match_id if partner_mp && @filter_partners.include?(partner_mp.user_id)
-      end
-
-      @filtered_matches = @filtered_matches.where(matches: { id: filtered_match_ids.uniq })
-    end
+    @filtered_matches = StatisticsFilteredMatchPlayersQuery.new(
+      user: viewing_as_user,
+      filter_events: @filter_events,
+      filter_mobile_suits: @filter_mobile_suits,
+      filter_partners: @filter_partners,
+      filter_costs: @filter_costs
+    ).call
   end
 
   # コミュニティ側クエリの基底スコープ（イベントフィルターのみ適用）
@@ -1136,5 +1100,16 @@ class StatisticsController < ApplicationController
 
   def selected_ids(param_key)
     params[param_key].present? ? params[param_key].map(&:to_i) : []
+  end
+
+  def set_filter_options
+    filter_options = StatisticsFilterOptions.new(
+      user: viewing_as_user,
+      filter_events: @filter_events
+    ).to_h
+
+    @all_events = filter_options[:all_events]
+    @all_mobile_suits = filter_options[:all_mobile_suits]
+    @all_partners = filter_options[:all_partners]
   end
 end
