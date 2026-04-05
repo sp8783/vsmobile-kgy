@@ -1,0 +1,14 @@
+<% compact = local_assigns.fetch(:compact, false) %>
+<% brand_classes = class_names("app-brand", ("app-brand--compact" if compact)) %>
+
+<%= link_to root_path, class: brand_classes do %>
+  <span class="app-brand__media">
+    <img src="/logo-header.png" srcset="/logo-header.png 2x" alt="VS.Mobile for KGY" class="h-10 w-auto sm:h-11">
+  </span>
+  <span class="app-brand__copy">
+    <span class="app-brand__title">VS.Mobile for KGY</span>
+    <% unless compact %>
+      <span class="app-brand__caption">対戦ログと進行を、見やすくひとつに。</span>
+    <% end %>
+  </span>
+<% end %>

@@ -1,0 +1,35 @@
+<div class="app-switcher" data-controller="user-switcher">
+  <button type="button" data-action="click->user-switcher#toggle" class="app-switcher__button">
+    <span class="app-switcher__meta">表示視点</span>
+    <span class="app-switcher__value">
+      <%= viewing_as_someone_else? ? "#{viewing_as_user.nickname}の視点" : "管理者" %>
+    </span>
+    <svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m6 9 6 6 6-6"/>
+    </svg>
+  </button>
+
+  <div data-user-switcher-target="dropdown" class="hidden app-switcher__menu">
+    <% if viewing_as_someone_else? %>
+      <button type="button" data-action="click->user-switcher#clearView" class="app-switcher__menu-item app-switcher__menu-item--accent border-b border-slate-200/70">
+        <span class="app-switcher__avatar app-switcher__avatar--accent">
+          <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 0 1 8 8v2M3 10l6 6m-6-6 6-6"/>
+          </svg>
+        </span>
+        <span>管理者視点に戻す</span>
+      </button>
+    <% end %>
+
+    <div class="max-h-60 overflow-y-auto py-1">
+      <% User.where(is_admin: false).order(:nickname).each do |user| %>
+        <% next if viewing_as_someone_else? && user.id == viewing_as_user.id %>
+
+        <button type="button" data-action="click->user-switcher#switchView" data-user-id="<%= user.id %>" class="app-switcher__menu-item">
+          <span class="app-switcher__avatar"><%= user_avatar_initial(user) %></span>
+          <span class="truncate"><%= user.nickname %></span>
+        </button>
+      <% end %>
+    </div>
+  </div>
+</div>

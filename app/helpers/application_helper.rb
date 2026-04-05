@@ -78,4 +78,85 @@ module ApplicationHelper
       cost_badge(costs[1].to_i)
     ])
   end
+
+  def app_primary_navigation_items
+    [
+      { label: "ダッシュボード", path: dashboard_path, active: current_page?(dashboard_path) || current_page?(root_path) },
+      { label: "イベント", path: events_path, active: current_page?(events_path) },
+      { label: "ローテーション", path: rotations_path, active: current_page?(rotations_path) },
+      { label: "対戦履歴", path: matches_path, active: current_page?(matches_path) },
+      { label: "統計", path: statistics_path, active: current_page?(statistics_path) },
+      { label: "機体一覧", path: mobile_suits_path, active: current_page?(mobile_suits_path) }
+    ]
+  end
+
+  def app_admin_navigation_items
+    return [] unless current_user&.is_admin?
+
+    [
+      { label: "お知らせ管理", path: admin_announcements_path, active: current_page?(admin_announcements_path) },
+      { label: "Discord設定", path: admin_discord_channels_path, active: current_page?(admin_discord_channels_path) },
+      { label: "機体マスタ", path: admin_mobile_suits_path, active: current_page?(admin_mobile_suits_path) },
+      { label: "スタンプマスタ", path: admin_master_emojis_path, active: current_page?(admin_master_emojis_path) },
+      { label: "ユーザー管理", path: admin_users_path, active: current_page?(admin_users_path) }
+    ]
+  end
+
+  def app_account_navigation_items
+    items = []
+    items << { label: "マイページ", path: my_page_path, active: current_page?(my_page_path) } unless current_user&.is_guest?
+    items << { label: "設定", path: edit_profile_path, active: current_page?(edit_profile_path) } unless current_user&.username == "guest"
+    items
+  end
+
+  def app_nav_link_classes(active: false, compact: false, accent: nil)
+    class_names(
+      "app-nav-link",
+      ("app-nav-link--compact" if compact),
+      ("is-active" if active),
+      ("app-nav-link--#{accent}" if accent.present?)
+    )
+  end
+
+  def user_avatar_initial(user)
+    user&.nickname.to_s.strip.first&.upcase.presence || "?"
+  end
+
+  def flash_banner_tone(type)
+    case type.to_s
+    when "notice"
+      :info
+    when "success"
+      :success
+    when "alert", "error"
+      :danger
+    when "warning"
+      :warning
+    else
+      :neutral
+    end
+  end
+
+  def flash_banner_classes(type)
+    class_names("flash-banner", "flash-banner--#{flash_banner_tone(type)}")
+  end
+
+  def flash_banner_icon_classes(type)
+    class_names("flash-banner__icon", "flash-banner__icon--#{flash_banner_tone(type)}")
+  end
+
+  def flash_banner_title(type)
+    case flash_banner_tone(type)
+    when :success
+      "完了"
+    when :danger
+      "注意"
+    when :warning
+      "確認"
+    when :info
+      "お知らせ"
+    else
+      "案内"
+    end
+  end
 end

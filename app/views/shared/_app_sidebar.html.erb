@@ -1,0 +1,42 @@
+<aside class="app-sidebar hidden lg:block">
+  <div class="app-sidebar__panel">
+    <div class="app-sidebar__brand">
+      <%= render "shared/app_logo" %>
+    </div>
+
+    <div class="app-sidebar__scroll">
+      <section class="space-y-2">
+        <p class="app-nav-label">Main</p>
+        <%= render "shared/app_nav_links", items: app_primary_navigation_items %>
+      </section>
+
+      <% if app_admin_navigation_items.any? %>
+        <section class="mt-8 space-y-2">
+          <p class="app-nav-label">Admin</p>
+          <%= render "shared/app_nav_links", items: app_admin_navigation_items %>
+        </section>
+      <% end %>
+    </div>
+
+    <div class="app-sidebar__footer">
+      <div class="app-account-card">
+        <span class="app-avatar"><%= user_avatar_initial(current_user) %></span>
+        <div class="min-w-0">
+          <p class="app-account-card__name"><%= current_user.nickname %></p>
+          <p class="app-account-card__meta"><%= current_user.username %></p>
+        </div>
+      </div>
+
+      <% if viewing_as_someone_else? %>
+        <div class="status-pill status-pill--inverted mt-3">
+          <span class="status-pill__dot" aria-hidden="true"></span>
+          <span><%= viewing_as_user.nickname %>の視点で表示中</span>
+        </div>
+      <% end %>
+
+      <div class="mt-4">
+        <%= render "shared/account_actions", compact: true %>
+      </div>
+    </div>
+  </div>
+</aside>
