@@ -168,9 +168,35 @@ module ApplicationHelper
     class_names("app-notice__icon", "app-notice__icon--#{tone.to_sym}")
   end
 
+  def safe_external_url(url)
+    return nil if url.blank?
+
+    parsed = URI.parse(url)
+    return nil unless parsed.is_a?(URI::HTTP) && parsed.host.present?
+
+    parsed.to_s
+  rescue URI::InvalidURIError
+    nil
+  end
+
   def app_button_classes(variant: :primary, size: :md, full_width: false)
+    variant_class = case variant.to_sym
+    when :primary
+      "ui-button-primary"
+    when :secondary
+      "ui-button-secondary"
+    when :neutral
+      "ui-button-neutral"
+    when :success
+      "ui-button-success"
+    when :danger
+      "ui-button-danger"
+    else
+      "ui-button-primary"
+    end
+
     class_names(
-      (variant.to_sym == :primary ? "ui-button-primary" : "ui-button-secondary"),
+      variant_class,
       ("ui-button--sm" if size.to_sym == :sm),
       ("w-full" if full_width)
     )
