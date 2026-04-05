@@ -7,8 +7,11 @@
   <h2 class="text-lg font-medium text-gray-700 mb-6">タイムスタンプ一括設定</h2>
 
   <% if flash[:alert] %>
-    <div class="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-      <p class="text-sm text-red-700"><%= flash[:alert] %></p>
+    <div class="mb-4">
+      <%= render "shared/app_notice",
+          tone: :danger,
+          title: "入力内容を確認してください",
+          message: flash[:alert] %>
     </div>
   <% end %>
 

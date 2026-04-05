@@ -6,8 +6,11 @@
   <h1 class="text-3xl font-bold text-gray-900 mb-6">試合データCSVインポート</h1>
 
   <% if alert %>
-    <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
-      <%= alert %>
+    <div class="mb-4">
+      <%= render "shared/app_notice",
+          tone: :danger,
+          title: "インポートに失敗しました",
+          message: alert %>
     </div>
   <% end %>
 
@@ -35,10 +38,11 @@
 
   <%= form_with url: admin_imports_path, multipart: true, class: "space-y-6" do |form| %>
     <div class="bg-white shadow sm:rounded-lg p-6">
-      <div class="mb-4 p-4 bg-blue-50 border border-blue-200 rounded">
-        <p class="text-sm text-blue-800">
-          <strong>自動イベント作成:</strong> CSVの日付列から自動的にイベントを作成します。同じ日付のイベントが既に存在する場合は、そのイベントに試合を追加します。
-        </p>
+      <div class="mb-4">
+        <%= render "shared/app_notice",
+            tone: :info,
+            title: "自動イベント作成",
+            message: "CSVの日付列から自動的にイベントを作成します。同じ日付のイベントが既に存在する場合は、そのイベントに試合を追加します。" %>
       </div>
 
       <div>
