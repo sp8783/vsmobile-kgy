@@ -23,7 +23,7 @@ class MobileSuitsController < ApplicationController
                           .includes(:user, match: { match_players: :mobile_suit })
 
     @total_uses = suit_mps.count
-    wins        = suit_mps.count { |mp| mp.match.winning_team == mp.team_number }
+    wins        = suit_mps.count(&:won?)
     @win_rate   = @total_uses > 0 ? (wins.to_f / @total_uses * 100).round(1) : 0.0
     @dominance  = (@win_rate * @total_uses).round(1)
 
@@ -60,7 +60,7 @@ class MobileSuitsController < ApplicationController
 
     # プレイヤーランキング TOP5
     @player_ranking = suit_mps.group_by(&:user_id).map do |_, mps|
-      wins_n  = mps.count { |mp| mp.match.winning_team == mp.team_number }
+      wins_n  = mps.count(&:won?)
       total_n = mps.count
       {
         user:     mps.first.user,
@@ -72,15 +72,13 @@ class MobileSuitsController < ApplicationController
     # 相方機体別分析
     partner_suit_data = Hash.new { |h, k| h[k] = { mobile_suit: nil, wins: 0, total: 0 } }
     suit_mps.each do |my_mp|
-      partner_mp = my_mp.match.match_players.find do |mp|
-        mp.team_number == my_mp.team_number && mp.mobile_suit_id != @suit.id
-      end
+      partner_mp = my_mp.partner
       next unless partner_mp
 
       pid = partner_mp.mobile_suit_id
       partner_suit_data[pid][:mobile_suit] = partner_mp.mobile_suit
       partner_suit_data[pid][:total] += 1
-      partner_suit_data[pid][:wins] += 1 if my_mp.match.winning_team == my_mp.team_number
+      partner_suit_data[pid][:wins] += 1 if my_mp.won?
     end
 
     @partner_suits = partner_suit_data.map do |_, d|
@@ -96,14 +94,12 @@ class MobileSuitsController < ApplicationController
     # 相方コスト別分析
     partner_cost_data = Hash.new { |h, k| h[k] = { wins: 0, total: 0 } }
     suit_mps.each do |my_mp|
-      partner_mp = my_mp.match.match_players.find do |mp|
-        mp.team_number == my_mp.team_number && mp.mobile_suit_id != @suit.id
-      end
+      partner_mp = my_mp.partner
       next unless partner_mp
 
       cost = partner_mp.mobile_suit.cost
       partner_cost_data[cost][:total] += 1
-      partner_cost_data[cost][:wins] += 1 if my_mp.match.winning_team == my_mp.team_number
+      partner_cost_data[cost][:wins] += 1 if my_mp.won?
     end
 
     @partner_costs = partner_cost_data.map do |cost, d|

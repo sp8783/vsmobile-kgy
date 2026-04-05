@@ -13,13 +13,8 @@ class Rotation < ApplicationRecord
     "#{round_number}周目"
   end
 
-  # Get all unique players in this rotation
   def players
-    player_ids = rotation_matches.flat_map do |rm|
-      [ rm.team1_player1_id, rm.team1_player2_id, rm.team2_player1_id, rm.team2_player2_id ]
-    end.uniq
-
-    User.where(id: player_ids)
+    User.where(id: rotation_matches.flat_map(&:player_ids).uniq)
   end
 
   def player_count
@@ -49,7 +44,7 @@ class Rotation < ApplicationRecord
     end
 
     scope.each do |rm|
-      all_players = [ rm.team1_player1, rm.team1_player2, rm.team2_player1, rm.team2_player2 ]
+      all_players = rm.players
       registered = rm.match.present?
 
       # Update match counts
@@ -60,19 +55,19 @@ class Rotation < ApplicationRecord
       end
 
       # Update streaming seat (team1_player1) counts
-      streamer = rm.team1_player1
+      streamer = rm.team1_players.first
       stats[streamer.id][:streaming_count] += 1
       stats[streamer.id][:registered_streaming_count] += 1 if registered
 
       # Update pair counts
-      [ [ rm.team1_player1, rm.team1_player2 ], [ rm.team2_player1, rm.team2_player2 ] ].each do |pair|
+      [ rm.team1_players, rm.team2_players ].each do |pair|
         stats[pair[0].id][:pair_counts][pair[1].id] += 1
         stats[pair[1].id][:pair_counts][pair[0].id] += 1
       end
 
       # Update opponent counts
-      [ rm.team1_player1, rm.team1_player2 ].each do |team1_player|
-        [ rm.team2_player1, rm.team2_player2 ].each do |team2_player|
+      rm.team1_players.each do |team1_player|
+        rm.team2_players.each do |team2_player|
           stats[team1_player.id][:opponent_counts][team2_player.id] += 1
           stats[team2_player.id][:opponent_counts][team1_player.id] += 1
         end
@@ -96,16 +91,9 @@ class Rotation < ApplicationRecord
 
   # Get player's partner and opponents for a specific match
   def match_info_for_player(rotation_match, player_id)
-    if rotation_match.team1_player1_id == player_id
-      { partner: rotation_match.team1_player2, opponents: [ rotation_match.team2_player1, rotation_match.team2_player2 ] }
-    elsif rotation_match.team1_player2_id == player_id
-      { partner: rotation_match.team1_player1, opponents: [ rotation_match.team2_player1, rotation_match.team2_player2 ] }
-    elsif rotation_match.team2_player1_id == player_id
-      { partner: rotation_match.team2_player2, opponents: [ rotation_match.team1_player1, rotation_match.team1_player2 ] }
-    elsif rotation_match.team2_player2_id == player_id
-      { partner: rotation_match.team2_player1, opponents: [ rotation_match.team1_player1, rotation_match.team1_player2 ] }
-    else
-      nil
-    end
+    seat_info = rotation_match.seat_info_for(player_id)
+    return nil unless seat_info[:seat]
+
+    seat_info.slice(:partner, :opponents)
   end
 end

@@ -19,9 +19,7 @@ class RotationsController < ApplicationController
 
     # プレイヤーのお気に入り機体を N+1 を起こさずまとめてロード
     if @current_match
-      players = [ @current_match.team1_player1, @current_match.team1_player2,
-                  @current_match.team2_player1, @current_match.team2_player2 ].compact
-      ActiveRecord::Associations::Preloader.new(records: players, associations: :user_favorite_suits).call
+      ActiveRecord::Associations::Preloader.new(records: @current_match.players, associations: :user_favorite_suits).call
     end
 
     # Check if we should show completion modal
@@ -170,16 +168,11 @@ class RotationsController < ApplicationController
     )
 
     # Build match players before saving
-    [
-      { user: rotation_match.team1_player1, mobile_suit_id: params[:team1_player1_suit], team: 1, position: 1 },
-      { user: rotation_match.team1_player2, mobile_suit_id: params[:team1_player2_suit], team: 1, position: 2 },
-      { user: rotation_match.team2_player1, mobile_suit_id: params[:team2_player1_suit], team: 2, position: 3 },
-      { user: rotation_match.team2_player2, mobile_suit_id: params[:team2_player2_suit], team: 2, position: 4 }
-    ].each do |mp|
+    rotation_match.match_player_attributes(rotation_match_suit_ids).each do |mp|
       match.match_players.build(
         user: mp[:user],
         mobile_suit_id: mp[:mobile_suit_id],
-        team_number: mp[:team],
+        team_number: mp[:team_number],
         position: mp[:position]
       )
     end
@@ -259,16 +252,11 @@ class RotationsController < ApplicationController
 
     # Update match players
     match.match_players.destroy_all
-    [
-      { user: rotation_match.team1_player1, mobile_suit_id: params[:team1_player1_suit], team: 1, position: 1 },
-      { user: rotation_match.team1_player2, mobile_suit_id: params[:team1_player2_suit], team: 1, position: 2 },
-      { user: rotation_match.team2_player1, mobile_suit_id: params[:team2_player1_suit], team: 2, position: 3 },
-      { user: rotation_match.team2_player2, mobile_suit_id: params[:team2_player2_suit], team: 2, position: 4 }
-    ].each do |mp|
+    rotation_match.match_player_attributes(rotation_match_suit_ids).each do |mp|
       match.match_players.build(
         user: mp[:user],
         mobile_suit_id: mp[:mobile_suit_id],
-        team_number: mp[:team],
+        team_number: mp[:team_number],
         position: mp[:position]
       )
     end
@@ -293,9 +281,7 @@ class RotationsController < ApplicationController
 
     # Re-generate rotation matches with reshuffled player slots so that streaming
     # patterns differ between rounds (same opponents/partners when streaming)
-    player_ids = @rotation.rotation_matches.flat_map { |rm|
-      [ rm.team1_player1_id, rm.team1_player2_id, rm.team2_player1_id, rm.team2_player2_id ]
-    }.uniq.compact
+    player_ids = @rotation.rotation_matches.flat_map(&:player_ids).uniq
     generate_rotation_matches(new_rotation, player_ids)
 
     # Deactivate all rotations for this event
@@ -357,9 +343,7 @@ class RotationsController < ApplicationController
                                .order(:match_index)
 
     # 全プレイヤーのIDを収集
-    all_player_ids = rotation_matches.flat_map do |rm|
-      [ rm.team1_player1_id, rm.team1_player2_id, rm.team2_player1_id, rm.team2_player2_id ]
-    end.compact.uniq
+    all_player_ids = rotation_matches.flat_map(&:player_ids).uniq
 
     # 各プレイヤーの「次の試合」を特定して通知
     all_player_ids.each do |player_id|
@@ -367,10 +351,7 @@ class RotationsController < ApplicationController
       next_match = rotation_matches.find do |rm|
         rm.match_index >= current_index &&
         rm.match_id.nil? &&
-        (rm.team1_player1_id == player_id ||
-         rm.team1_player2_id == player_id ||
-         rm.team2_player1_id == player_id ||
-         rm.team2_player2_id == player_id)
+        rm.includes_player?(player_id)
       end
 
       next unless next_match
@@ -381,7 +362,7 @@ class RotationsController < ApplicationController
       next if matches_until > 2
 
       # 座席情報とパートナーを特定
-      seat_info = determine_seat_info(next_match, player_id)
+      seat_info = next_match.seat_info_for(player_id)
       user = User.find_by(id: player_id)
       next unless user
 
@@ -406,24 +387,18 @@ class RotationsController < ApplicationController
     end
   end
 
-  def determine_seat_info(rotation_match, player_id)
-    case player_id
-    when rotation_match.team1_player1_id
-      { seat: :seat_1, partner: rotation_match.team1_player2 }  # 1番席（配信台）
-    when rotation_match.team1_player2_id
-      { seat: :seat_2, partner: rotation_match.team1_player1 }  # 2番席（配信台の隣）
-    when rotation_match.team2_player1_id
-      { seat: :seat_3, partner: rotation_match.team2_player2 }  # 3番席
-    when rotation_match.team2_player2_id
-      { seat: :seat_4, partner: rotation_match.team2_player1 }  # 4番席
-    else
-      { seat: nil, partner: nil }
-    end
-  end
-
   def mark_current_match_started(rotation)
     rm = rotation.rotation_matches.find_by(match_index: rotation.current_match_index)
     rm&.update!(started_at: Time.current) if rm && rm.started_at.nil?
+  end
+
+  def rotation_match_suit_ids
+    {
+      team1_player1: params[:team1_player1_suit],
+      team1_player2: params[:team1_player2_suit],
+      team2_player1: params[:team2_player1_suit],
+      team2_player2: params[:team2_player2_suit]
+    }
   end
 
   def generate_rotation_matches(rotation, player_ids)
