@@ -1,0 +1,43 @@
+<%# 番号付きランキング行
+     rows / name:->(r) / sub:->(r) / value:->(r) / limit
+     thumb:->(r){ MobileSuit | [MobileSuit,...] }（任意）
+     bar:->(r){ 数値 }（任意） 行下の進捗バーの元値
+     bar_full:数値（任意） 指定時はこれを 100% 基準（勝率など）。未指定なら表示分の最大値基準
+     neg:->(r){ bool }（任意） バー・数値を負トーンに %>
+<% rows ||= []
+   thumb ||= nil
+   limit ||= rows.size
+   bar ||= nil
+   neg ||= nil
+   bar_full = local_assigns[:bar_full]
+   shown = rows.first(limit)
+   maxv = (bar && bar_full.nil?) ? (shown.map { |r| bar.call(r).to_f }.max || 0) : nil %>
+<% if shown.empty? %>
+  <div class="m-pbody"><p class="text-sm font-bold text-muted"><%= local_assigns[:empty_text] || "データがありません" %></p></div>
+<% else %>
+  <% shown.each_with_index do |row, i| %>
+    <% is_neg = neg&.call(row) %>
+    <div class="st-rrow">
+      <div class="st-rmain">
+        <span class="st-rno <%= "top" if i.zero? %>"><%= i + 1 %></span>
+        <% if thumb %>
+          <span class="m-thumbs">
+            <% Array(thumb.call(row)).each do |suit| %>
+              <span class="suit-thumb suit-thumb-sm"><% if suit&.image_filename.present? %><%= image_tag "/mobile_suits/#{suit.image_filename}", alt: suit.name, loading: "lazy" %><% end %></span>
+            <% end %>
+          </span>
+        <% end %>
+        <div class="st-rbody">
+          <div class="st-rnm"><%= name.call(row) %></div>
+          <div class="st-rsub"><%= sub.call(row) %></div>
+        </div>
+        <span class="st-rval <%= "neg" if is_neg %>"><%= value.call(row) %></span>
+      </div>
+      <% if bar %>
+        <% denom = bar_full || (maxv.to_f.positive? ? maxv : 1)
+           w = [[bar.call(row).to_f / denom * 100, 0].max, 100].min %>
+        <div class="st-rtrack"><div class="st-rfill <%= "neg" if is_neg %>" style="width:<%= w.round(1) %>%"></div></div>
+      <% end %>
+    </div>
+  <% end %>
+<% end %>

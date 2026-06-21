@@ -1,0 +1,40 @@
+<header class="nav-topbar" data-controller="nav-menu">
+  <div class="page-container">
+    <div class="relative flex h-16 items-center justify-center">
+      <%= link_to helpers.root_path, class: "shrink-0" do %>
+        <%= image_tag "/logo-header.png", alt: "VS.Mobile for KGY", class: "h-12 w-auto" %>
+      <% end %>
+
+      <button type="button" class="nav-burger absolute right-0 top-1/2 -translate-y-1/2" data-action="nav-menu#toggle" aria-controls="mobile-menu" aria-expanded="false" aria-label="メニュー">
+        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" data-nav-menu-target="openIcon"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+        <svg class="hidden h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" data-nav-menu-target="closeIcon"><path d="M6 6l12 12M18 6 6 18"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <div id="mobile-menu" class="nav-mobile-panel hidden" data-nav-menu-target="panel">
+    <div class="page-container py-3">
+      <nav class="grid gap-2" aria-label="モバイルナビゲーション">
+        <% primary_items.each do |label, path, active, icon| %>
+          <%= link_to path, class: nav_item_classes(active) do %>
+            <%= nav_icon(icon) %>
+            <span><%= label %></span>
+          <% end %>
+        <% end %>
+        <% if admin_items.any? %>
+          <div class="nav-section-label">Admin</div>
+          <% admin_items.each do |label, path, active, icon| %>
+            <%= link_to path, class: nav_item_classes(active) do %>
+              <%= nav_icon(icon) %>
+              <span><%= label %></span>
+            <% end %>
+          <% end %>
+        <% end %>
+      </nav>
+
+      <div class="mt-4">
+        <%= render Layout::UserMenuComponent.new(current_user: current_user, viewing_as_user: viewing_as_user, viewing_as_someone_else: viewing_as_someone_else?, switchable_users: switchable_users, placement: :top) %>
+      </div>
+    </div>
+  </div>
+</header>

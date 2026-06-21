@@ -16,12 +16,17 @@ class MobileSuitStatisticsSnapshot
       player_ranking: player_ranking,
       partner_suits: partner_suits,
       partner_costs: partner_costs,
+      matchup_strong: matchup_strong,
+      matchup_weak: matchup_weak,
       global_perf: global_perf,
       player_perf: player_perf
     }
   end
 
   private
+
+  # 得意・不得意の判定に必要な最低対戦数
+  MIN_MATCHUP_GAMES = 3
 
   attr_reader :mobile_suit
 
@@ -129,6 +134,46 @@ class MobileSuitStatisticsSnapshot
         win_rate: percentage(data[:wins], total)
       }
     end.sort_by { |data| -data[:total] }
+  end
+
+  # 対面した相手機体ごとの勝率（得意＝高勝率、不得意＝低勝率）
+  def matchup_suits
+    @matchup_suits ||= begin
+      stats = Hash.new { |hash, key| hash[key] = { mobile_suit: nil, wins: 0, total: 0 } }
+
+      suit_match_players.each do |match_player|
+        won = match_player.won?
+        match_player.opponents.each do |opponent|
+          next unless opponent.mobile_suit
+
+          stats[opponent.mobile_suit_id][:mobile_suit] = opponent.mobile_suit
+          stats[opponent.mobile_suit_id][:total] += 1
+          stats[opponent.mobile_suit_id][:wins] += 1 if won
+        end
+      end
+
+      stats.values.map do |data|
+        total = data[:total]
+        {
+          mobile_suit: data[:mobile_suit],
+          total: total,
+          wins: data[:wins],
+          win_rate: percentage(data[:wins], total)
+        }
+      end.select { |data| data[:total] >= MIN_MATCHUP_GAMES }
+    end
+  end
+
+  def matchup_strong
+    matchup_suits.select { |data| data[:win_rate] >= 50 }
+                 .sort_by { |data| [ -data[:win_rate], -data[:total] ] }
+                 .first(6)
+  end
+
+  def matchup_weak
+    matchup_suits.select { |data| data[:win_rate] < 50 }
+                 .sort_by { |data| [ data[:win_rate], -data[:total] ] }
+                 .first(6)
   end
 
   def partner_stats_by_suit

@@ -1,69 +1,81 @@
-<div class="py-8">
-  <div class="page-header">
+<div class="ui-page">
+  <div class="ui-page-header">
     <div>
-      <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">機体マスタ</h1>
-      <p class="mt-2 text-sm text-gray-600">使用できる機体の一覧を管理できます</p>
+      <p class="text-xs font-black uppercase tracking-wide text-subtle">Master Data</p>
+      <h1 class="font-display text-3xl font-black text-ink">機体マスタ</h1>
+      <p class="mt-2 text-sm font-semibold text-muted">使用できる機体の一覧を管理できます</p>
     </div>
     <% if current_user.is_admin? %>
       <div class="flex flex-wrap gap-2">
-        <%= link_to "新規登録", new_admin_mobile_suit_path, class: "bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded" %>
-        <%= link_to "CSVインポート", new_mobile_suits_admin_imports_path, class: "bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded" %>
+        <%= link_to "新規登録", new_admin_mobile_suit_path, class: "ui-btn ui-btn-primary" %>
+        <%= link_to "CSVインポート", new_mobile_suits_admin_imports_path, class: "ui-btn ui-btn-muted" %>
       </div>
     <% end %>
   </div>
 
-  <!-- モバイル用カードビュー -->
   <div class="mobile-only-view space-y-3">
     <% @mobile_suits.each do |mobile_suit| %>
-      <div class="bg-white shadow rounded-lg p-4">
-        <div class="flex items-center justify-between mb-2">
-          <span class="text-sm font-medium text-gray-900"><%= mobile_suit.name %></span>
+      <%= render Ui::CardComponent.new(padded: true) do %>
+        <div class="flex items-start justify-between gap-3">
+          <div class="min-w-0">
+            <p class="truncate text-sm font-black text-ink"><%= mobile_suit.name %></p>
+            <p class="mt-1 truncate text-xs font-semibold text-muted"><%= mobile_suit.series %></p>
+          </div>
           <%= cost_badge(mobile_suit.cost) %>
         </div>
-        <div class="text-xs text-gray-500 mb-2"><%= mobile_suit.series %></div>
         <% if current_user.is_admin? %>
-          <div class="flex items-center gap-3 pt-2 border-t border-gray-100">
-            <%= link_to "編集", edit_admin_mobile_suit_path(mobile_suit), class: "text-blue-600 hover:text-blue-900 text-sm" %>
-            <%= button_to "削除", admin_mobile_suit_path(mobile_suit), method: :delete, data: { turbo_confirm: "本当に削除しますか？" }, class: "text-red-600 hover:text-red-900 text-sm" %>
+          <div class="mt-4 flex items-center gap-2">
+            <%= link_to "編集", edit_admin_mobile_suit_path(mobile_suit), class: "ui-btn ui-btn-muted ui-btn-small" %>
+            <%= button_to "削除",
+                admin_mobile_suit_path(mobile_suit),
+                method: :delete,
+                data: { turbo_confirm: "本当に削除しますか？" },
+                form: { class: "contents" },
+                class: "ui-btn ui-btn-danger ui-btn-small" %>
           </div>
         <% end %>
-      </div>
+      <% end %>
     <% end %>
   </div>
 
-  <!-- デスクトップ用テーブルビュー -->
-  <div class="desktop-only-view bg-white shadow overflow-hidden sm:rounded-lg">
-    <table class="min-w-full divide-y divide-gray-200">
-      <thead class="bg-gray-50">
-        <tr>
-          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">機体名</th>
-          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">シリーズ</th>
-          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">コスト</th>
-          <% if current_user.is_admin? %>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
-          <% end %>
-        </tr>
-      </thead>
-      <tbody class="bg-white divide-y divide-gray-200">
-        <% @mobile_suits.each do |mobile_suit| %>
+  <%= render Ui::CardComponent.new(padded: false, class_name: "desktop-only-view overflow-hidden") do %>
+    <div class="overflow-x-auto">
+      <table class="ui-data-table table-min-md">
+        <thead>
           <tr>
-            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"><%= mobile_suit.name %></td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><%= mobile_suit.series %></td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><%= cost_badge(mobile_suit.cost) %></td>
+            <th scope="col">機体名</th>
+            <th scope="col">シリーズ</th>
+            <th scope="col">コスト</th>
             <% if current_user.is_admin? %>
-              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                <%= link_to "編集", edit_admin_mobile_suit_path(mobile_suit), class: "text-blue-600 hover:text-blue-900 mr-3" %>
-                <%= button_to "削除", admin_mobile_suit_path(mobile_suit), method: :delete, data: { turbo_confirm: "本当に削除しますか？" }, class: "text-red-600 hover:text-red-900" %>
-              </td>
+              <th scope="col">操作</th>
             <% end %>
           </tr>
-        <% end %>
-      </tbody>
-    </table>
-  </div>
+        </thead>
+        <tbody>
+          <% @mobile_suits.each do |mobile_suit| %>
+            <tr>
+              <td class="font-black text-ink"><%= mobile_suit.name %></td>
+              <td class="text-muted"><%= mobile_suit.series %></td>
+              <td><%= cost_badge(mobile_suit.cost) %></td>
+              <% if current_user.is_admin? %>
+                <td>
+                  <div class="flex items-center gap-2">
+                    <%= link_to "編集", edit_admin_mobile_suit_path(mobile_suit), class: "ui-btn ui-btn-muted ui-btn-small" %>
+                    <%= button_to "削除",
+                        admin_mobile_suit_path(mobile_suit),
+                        method: :delete,
+                        data: { turbo_confirm: "本当に削除しますか？" },
+                        form: { class: "contents" },
+                        class: "ui-btn ui-btn-danger ui-btn-small" %>
+                  </div>
+                </td>
+              <% end %>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
 
-  <div class="mt-4 text-sm text-gray-500">
-    全 <%= @mobile_suits.count %> 機体
-  </div>
+  <p class="text-sm font-semibold text-muted">全 <span class="font-mono tabular-nums text-ink"><%= @mobile_suits.count %></span> 機体</p>
 </div>
-

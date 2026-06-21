@@ -1,0 +1,8 @@
+<%# mock の .suit プレースホルダ。suit が画像を持てば表示、なければ機体アイコン %>
+<span class="suit-thumb suit-thumb-sm">
+  <% if local_assigns[:suit]&.image_filename.present? %>
+    <%= image_tag "/mobile_suits/#{suit.image_filename}", alt: suit.name, loading: "lazy" %>
+  <% else %>
+    <svg viewBox="0 0 24 24"><path d="M12 2l3 4h-6l3-4zM7 6h10l1 5-6 3-6-3 1-5zM6 11l-3 3 4 6h10l4-6-3-3"/></svg>
+  <% end %>
+</span>

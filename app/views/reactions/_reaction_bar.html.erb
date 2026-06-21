@@ -2,26 +2,27 @@
 <% emojis ||= MasterEmoji.active.ordered %>
 <% return if emojis.empty? %>
 
-<div id="<%= dom_id(match, :reactions) %>" class="reaction-bar relative flex flex-wrap items-center gap-2 <%= compact ? 'mt-2' : 'mt-4' %>" data-controller="reaction-picker" data-reaction-picker-match-id-value="<%= match.id %>">
+<div id="<%= dom_id(match, :reactions) %>" class="reaction-bar relative flex flex-wrap items-center gap-2 <%= compact ? 'mt-2' : 'mt-4 reaction-bar-up' %>" data-controller="reaction-picker" data-reaction-picker-match-id-value="<%= match.id %>">
   <% emojis.each do |emoji| %>
     <%= render "reactions/reaction_button", match: match, emoji: emoji, compact: compact %>
   <% end %>
 
   <% if can_react? %>
+    <div class="reaction-add-wrap">
     <button type="button"
-            class="reaction-add-btn <%= compact ? 'w-7 h-7 text-sm' : 'w-8 h-8 text-lg' %> rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 transition-colors"
+            class="reaction-add-btn <%= compact ? 'h-7 w-7 text-sm' : 'h-8 w-8 text-lg' %> flex items-center justify-center rounded-full bg-surface-2 font-black text-muted transition-colors hover:bg-hover hover:text-ink"
             data-action="click->reaction-picker#togglePicker"
             title="リアクションを追加">
       +
     </button>
 
-    <div class="reaction-picker hidden absolute z-20 bg-white shadow-lg rounded-lg p-2 border border-gray-200"
+    <div class="reaction-picker reaction-picker-panel hidden"
          data-reaction-picker-target="picker">
       <div class="flex flex-wrap gap-1 max-w-sm">
         <% emojis.each do |emoji| %>
           <%= button_to toggle_match_reactions_path(match, master_emoji_id: emoji.id, compact: compact),
                 method: :post,
-                class: "reaction-picker-item w-9 h-9 flex items-center justify-center rounded hover:bg-gray-100 transition-colors text-xl",
+                class: "reaction-picker-item flex h-9 w-9 items-center justify-center rounded-lg text-xl transition-colors hover:bg-hover",
                 title: emoji.name,
                 data: { turbo_stream: true, action: "click->reaction-picker#trackReaction click->reaction-picker#closePicker", emoji_id: emoji.id } do %>
             <span class="inline-flex items-center justify-center w-7 h-7">
@@ -34,6 +35,7 @@
           <% end %>
         <% end %>
       </div>
+    </div>
     </div>
   <% end %>
 </div>

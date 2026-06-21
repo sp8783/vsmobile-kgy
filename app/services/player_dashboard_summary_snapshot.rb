@@ -4,6 +4,7 @@ class PlayerDashboardSummarySnapshot < PlayerDashboardSnapshotBase
       recent_matches: recent_matches,
       user_favorite_suits: user_favorite_suits,
       recent_5_results: recent_5_results,
+      recent_10_results: recent_10_results,
       recent_10_win_rate: recent_10_win_rate,
       recent_10_diff: recent_10_diff,
       current_streak: current_streak,
@@ -23,8 +24,20 @@ class PlayerDashboardSummarySnapshot < PlayerDashboardSnapshotBase
       user_win_rate: percentage(wins, match_players.size),
       user_has_stats: stats_match_players.any?,
       user_avg_damage: average_damage,
-      user_avg_kd: average_kd(total_deaths)
+      user_avg_damage_received: average_damage_received,
+      user_avg_kd: average_kd(total_deaths),
+      user_suits_used: distinct_suits_used
     }
+  end
+
+  def distinct_suits_used
+    match_players.map(&:mobile_suit_id).uniq.size
+  end
+
+  def average_damage_received
+    return nil if stats_match_players.empty?
+
+    average(stats_match_players) { |match_player| match_player.damage_received.to_i }.round(0).to_i
   end
 
   def recent_matches

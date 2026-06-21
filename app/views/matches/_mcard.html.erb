@@ -1,0 +1,38 @@
+<%# mock の .mcard。locals: match, left_players, right_players, left_wins, left_label, right_label %>
+<article class="m-mcard"
+         data-controller="card-link"
+         data-card-link-url-value="<%= match_path(match) %>"
+         data-action="click->card-link#navigate"
+         role="link" tabindex="0">
+  <div class="m-mtop">
+    <span class="m-rbadge <%= left_wins ? "m-w" : "m-l" %>"><%= left_wins ? "WIN" : "LOSE" %></span>
+    <span class="m-mmeta"><span class="m-num"><%= match.played_at.strftime("%m/%d") %></span> · <%= match.event.name %></span>
+  </div>
+  <div class="m-teams">
+    <div class="m-tcard <%= left_wins ? "m-win" : "m-lose" %>">
+      <div class="m-tlabel"><%= left_label %></div>
+      <% left_players.each do |mp| %>
+        <div class="m-pl">
+          <%= render "shared/m_suit", suit: mp.mobile_suit %>
+          <div>
+            <div class="m-pn"><%= mp.user&.nickname %></div>
+            <div class="m-sn"><%= mp.mobile_suit&.name %></div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+    <div class="m-midvs">VS</div>
+    <div class="m-tcard <%= left_wins ? "m-lose" : "m-win" %>">
+      <div class="m-tlabel"><%= right_label %></div>
+      <% right_players.each do |mp| %>
+        <div class="m-pl">
+          <%= render "shared/m_suit", suit: mp.mobile_suit %>
+          <div>
+            <div class="m-pn"><%= mp.user&.nickname %></div>
+            <div class="m-sn"><%= mp.mobile_suit&.name %></div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</article>

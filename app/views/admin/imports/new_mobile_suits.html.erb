@@ -1,47 +1,44 @@
-<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-  <div class="mb-6">
-    <%= link_to "← 機体マスタに戻る", admin_mobile_suits_path, class: "text-blue-600 hover:text-blue-500" %>
+<div class="ui-page">
+  <div class="ui-page-header">
+    <div>
+      <%= link_to "機体マスタに戻る", admin_mobile_suits_path, class: "ui-btn ui-btn-ghost ui-btn-small mb-3" %>
+      <p class="text-xs font-black uppercase tracking-wide text-subtle">Import</p>
+      <h1 class="font-display text-3xl font-black text-ink">機体マスタCSVインポート</h1>
+    </div>
   </div>
 
-  <h1 class="text-3xl font-bold text-gray-900 mb-6">機体マスタCSVインポート</h1>
-
   <% if alert %>
-    <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+    <div class="ui-alert ui-alert-danger">
       <%= alert %>
     </div>
   <% end %>
 
-
-  <div class="bg-white shadow sm:rounded-lg p-6 mb-6">
-    <h2 class="text-lg font-medium text-gray-900 mb-4">CSVフォーマット</h2>
-    <div class="bg-gray-50 p-4 rounded text-sm font-mono">
-      <p class="mb-2">機体名,コスト,シリーズ</p>
-      <p class="text-gray-600">フルアーマーZZガンダム,3000,機動戦士ガンダムZZ</p>
-      <p class="text-gray-600">キュベレイ,3000,機動戦士ガンダムZZ</p>
-      <p class="text-gray-600">νガンダム,3000,機動戦士ガンダム 逆襲のシャア</p>
+  <%= render Ui::CardComponent.new(title: "CSVフォーマット", subtitle: "機体名が既に存在する場合は、コストとシリーズを更新します。") do %>
+    <div class="rounded-lg bg-surface-2 p-4 font-mono text-xs font-semibold text-ink shadow-inner-soft">
+      <p>機体名,コスト,シリーズ</p>
+      <p class="mt-2 text-muted">フルアーマーZZガンダム,3000,機動戦士ガンダムZZ</p>
+      <p class="mt-1 text-muted">キュベレイ,3000,機動戦士ガンダムZZ</p>
+      <p class="mt-1 text-muted">νガンダム,3000,機動戦士ガンダム 逆襲のシャア</p>
     </div>
-    <div class="mt-4 text-sm text-gray-600">
-      <h3 class="font-semibold mb-2">注意事項:</h3>
-      <ul class="list-disc list-inside space-y-1">
-        <li>1行目はヘッダー行（列名）</li>
-        <li>機体名: 機体の正式名称</li>
-        <li>コスト: 1500, 2000, 2500, 3000</li>
-        <li>シリーズ: 作品名</li>
-        <li>既存の機体名がある場合は、コストとシリーズを更新</li>
-        <li>UTF-8エンコーディング推奨</li>
-      </ul>
+    <div class="mt-4 grid gap-2 text-sm font-semibold text-muted sm:grid-cols-2">
+      <p>1行目はヘッダー行</p>
+      <p>機体名は正式名称</p>
+      <p>コストは 1500, 2000, 2500, 3000</p>
+      <p>シリーズは作品名</p>
+      <p>既存の機体名がある場合は更新</p>
+      <p>UTF-8 エンコーディング推奨</p>
     </div>
-  </div>
+  <% end %>
 
-  <%= form_with url: import_mobile_suits_admin_imports_path, multipart: true, class: "space-y-6" do |form| %>
-    <div class="bg-white shadow sm:rounded-lg p-6">
-      <label class="block text-sm font-medium text-gray-700 mb-2">CSVファイル</label>
-      <%= file_field_tag :file, accept: ".csv", class: "w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" %>
-    </div>
+  <%= form_with url: import_mobile_suits_admin_imports_path, multipart: true, class: "space-y-4" do |form| %>
+    <%= render Ui::CardComponent.new(title: "アップロード") do %>
+      <label class="ui-label">CSVファイル</label>
+      <%= file_field_tag :file, accept: ".csv", class: "ui-form-control" %>
+    <% end %>
 
-    <div class="flex justify-end space-x-3">
-      <%= link_to "キャンセル", admin_mobile_suits_path, class: "px-4 py-2 bg-gray-600 text-white font-semibold rounded-md hover:bg-gray-700" %>
-      <%= submit_tag "インポート", class: "px-4 py-2 bg-indigo-600 text-white font-semibold rounded-md hover:bg-indigo-700", data: { turbo_confirm: "CSVファイルをインポートしますか？" } %>
+    <div class="flex justify-end gap-2">
+      <%= link_to "キャンセル", admin_mobile_suits_path, class: "ui-btn ui-btn-muted" %>
+      <%= submit_tag "インポート", class: "ui-btn ui-btn-primary", data: { turbo_confirm: "CSVファイルをインポートしますか？" } %>
     </div>
   <% end %>
 </div>

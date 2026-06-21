@@ -12,6 +12,10 @@ class StatisticsOverallSnapshot
       high_winrate_suits: high_winrate_suits,
       cost_stats: cost_stats,
       dominant_suits: dominant_suits,
+      dominant_pairs: dominant_pairs,
+      popular_pairs: popular_pairs,
+      high_winrate_pairs: high_winrate_pairs,
+      cost_pair_stats: cost_pair_stats,
       event_stats: event_stats
     }
   end
@@ -93,6 +97,83 @@ class StatisticsOverallSnapshot
       end
       .sort_by { |entry| -entry[:dominance] }
       .first(10)
+  end
+
+  def dominant_pairs
+    suit_pair_stats_by_key.map do |ids, stats|
+      win_rate = percentage(stats[:wins], stats[:total])
+      {
+        mobile_suits: ids.map { |id| mobile_suits_by_id[id] },
+        total: stats[:total],
+        wins: stats[:wins],
+        win_rate: win_rate,
+        dominance: (win_rate * stats[:total]).round(1)
+      }
+    end.sort_by { |entry| -entry[:dominance] }.first(10)
+  end
+
+  def popular_pairs
+    suit_pair_stats_by_key.map do |ids, stats|
+      {
+        mobile_suits: ids.map { |id| mobile_suits_by_id[id] },
+        usage_count: stats[:total],
+        win_rate: percentage(stats[:wins], stats[:total])
+      }
+    end.sort_by { |entry| -entry[:usage_count] }.first(10)
+  end
+
+  def high_winrate_pairs
+    suit_pair_stats_by_key
+      .select { |_, stats| stats[:total] >= 3 }
+      .map do |ids, stats|
+        {
+          mobile_suits: ids.map { |id| mobile_suits_by_id[id] },
+          total: stats[:total],
+          wins: stats[:wins],
+          win_rate: percentage(stats[:wins], stats[:total])
+        }
+      end
+      .sort_by { |entry| [ -entry[:win_rate], -entry[:total] ] }
+      .first(10)
+  end
+
+  # チーム単位（同チーム2機）のコスト組み合わせを無向キー [小コスト, 大コスト] で集計
+  def cost_pair_stats
+    pairs = Hash.new { |hash, key| hash[key] = { wins: 0, total: 0 } }
+    base_match_players.group_by { |mp| [ mp.match_id, mp.team_number ] }.each_value do |players|
+      next unless players.size == 2
+
+      key = players.map { |p| p.mobile_suit.cost }.sort
+      entry = pairs[key]
+      entry[:total] += 1
+      entry[:wins] += 1 if players.first.won?
+    end
+    grand_total = pairs.values.sum { |stats| stats[:total] }
+    pairs.map do |costs, stats|
+      {
+        costs: costs,
+        total: stats[:total],
+        wins: stats[:wins],
+        win_rate: percentage(stats[:wins], stats[:total]),
+        usage_rate: percentage(stats[:total], grand_total)
+      }
+    end
+  end
+
+  # チーム単位（同チーム2機）の機体ペアを無向キー [小id, 大id] で集計
+  def suit_pair_stats_by_key
+    @suit_pair_stats_by_key ||= begin
+      stats = Hash.new { |hash, key| hash[key] = { wins: 0, total: 0 } }
+      base_match_players.group_by { |mp| [ mp.match_id, mp.team_number ] }.each_value do |players|
+        next unless players.size == 2
+
+        key = players.map(&:mobile_suit_id).sort
+        entry = stats[key]
+        entry[:total] += 1
+        entry[:wins] += 1 if players.first.won?
+      end
+      stats
+    end
   end
 
   def event_stats

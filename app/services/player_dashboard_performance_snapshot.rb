@@ -31,6 +31,7 @@ class PlayerDashboardPerformanceSnapshot < PlayerDashboardSnapshotBase
     {
       avg_score: community_base.average(:score)&.round(1),
       avg_damage: community_base.average(:damage_dealt)&.round(0)&.to_i,
+      avg_damage_received: community_base.average(:damage_received)&.round(0)&.to_i,
       avg_exburst_damage: community_base.average(:exburst_damage)&.round(0)&.to_i
     }
   end

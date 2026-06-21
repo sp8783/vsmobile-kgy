@@ -1,27 +1,27 @@
-<div class="py-8">
-  <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 mb-6">
+<div class="ui-page">
+  <div class="ui-page-header">
     <div>
-      <h1 class="text-2xl sm:text-3xl font-bold text-gray-900"><%= @announcement.title %></h1>
-      <p class="mt-2 text-sm text-gray-600">閲覧ユーザー一覧</p>
+      <p class="ui-eyebrow">Readers</p>
+      <h1 class="ui-title"><%= @announcement.title %></h1>
+      <p class="ui-subtitle">閲覧ユーザー一覧</p>
     </div>
-    <%= link_to "一覧に戻る", admin_announcements_path, class: "text-sm text-indigo-600 hover:text-indigo-500" %>
+    <%= link_to "一覧に戻る", admin_announcements_path, class: "ui-btn ui-btn-secondary" %>
   </div>
 
-  <div class="bg-white shadow sm:rounded-lg">
-    <div class="px-6 py-4 border-b border-gray-200">
-      <p class="text-sm text-gray-600">既読: <span class="font-semibold text-gray-900"><%= @readers.count %>人</span></p>
+  <div class="ui-card p-5">
+    <div class="mb-4 flex items-center justify-between gap-3">
+      <p class="text-sm font-bold text-muted">既読</p>
+      <span class="ui-chip ui-chip-active tabular-nums"><%= @readers.count %>人</span>
     </div>
 
     <% if @readers.any? %>
-      <ul class="divide-y divide-gray-200">
+      <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
         <% @readers.each do |user| %>
-          <li class="px-6 py-3 text-sm text-gray-800"><%= user.nickname %></li>
+          <div class="rounded-lg bg-bg px-4 py-3 text-sm font-black text-ink shadow-inner-soft"><%= user.nickname %></div>
         <% end %>
-      </ul>
-    <% else %>
-      <div class="px-6 py-8 text-center text-sm text-gray-500">
-        まだ誰も閲覧していません
       </div>
+    <% else %>
+      <p class="text-center text-sm font-bold text-muted">まだ誰も閲覧していません</p>
     <% end %>
   </div>
 </div>

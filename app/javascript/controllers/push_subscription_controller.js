@@ -140,8 +140,8 @@ export default class extends Controller {
         ? "このデバイスでプッシュ通知が有効です"
         : "このデバイスでプッシュ通知が無効です"
       this.statusTarget.className = this.subscribedValue
-        ? "text-sm text-green-600"
-        : "text-sm text-gray-500"
+        ? "text-sm font-bold text-accent"
+        : "text-sm font-bold text-muted"
     }
   }
 
@@ -157,7 +157,7 @@ export default class extends Controller {
     }
     if (this.hasStatusTarget) {
       this.statusTarget.textContent = "このブラウザはプッシュ通知に対応していません"
-      this.statusTarget.className = "text-sm text-yellow-600"
+      this.statusTarget.className = "text-sm font-bold text-neg"
     }
   }
 
@@ -172,8 +172,8 @@ export default class extends Controller {
 
       this.statusTarget.textContent = message
       this.statusTarget.className = type === "success"
-        ? "text-sm text-green-600 font-medium"
-        : "text-sm text-red-600 font-medium"
+        ? "text-sm font-bold text-accent"
+        : "text-sm font-bold text-neg"
 
       setTimeout(() => {
         this.updateUI()

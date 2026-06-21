@@ -100,23 +100,23 @@ export default class extends Controller {
 
     // ニックネームをリスト形式に
     const nicknameList = nicknames.split(', ').map(name =>
-      `<div class="py-2 px-4 border-b border-gray-100 last:border-b-0">${this.escapeHtml(name)}</div>`
+      `<div class="rounded-lg bg-bg px-4 py-2 font-bold text-ink shadow-inner-soft">${this.escapeHtml(name)}</div>`
     ).join('')
 
     // モーダルを作成
     this.modal = document.createElement('div')
-    this.modal.className = 'reaction-modal-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/50'
+    this.modal.className = 'reaction-modal-overlay fixed inset-0 z-50 flex items-center justify-center bg-ink/60'
     this.modal.innerHTML = `
-      <div class="reaction-modal bg-white rounded-2xl shadow-xl mx-4 max-w-sm w-full overflow-hidden" data-modal-content>
-        <div class="bg-gray-50 px-4 py-3 flex items-center gap-3 border-b border-gray-200">
+      <div class="reaction-modal ui-card mx-4 w-full max-w-sm overflow-hidden p-4" data-modal-content>
+        <div class="flex items-center gap-3">
           ${emojiHtml}
-          <span class="text-lg font-semibold text-gray-700">リアクションしたユーザー</span>
+          <span class="text-lg font-black text-ink">リアクションしたユーザー</span>
         </div>
-        <div class="max-h-64 overflow-y-auto">
+        <div class="mt-4 max-h-64 space-y-2 overflow-y-auto">
           ${nicknameList}
         </div>
-        <div class="px-4 py-3 border-t border-gray-200">
-          <button type="button" class="w-full py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-gray-700 font-medium transition-colors" data-close-modal>
+        <div class="mt-4">
+          <button type="button" class="ui-btn ui-btn-secondary w-full" data-close-modal>
             閉じる
           </button>
         </div>
@@ -134,8 +134,7 @@ export default class extends Controller {
     // bodyに追加
     document.body.appendChild(this.modal)
 
-    // スクロールを防止
-    document.body.style.overflow = 'hidden'
+    document.body.classList.add('modal-open')
   }
 
   // モーダルを閉じる
@@ -143,7 +142,7 @@ export default class extends Controller {
     if (this.modal) {
       this.modal.remove()
       this.modal = null
-      document.body.style.overflow = ''
+      document.body.classList.remove('modal-open')
     }
   }
 
@@ -163,15 +162,7 @@ export default class extends Controller {
 
   // ツールチップの位置を調整（画面外にはみ出さないように）
   positionTooltip() {
-    if (!this.hasTooltipTarget) return
-
-    const tooltip = this.tooltipTarget
-    if (!tooltip) return
-
-    // インラインスタイルをクリアしてCSSクラスに任せる
-    tooltip.style.left = ''
-    tooltip.style.right = ''
-    tooltip.style.transform = ''
+    return
   }
 
   // タッチデバイスかどうかを判定

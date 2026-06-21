@@ -7,13 +7,13 @@
     remote:        data-remote
 -%>
 <% if current_page.first? %>
-  <span class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-400 bg-gray-100 border border-gray-200 rounded-lg cursor-not-allowed" title="前へ">
+  <span class="ui-btn ui-btn-small ui-btn-muted cursor-not-allowed opacity-50" title="前へ">
     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
     </svg>
   </span>
 <% else %>
-  <%= link_to url, rel: 'prev', remote: remote, class: "inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-indigo-600 hover:border-indigo-300 transition duration-150 ease-in-out", title: "前へ" do %>
+  <%= link_to url, rel: 'prev', remote: remote, class: "ui-btn ui-btn-small ui-btn-secondary", title: "前へ" do %>
     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
     </svg>

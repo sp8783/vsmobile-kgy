@@ -1,16 +1,18 @@
-<div class="max-w-4xl mx-auto py-8">
-  <div class="mb-6">
-    <%= link_to "← イベントに戻る", event_path(@event), class: "text-blue-600 hover:text-blue-500" %>
+<div class="ui-page mx-auto max-w-4xl">
+  <div class="ui-page-header">
+    <div>
+      <%= link_to "イベントに戻る", event_path(@event), class: "ui-btn ui-btn-ghost mb-4" %>
+      <p class="ui-eyebrow">Match</p>
+      <h1 class="ui-title">対戦記録入力</h1>
+      <p class="ui-subtitle"><%= @event.name %></p>
+    </div>
   </div>
 
-  <h1 class="text-3xl font-bold text-gray-900 mb-6">対戦記録入力</h1>
-  <p class="text-sm text-gray-600 mb-6"><%= @event.name %></p>
-
-  <%= form_with(model: [@event, @match], class: "space-y-6") do |form| %>
+  <%= form_with(model: [@event, @match], class: "space-y-5") do |form| %>
     <% if @match.errors.any? %>
-      <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-        <h2 class="font-bold text-lg mb-2"><%= pluralize(@match.errors.count, "個のエラー") %>があります:</h2>
-        <ul class="list-disc list-inside">
+      <div class="ui-alert ui-alert-danger">
+        <p class="font-black"><%= pluralize(@match.errors.count, "個のエラー") %>があります</p>
+        <ul class="mt-2 list-disc pl-5 text-sm">
           <% @match.errors.full_messages.each do |message| %>
             <li><%= message %></li>
           <% end %>
@@ -18,16 +20,16 @@
       </div>
     <% end %>
 
-    <div class="bg-white shadow sm:rounded-lg p-6">
-      <h2 class="text-lg font-medium text-gray-900 mb-4">チーム1</h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <section class="ui-card p-5">
+      <h2 class="mb-4 text-lg font-black text-ink">チーム1</h2>
+      <div class="grid gap-4 md:grid-cols-2">
         <%= form.fields_for :match_players, @match.match_players[0] do |player_form| %>
           <%= player_form.hidden_field :team_number, value: 1 %>
           <%= player_form.hidden_field :position, value: 1 %>
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">プレイヤー1</label>
-            <%= player_form.collection_select :user_id, @users, :id, :nickname, { prompt: "選択してください" }, class: "w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" %>
-            <%= player_form.collection_select :mobile_suit_id, @mobile_suits, :id, :name, { prompt: "機体を選択" }, { class: "mt-2 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500", data: { controller: "select2", placeholder: "機体を検索..." } } %>
+            <label class="ui-label">プレイヤー1</label>
+            <%= player_form.collection_select :user_id, @users, :id, :nickname, { prompt: "選択してください" }, class: "ui-form-control" %>
+            <%= player_form.collection_select :mobile_suit_id, @mobile_suits, :id, :name, { prompt: "機体を選択" }, { class: "ui-form-control mt-2", data: { controller: "select2", placeholder: "機体を検索..." } } %>
           </div>
         <% end %>
 
@@ -35,24 +37,24 @@
           <%= player_form.hidden_field :team_number, value: 1 %>
           <%= player_form.hidden_field :position, value: 2 %>
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">プレイヤー2</label>
-            <%= player_form.collection_select :user_id, @users, :id, :nickname, { prompt: "選択してください" }, class: "w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" %>
-            <%= player_form.collection_select :mobile_suit_id, @mobile_suits, :id, :name, { prompt: "機体を選択" }, { class: "mt-2 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500", data: { controller: "select2", placeholder: "機体を検索..." } } %>
+            <label class="ui-label">プレイヤー2</label>
+            <%= player_form.collection_select :user_id, @users, :id, :nickname, { prompt: "選択してください" }, class: "ui-form-control" %>
+            <%= player_form.collection_select :mobile_suit_id, @mobile_suits, :id, :name, { prompt: "機体を選択" }, { class: "ui-form-control mt-2", data: { controller: "select2", placeholder: "機体を検索..." } } %>
           </div>
         <% end %>
       </div>
-    </div>
+    </section>
 
-    <div class="bg-white shadow sm:rounded-lg p-6">
-      <h2 class="text-lg font-medium text-gray-900 mb-4">チーム2</h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <section class="ui-card p-5">
+      <h2 class="mb-4 text-lg font-black text-ink">チーム2</h2>
+      <div class="grid gap-4 md:grid-cols-2">
         <%= form.fields_for :match_players, @match.match_players[2] do |player_form| %>
           <%= player_form.hidden_field :team_number, value: 2 %>
           <%= player_form.hidden_field :position, value: 3 %>
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">プレイヤー3</label>
-            <%= player_form.collection_select :user_id, @users, :id, :nickname, { prompt: "選択してください" }, class: "w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" %>
-            <%= player_form.collection_select :mobile_suit_id, @mobile_suits, :id, :name, { prompt: "機体を選択" }, { class: "mt-2 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500", data: { controller: "select2", placeholder: "機体を検索..." } } %>
+            <label class="ui-label">プレイヤー3</label>
+            <%= player_form.collection_select :user_id, @users, :id, :nickname, { prompt: "選択してください" }, class: "ui-form-control" %>
+            <%= player_form.collection_select :mobile_suit_id, @mobile_suits, :id, :name, { prompt: "機体を選択" }, { class: "ui-form-control mt-2", data: { controller: "select2", placeholder: "機体を検索..." } } %>
           </div>
         <% end %>
 
@@ -60,31 +62,31 @@
           <%= player_form.hidden_field :team_number, value: 2 %>
           <%= player_form.hidden_field :position, value: 4 %>
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">プレイヤー4</label>
-            <%= player_form.collection_select :user_id, @users, :id, :nickname, { prompt: "選択してください" }, class: "w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" %>
-            <%= player_form.collection_select :mobile_suit_id, @mobile_suits, :id, :name, { prompt: "機体を選択" }, { class: "mt-2 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500", data: { controller: "select2", placeholder: "機体を検索..." } } %>
+            <label class="ui-label">プレイヤー4</label>
+            <%= player_form.collection_select :user_id, @users, :id, :nickname, { prompt: "選択してください" }, class: "ui-form-control" %>
+            <%= player_form.collection_select :mobile_suit_id, @mobile_suits, :id, :name, { prompt: "機体を選択" }, { class: "ui-form-control mt-2", data: { controller: "select2", placeholder: "機体を検索..." } } %>
           </div>
         <% end %>
       </div>
-    </div>
+    </section>
 
-    <div class="bg-white shadow sm:rounded-lg p-6">
-      <h2 class="text-lg font-medium text-gray-900 mb-4">勝利チーム</h2>
-      <div class="flex space-x-4">
-        <label class="flex items-center">
-          <%= form.radio_button :winning_team, 1, class: "h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300" %>
-          <span class="ml-2 text-sm text-gray-900">チーム1</span>
+    <section class="ui-card p-5">
+      <h2 class="mb-4 text-lg font-black text-ink">勝利チーム</h2>
+      <div class="flex flex-wrap gap-3">
+        <label class="flex cursor-pointer items-center gap-2 rounded-lg bg-bg px-4 py-3 font-bold text-ink shadow-inner-soft">
+          <%= form.radio_button :winning_team, 1, class: "h-4 w-4 text-accent focus:ring-accent" %>
+          チーム1
         </label>
-        <label class="flex items-center">
-          <%= form.radio_button :winning_team, 2, class: "h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300" %>
-          <span class="ml-2 text-sm text-gray-900">チーム2</span>
+        <label class="flex cursor-pointer items-center gap-2 rounded-lg bg-bg px-4 py-3 font-bold text-ink shadow-inner-soft">
+          <%= form.radio_button :winning_team, 2, class: "h-4 w-4 text-accent focus:ring-accent" %>
+          チーム2
         </label>
       </div>
-    </div>
+    </section>
 
-    <div class="flex justify-end space-x-3">
-      <%= link_to "キャンセル", event_path(@event), class: "px-4 py-2 bg-gray-600 text-white font-semibold rounded-md hover:bg-gray-700" %>
-      <%= form.submit "記録", class: "px-4 py-2 bg-indigo-600 text-white font-semibold rounded-md hover:bg-indigo-700" %>
+    <div class="flex flex-wrap justify-end gap-3">
+      <%= link_to "キャンセル", event_path(@event), class: "ui-btn ui-btn-secondary" %>
+      <%= form.submit "記録", class: "ui-btn ui-btn-primary cursor-pointer" %>
     </div>
   <% end %>
 </div>

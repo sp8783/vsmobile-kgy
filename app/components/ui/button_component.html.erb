@@ -1,0 +1,6 @@
+<% body = content.present? ? content : label %>
+<% if href.present? %>
+  <%= link_to body, href, class: button_classes, data: data, method: method %>
+<% else %>
+  <button type="button" class="<%= button_classes %>" <%= tag.attributes(data: data) %>><%= body %></button>
+<% end %>

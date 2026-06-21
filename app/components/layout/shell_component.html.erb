@@ -1,0 +1,22 @@
+<div class="page-shell">
+  <% if user_signed_in? %>
+    <%= render Layout::SidebarComponent.new(current_user: current_user, viewing_as_user: viewing_as_user, viewing_as_someone_else: viewing_as_someone_else?, switchable_users: switchable_users) %>
+    <%= render Layout::TopbarComponent.new(current_user: current_user, viewing_as_user: viewing_as_user, viewing_as_someone_else: viewing_as_someone_else?, switchable_users: switchable_users) %>
+  <% end %>
+
+  <div id="flash-messages" class="<%= classes("app-flash page-container", !user_signed_in? && "app-flash--bare") %>">
+    <% flash.each do |type, message| %>
+      <%= render "shared/flash_message", type: type, message: message %>
+    <% end %>
+  </div>
+
+  <main class="<%= classes("app-content", !user_signed_in? && "app-content--bare") %>">
+    <div class="page-container">
+      <%= content %>
+    </div>
+  </main>
+
+  <% if unread_announcement %>
+    <%= render "announcements/modal", announcement: unread_announcement %>
+  <% end %>
+</div>

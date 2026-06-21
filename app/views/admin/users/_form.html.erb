@@ -1,8 +1,8 @@
-<%= form_with(model: [:admin, user], class: "space-y-6") do |form| %>
+<%= form_with(model: [:admin, user], class: "space-y-5") do |form| %>
   <% if user.errors.any? %>
-    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-      <h2 class="font-bold text-lg mb-2"><%= pluralize(user.errors.count, "個のエラー") %>があります:</h2>
-      <ul class="list-disc list-inside">
+    <div class="ui-alert ui-alert-danger">
+      <p class="font-black"><%= pluralize(user.errors.count, "個のエラー") %>があります</p>
+      <ul class="mt-2 list-disc pl-5 text-sm">
         <% user.errors.full_messages.each do |message| %>
           <li><%= message %></li>
         <% end %>
@@ -11,36 +11,36 @@
   <% end %>
 
   <div>
-    <%= form.label :username, "ユーザー名", class: "block text-sm font-medium text-gray-700 mb-1" %>
-    <%= form.text_field :username, class: "w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" %>
-    <p class="mt-1 text-sm text-gray-500">半角英数字と記号（_ -）が使用できます</p>
+    <%= form.label :username, "ユーザー名", class: "ui-label" %>
+    <%= form.text_field :username, class: "ui-form-control" %>
+    <p class="mt-2 text-sm font-bold text-subtle">半角英数字と記号（_ -）が使用できます。</p>
   </div>
 
   <div>
-    <%= form.label :nickname, "ニックネーム", class: "block text-sm font-medium text-gray-700 mb-1" %>
-    <%= form.text_field :nickname, class: "w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" %>
+    <%= form.label :nickname, "ニックネーム", class: "ui-label" %>
+    <%= form.text_field :nickname, class: "ui-form-control" %>
   </div>
 
   <div>
-    <%= form.label :password, user.persisted? ? "パスワード（変更する場合のみ）" : "パスワード", class: "block text-sm font-medium text-gray-700 mb-1" %>
-    <%= form.password_field :password, autocomplete: "new-password", class: "w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" %>
+    <%= form.label :password, user.persisted? ? "パスワード（変更する場合のみ）" : "パスワード", class: "ui-label" %>
+    <%= form.password_field :password, autocomplete: "new-password", class: "ui-form-control" %>
     <% if user.persisted? %>
-      <p class="mt-1 text-sm text-gray-500">変更しない場合は空欄のままにしてください</p>
+      <p class="mt-2 text-sm font-bold text-subtle">変更しない場合は空欄のままにしてください。</p>
     <% end %>
   </div>
 
   <div>
-    <%= form.label :password_confirmation, "パスワード（確認）", class: "block text-sm font-medium text-gray-700 mb-1" %>
-    <%= form.password_field :password_confirmation, autocomplete: "new-password", class: "w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" %>
+    <%= form.label :password_confirmation, "パスワード（確認）", class: "ui-label" %>
+    <%= form.password_field :password_confirmation, autocomplete: "new-password", class: "ui-form-control" %>
   </div>
 
-  <div class="flex items-center">
-    <%= form.check_box :is_admin, class: "h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" %>
-    <%= form.label :is_admin, "管理者権限を付与", class: "ml-2 block text-sm text-gray-900" %>
-  </div>
+  <label class="flex cursor-pointer items-center gap-3 rounded-lg bg-bg p-3 shadow-inner-soft">
+    <%= form.check_box :is_admin, class: "h-4 w-4 rounded text-accent focus:ring-accent" %>
+    <span class="text-sm font-bold text-ink">管理者権限を付与</span>
+  </label>
 
-  <div class="flex justify-end space-x-3 pt-4">
-    <%= link_to "キャンセル", admin_users_path, class: "px-4 py-2 bg-gray-600 text-white font-semibold rounded-md hover:bg-gray-700" %>
-    <%= form.submit user.new_record? ? "作成" : "更新", class: "px-4 py-2 bg-indigo-600 text-white font-semibold rounded-md hover:bg-indigo-700 cursor-pointer" %>
+  <div class="flex flex-wrap justify-end gap-3 pt-2">
+    <%= link_to "キャンセル", admin_users_path, class: "ui-btn ui-btn-secondary" %>
+    <%= form.submit user.new_record? ? "作成" : "更新", class: "ui-btn ui-btn-primary cursor-pointer" %>
   </div>
 <% end %>
