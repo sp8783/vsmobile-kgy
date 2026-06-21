@@ -1,16 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
 
-const SLOT_LABELS = ["M", "S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", "S10", "S11"]
 const MAX_SLOTS = 12
-
-const COST_STYLES = {
-  "":     { active: "bg-white shadow text-gray-900",         inactive: "text-gray-500 hover:text-gray-700" },
-  "3000": { active: "bg-red-500 text-white shadow-sm",       inactive: "text-red-500 hover:bg-red-100/80" },
-  "2500": { active: "bg-orange-500 text-white shadow-sm",    inactive: "text-orange-500 hover:bg-orange-100/80" },
-  "2000": { active: "bg-yellow-400 text-gray-900 shadow-sm", inactive: "text-yellow-600 hover:bg-yellow-100/80" },
-  "1500": { active: "bg-green-500 text-white shadow-sm",     inactive: "text-green-600 hover:bg-green-100/80" },
-}
-const COST_TAB_BASE = "flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-semibold text-sm transition-all whitespace-nowrap"
 
 export default class extends Controller {
   static targets = ["modal", "form", "tray", "countBadge", "saveBtn", "searchInput"]
@@ -34,14 +24,14 @@ export default class extends Controller {
   open() {
     this.selected = [...this.initialValue]
     this.modalTarget.classList.remove("hidden")
-    document.body.style.overflow = "hidden"
+    document.body.classList.add("modal-open")
     this._resetFilters()
     this._renderAll()
   }
 
   close() {
     this.modalTarget.classList.add("hidden")
-    document.body.style.overflow = ""
+    document.body.classList.remove("modal-open")
   }
 
   // ── 機体選択トグル ────────────────────────────────
@@ -70,10 +60,10 @@ export default class extends Controller {
     const form = this.formTarget
     form.querySelectorAll("input[name='mobile_suit_ids[]']").forEach(el => el.remove())
     this.selected.forEach(id => {
-      const input   = document.createElement("input")
-      input.type    = "hidden"
-      input.name    = "mobile_suit_ids[]"
-      input.value   = id
+      const input = document.createElement("input")
+      input.type  = "hidden"
+      input.name  = "mobile_suit_ids[]"
+      input.value = id
       form.appendChild(input)
     })
     form.requestSubmit()
@@ -84,11 +74,7 @@ export default class extends Controller {
 
   search(event) {
     const q = event.target.value.trim().toLowerCase()
-    this.element.querySelectorAll("[data-suit-wrapper]").forEach(wrapper => {
-      const nameMatch = !q || wrapper.dataset.suitName.toLowerCase().includes(q)
-      const costMatch = !this._currentCost || wrapper.dataset.suitCost === this._currentCost
-      wrapper.style.display = (nameMatch && costMatch) ? "" : "none"
-    })
+    this._applyFilter(q, this._currentCost)
   }
 
   filterCost(event) {
@@ -98,28 +84,35 @@ export default class extends Controller {
     this.element.querySelectorAll("[data-cost-btn]").forEach(btn => {
       const isActive     = btn.dataset.cost === cost
       btn.dataset.active = isActive ? "true" : "false"
-      const s            = COST_STYLES[btn.dataset.cost] || COST_STYLES[""]
-      btn.className      = `${COST_TAB_BASE} ${isActive ? s.active : s.inactive}`
+      btn.className      = this._costTabClass(btn.dataset.cost, isActive)
     })
 
     const q = this.hasSearchInputTarget ? this.searchInputTarget.value.trim().toLowerCase() : ""
+    this._applyFilter(q, cost)
+  }
+
+  _applyFilter(q, cost) {
     this.element.querySelectorAll("[data-suit-wrapper]").forEach(wrapper => {
       const nameMatch = !q || wrapper.dataset.suitName.toLowerCase().includes(q)
       const costMatch = !cost || wrapper.dataset.suitCost === cost
-      wrapper.style.display = (nameMatch && costMatch) ? "" : "none"
+      wrapper.classList.toggle("hidden", !(nameMatch && costMatch))
     })
+  }
+
+  _costTabClass(cost, isActive) {
+    const base = cost ? `pk-costtab c${cost}` : "pk-costtab"
+    return isActive ? `${base} on` : base
   }
 
   // ── プライベート ──────────────────────────────────
 
   _resetFilters() {
     this._currentCost = ""
-    this.element.querySelectorAll("[data-suit-wrapper]").forEach(w => w.style.display = "")
+    this.element.querySelectorAll("[data-suit-wrapper]").forEach(w => w.classList.remove("hidden"))
     this.element.querySelectorAll("[data-cost-btn]").forEach(btn => {
       const isActive     = btn.dataset.cost === ""
       btn.dataset.active = isActive ? "true" : "false"
-      const s            = COST_STYLES[btn.dataset.cost] || COST_STYLES[""]
-      btn.className      = `${COST_TAB_BASE} ${isActive ? s.active : s.inactive}`
+      btn.className      = this._costTabClass(btn.dataset.cost, isActive)
     })
     if (this.hasSearchInputTarget) this.searchInputTarget.value = ""
   }
@@ -132,35 +125,8 @@ export default class extends Controller {
 
   _updateCards() {
     this.element.querySelectorAll("[data-suit-id]").forEach(card => {
-      const id      = parseInt(card.dataset.suitId)
-      const slotIdx = this.selected.indexOf(id)
-      const badge   = card.querySelector("[data-slot-badge]")
-
-      if (slotIdx >= 0) {
-        card.classList.add("ring-2", "ring-indigo-500", "border-indigo-400")
-        card.classList.remove("border-gray-200", "hover:border-indigo-300")
-        let overlay = card.querySelector("[data-picker-overlay]")
-        if (!overlay) {
-          overlay = document.createElement("div")
-          overlay.dataset.pickerOverlay = ""
-          overlay.className = "absolute inset-0 bg-indigo-500/8 pointer-events-none rounded-xl"
-          card.appendChild(overlay)
-        }
-        if (badge) {
-          badge.textContent = SLOT_LABELS[slotIdx]
-          badge.classList.remove("hidden")
-          badge.classList.add("flex")
-        }
-      } else {
-        card.classList.remove("ring-2", "ring-indigo-500", "border-indigo-400")
-        card.classList.add("border-gray-200", "hover:border-indigo-300")
-        const overlay = card.querySelector("[data-picker-overlay]")
-        if (overlay) overlay.remove()
-        if (badge) {
-          badge.classList.add("hidden")
-          badge.classList.remove("flex")
-        }
-      }
+      const id = parseInt(card.dataset.suitId)
+      card.classList.toggle("is-sel", this.selected.indexOf(id) >= 0)
     })
   }
 
@@ -171,36 +137,21 @@ export default class extends Controller {
     }
 
     if (this.selected.length === 0) {
-      this.trayTarget.innerHTML = `<p class="col-span-6 text-sm text-gray-400 italic py-4 text-center">機体をクリックして追加…</p>`
+      this.trayTarget.innerHTML = `<div class="pk-trayempty">機体をクリックして追加…</div>`
       return
     }
 
     const suitMap = this._buildSuitMap()
-    this.trayTarget.innerHTML = this.selected.map((id, idx) => {
-      const s          = suitMap[id] || {}
-      const label      = SLOT_LABELS[idx]
-      const isMain     = idx === 0
-      const badgeColor = isMain ? "bg-indigo-600" : "bg-indigo-400"
-      const img        = s.image
-        ? `<img src="/mobile_suits/${s.image}" alt="${s.name || ""}" class="w-full h-full object-contain pointer-events-none p-1">`
-        : `<div class="w-full h-full flex items-center justify-center text-gray-300 text-xs">?</div>`
+    this.trayTarget.innerHTML = this.selected.map(id => {
+      const s   = suitMap[id] || {}
+      const img = s.image
+        ? `<img src="/mobile_suits/${s.image}" alt="${s.name || ""}">`
+        : `<span class="ph">?</span>`
       return `
-        <div class="tray-item flex flex-col items-center gap-1.5 cursor-grab active:cursor-grabbing select-none"
-             data-tray-suit-id="${id}">
-          <div class="relative w-full h-12 rounded-xl overflow-hidden bg-gradient-to-b from-gray-50 to-gray-100
-                      border-2 border-indigo-300 transition-all duration-150 shadow-sm">
-            ${img}
-            <span class="absolute top-1 left-1 px-1.5 h-5 min-w-[20px] ${badgeColor} text-white
-                         text-[10px] font-bold rounded-md flex items-center justify-center
-                         pointer-events-none shadow-sm">${label}</span>
-            <button type="button"
-                    class="delete-btn absolute top-1 right-1 w-5 h-5 bg-red-500 hover:bg-red-600 text-white
-                           text-[11px] font-bold rounded-full flex items-center justify-center shadow-md
-                           pointer-events-auto z-10 leading-none"
-                    data-delete-suit-id="${id}">×</button>
-          </div>
-          <span class="text-xs text-gray-600 font-medium leading-tight text-center w-full line-clamp-2 px-0.5
-                       pointer-events-none">${s.name || ""}</span>
+        <div class="pk-trayitem" data-tray-suit-id="${id}">
+          <button type="button" class="tx" data-delete-suit-id="${id}" aria-label="削除">×</button>
+          <div class="tt">${img}</div>
+          <div class="tname">${s.name || ""}</div>
         </div>`
     }).join("")
 
@@ -213,12 +164,10 @@ export default class extends Controller {
         ghostClass:  "tray-ghost",
         chosenClass: "tray-chosen",
         dragClass:   "tray-dragging",
+        filter:      ".tx",
         onEnd: () => {
-          // DOM の順序から selected を同期
           const items = this.trayTarget.querySelectorAll("[data-tray-suit-id]")
           this.selected = Array.from(items).map(el => parseInt(el.dataset.traySuitId))
-          this._updateTrayBadges()
-          this._updateCards()
           this._updateCounter()
         },
       })
@@ -227,27 +176,12 @@ export default class extends Controller {
     })
   }
 
-  // ドラッグ後にトレイ内バッジのテキストと色だけ更新（DOM再構築なし）
-  _updateTrayBadges() {
-    const items = this.trayTarget.querySelectorAll("[data-tray-suit-id]")
-    items.forEach((item, idx) => {
-      const badge = item.querySelector("span[class*='rounded-md']")
-      if (!badge) return
-      badge.textContent = SLOT_LABELS[idx]
-      // メインとサブで色を切り替え
-      badge.classList.toggle("bg-indigo-600", idx === 0)
-      badge.classList.toggle("bg-indigo-400", idx !== 0)
-    })
-  }
-
   _onTrayClick(e) {
-    // 削除ボタンのクリック
     const deleteBtn = e.target.closest("[data-delete-suit-id]")
     if (deleteBtn) {
-      const id  = parseInt(deleteBtn.dataset.deleteSuitId)
+      const id = parseInt(deleteBtn.dataset.deleteSuitId)
       this.selected = this.selected.filter(s => s !== id)
       this._renderAll()
-      return
     }
   }
 

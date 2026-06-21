@@ -5,7 +5,7 @@ export default class extends Controller {
   static values = { url: String }
 
   navigate(event) {
-    if (!event.target.closest("a, button")) {
+    if (!event.target.closest("a, button, input, select, textarea, label")) {
       Turbo.visit(this.urlValue)
     }
   }

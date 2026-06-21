@@ -5,22 +5,26 @@ export default class extends Controller {
 
   connect() {
     this._outsideClickHandler = this._handleOutsideClick.bind(this)
+    this._dismiss = this.hide.bind(this)
   }
 
   disconnect() {
-    document.removeEventListener("click", this._outsideClickHandler)
+    this._removeListeners()
   }
 
   show() {
     const tooltip = this.contentTarget
-    this._position()
     tooltip.classList.remove("hidden")
+    this._position()
     document.addEventListener("click", this._outsideClickHandler)
+    // スクロール・リサイズで閉じる（残留・ズレ防止）
+    window.addEventListener("scroll", this._dismiss, true)
+    window.addEventListener("resize", this._dismiss)
   }
 
   hide() {
     this.contentTarget.classList.add("hidden")
-    document.removeEventListener("click", this._outsideClickHandler)
+    this._removeListeners()
   }
 
   toggle(event) {
@@ -28,14 +32,25 @@ export default class extends Controller {
     this.contentTarget.classList.contains("hidden") ? this.show() : this.hide()
   }
 
+  _removeListeners() {
+    document.removeEventListener("click", this._outsideClickHandler)
+    window.removeEventListener("scroll", this._dismiss, true)
+    window.removeEventListener("resize", this._dismiss)
+  }
+
   _position() {
     const tooltip = this.contentTarget
     const rect = this.element.getBoundingClientRect()
     const GAP = 8
+    const MARGIN = 8
     tooltip.style.position = "fixed"
-    tooltip.style.left = `${rect.left + rect.width / 2}px`
     tooltip.style.top = `${rect.top - GAP}px`
-    tooltip.style.transform = "translate(-50%, -100%)"
+    tooltip.style.transform = "translateY(-100%)"
+    // アイコン中央を基準に、左右が画面外へはみ出さないようクランプ
+    const width = tooltip.offsetWidth
+    let left = rect.left + rect.width / 2 - width / 2
+    left = Math.max(MARGIN, Math.min(left, window.innerWidth - width - MARGIN))
+    tooltip.style.left = `${left}px`
   }
 
   _handleOutsideClick(event) {

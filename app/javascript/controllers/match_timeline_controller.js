@@ -1,35 +1,47 @@
 import { Controller } from "@hotwired/stimulus"
 
-// Rendering constants
+const COLORS = {
+  timelineEx: "rgb(199 210 254)",
+  timelineF: "rgb(249 115 22)",
+  timelineS: "rgb(59 130 246)",
+  timelineE: "rgb(34 197 94)",
+  timelineXb: "rgb(237 233 254)",
+  timelineOv: "rgb(221 214 254)",
+  timelineOvActive: "rgb(139 92 246)",
+  accent: "rgb(43 84 255)",
+  accentSoft: "rgb(238 242 255)",
+  axis: "rgb(99 102 241)",
+  neg: "rgb(229 56 77)",
+  surface: "rgb(255 255 255)",
+  muted: "rgb(107 114 128)",
+  hatch: "rgb(148 163 184)",
+}
+
 const ICON_W     = 55   // left column (mobile suit icon)
 const ROW_H      = 38   // height per player row
 const HEADER_H   = 35   // height of time axis header
 const TEAM_GAP   = 6    // gap between team 1 and team 2
 const END_PAD    = 18   // right padding (END badge overflow area)
 
-// 2-lane layout within each player row
-// Upper lane: EXバースト system  /  Lower lane: EXオーバーリミット system
+// Two lanes within each player row.
 const EX_BAR_H   = 14   // EXバースト lane bar height
 const EX_BAR_OFF = 3    // EXバースト lane y-offset from row top
 const OL_BAR_H   = 10   // OL lane bar height
 const OL_BAR_OFF = 21   // OL lane y-offset from row top (3 + 14 + 4px gap)
 
-// EXオーバーリミット system — rendered in lower lane
 const OL_CLASSES = new Set(["ov", "exbst-ov"])
 
-// class_name → rendering style (bar events)
 const CLASS_STYLES = {
-  "ex":       { fill: "#C7D2FE", stroke: null },        // EXバースト発動可能域 (indigo-200)
-  "exbst-f":  { fill: "#F97316", stroke: null },        // ファイティングバースト (orange)
-  "exbst-s":  { fill: "#3B82F6", stroke: null },        // シューティングバースト (blue)
-  "exbst-e":  { fill: "#22C55E", stroke: null },        // エクステンドバースト (green)
-  "ov":       { fill: "#DDD6FE", stroke: null },        // EXオーバーリミット発動可能域 (violet-200, light fill)
-  "exbst-ov": { fill: "#8B5CF6", stroke: null },        // EXオーバーリミット発動中 (brand purple)
-  "com":      { fill: "url(#hatch)", stroke: "#94A3B8" }, // データ無し
+  "ex":       { fill: COLORS.timelineEx, stroke: null },
+  "exbst-f":  { fill: COLORS.timelineF, stroke: null },
+  "exbst-s":  { fill: COLORS.timelineS, stroke: null },
+  "exbst-e":  { fill: COLORS.timelineE, stroke: null },
+  "ov":       { fill: COLORS.timelineOv, stroke: null },
+  "exbst-ov": { fill: COLORS.timelineOvActive, stroke: null },
+  "com":      { fill: "url(#hatch)", stroke: COLORS.hatch },
 }
 
-// EXバーストクロス: rendered as row background overlay (not a lane bar)
-const XB_BG_COLOR = "#EDE9FE"
+const XB_BG_COLOR = COLORS.timelineXb
 
 // Convert centiseconds to "M:SS" display string
 function fmtCs(cs) {
@@ -57,7 +69,7 @@ export default class extends Controller {
 
     let data
     try { data = JSON.parse(raw) } catch {
-      this.element.innerHTML = '<p class="text-red-400 text-xs p-2">タイムラインデータの解析に失敗しました</p>'
+      this.element.innerHTML = '<p class="p-2 text-xs font-bold text-neg">タイムラインデータの解析に失敗しました</p>'
       return
     }
 
@@ -71,8 +83,7 @@ export default class extends Controller {
     // Uses server-provided team_info (name-matched) with fallback to key-name convention.
     const teamOf = key => teamInfo[key] ?? (key.startsWith("team1") ? 1 : 2)
 
-    // Returns team color: blue for winner, red for loser.
-    const teamColor = key => winnerKeys.has(key) ? "#3B82F6" : "#EF4444"
+    const teamColor = key => winnerKeys.has(key) ? COLORS.accent : COLORS.neg
 
     // Use server-provided group_order (matches stats table display order = position-ascending)
     // Fall back to numeric sort of group keys when not provided
@@ -105,32 +116,43 @@ export default class extends Controller {
       xmlns: NS,
       width: "100%",
       viewBox: `0 0 ${totalW} ${totalH}`,
-      style: `min-width: 550px; display: block; font-family: sans-serif;`,
+      class: "match-timeline-svg",
     })
 
-    // Defs: hatch pattern
     const defs = svgEl("defs")
-    defs.innerHTML = `
-      <pattern id="hatch" patternUnits="userSpaceOnUse" width="6" height="6" patternTransform="rotate(45)">
-        <line x1="0" y1="0" x2="0" y2="6" stroke="#888" stroke-width="2"/>
-      </pattern>
-      <clipPath id="chart-clip">
-        <rect x="${ICON_W}" y="${HEADER_H}" width="${chartW}" height="${totalH - HEADER_H}"/>
-      </clipPath>`
+    const pattern = svgEl("pattern", {
+      id: "hatch",
+      patternUnits: "userSpaceOnUse",
+      width: 6,
+      height: 6,
+      patternTransform: "rotate(45)",
+    })
+    pattern.appendChild(svgEl("line", {
+      x1: 0, y1: 0, x2: 0, y2: 6,
+      stroke: COLORS.hatch, "stroke-width": 2,
+    }))
+    const clipPath = svgEl("clipPath", { id: "chart-clip" })
+    clipPath.appendChild(svgEl("rect", {
+      x: ICON_W,
+      y: HEADER_H,
+      width: chartW,
+      height: totalH - HEADER_H,
+    }))
+    defs.append(pattern, clipPath)
     svg.appendChild(defs)
 
     const majorInterval = gameEndCs <= 18000 ? 3000 : 6000  // 30s or 60s
     const minorInterval = 1000                               // 10s
 
     // 1. Background
-    svg.appendChild(svgEl("rect", { x: 0, y: 0, width: totalW, height: totalH, fill: "#EEF2FF" }))
+    svg.appendChild(svgEl("rect", { x: 0, y: 0, width: totalW, height: totalH, fill: COLORS.accentSoft }))
 
     // 2. Row backgrounds + team indicator + icon + lane divider
     groupKeys.forEach(key => {
       const y         = groupY[key]
       const iconUrl = groups[key]
 
-      svg.appendChild(svgEl("rect", { x: 0, y, width: totalW, height: ROW_H, fill: "#FFFFFF" }))
+      svg.appendChild(svgEl("rect", { x: 0, y, width: totalW, height: ROW_H, fill: COLORS.surface }))
       // 2px team color indicator on left edge
       svg.appendChild(svgEl("rect", { x: 0, y, width: 2, height: ROW_H, fill: teamColor(key) }))
 
@@ -139,7 +161,7 @@ export default class extends Controller {
       svg.appendChild(svgEl("line", {
         x1: ICON_W, x2: endX,
         y1: divY, y2: divY,
-        stroke: "#C7D2FE", "stroke-width": 0.5, "stroke-dasharray": "3,3",
+        stroke: COLORS.timelineEx, "stroke-width": 0.5, "stroke-dasharray": "3,3",
       }))
 
       if (iconUrl) {
@@ -157,7 +179,7 @@ export default class extends Controller {
       const sepY = groupY[firstT2] - TEAM_GAP / 2
       svg.appendChild(svgEl("line", {
         x1: 0, x2: totalW, y1: sepY, y2: sepY,
-        stroke: "#C7D2FE", "stroke-width": 1,
+        stroke: COLORS.timelineEx, "stroke-width": 1,
       }))
     }
 
@@ -168,7 +190,7 @@ export default class extends Controller {
       axisGroup.appendChild(svgEl("line", {
         x1: ICON_W + cs * scale, x2: ICON_W + cs * scale,
         y1: HEADER_H, y2: totalH - 8,
-        stroke: "#C7D2FE", "stroke-width": 1,
+        stroke: COLORS.timelineEx, "stroke-width": 1,
       }))
     }
 
@@ -178,12 +200,12 @@ export default class extends Controller {
       const tickH   = isMajor ? 8 : 4
       axisGroup.appendChild(svgEl("line", {
         x1: x, x2: x, y1: HEADER_H - tickH, y2: HEADER_H,
-        stroke: isMajor ? "#6366F1" : "#C7D2FE", "stroke-width": 1,
+        stroke: isMajor ? COLORS.axis : COLORS.timelineEx, "stroke-width": 1,
       }))
       if (isMajor) {
         const t = svgEl("text", {
           x, y: HEADER_H - 10, "text-anchor": "middle",
-          fill: "#6366F1", "font-size": 11, "font-weight": "bold",
+          fill: COLORS.axis, "font-size": 11, "font-weight": "bold",
         })
         t.textContent = fmtCs(cs)
         axisGroup.appendChild(t)
@@ -210,7 +232,7 @@ export default class extends Controller {
       const y = groupY[evt.group]
       if (y === undefined) return
 
-      const style  = CLASS_STYLES[evt.class_name] || { fill: "#6B7280", stroke: null }
+      const style  = CLASS_STYLES[evt.class_name] || { fill: COLORS.muted, stroke: null }
       const x      = ICON_W + evt.start_cs * scale
       const w      = Math.max((evt.end_cs - evt.start_cs) * scale, 2)
       const isOL   = OL_CLASSES.has(evt.class_name)
@@ -236,13 +258,13 @@ export default class extends Controller {
       svg.appendChild(svgEl("rect", {
         x: endX, y: groupY[key],
         width: totalW - endX, height: ROW_H,
-        fill: "#6366F1", "fill-opacity": 0.1,
+        fill: COLORS.axis, "fill-opacity": 0.1,
       }))
     })
     // Boundary line (full height, clearly marks game end)
     svg.appendChild(svgEl("line", {
       x1: endX, x2: endX, y1: 0, y2: totalH,
-      stroke: "#6366F1", "stroke-width": 2,
+      stroke: COLORS.axis, "stroke-width": 2,
     }))
 
     // Pass 3: Death markers — drawn after END line so ✕ appears on top; no clamp (center = exact time)
@@ -257,13 +279,13 @@ export default class extends Controller {
       arms.forEach(([dx1, dy1, dx2, dy2]) => {
         svg.appendChild(svgEl("line", {
           x1: x+dx1, y1: cy+dy1, x2: x+dx2, y2: cy+dy2,
-          stroke: "#FFFFFF", "stroke-width": 3.5, "stroke-linecap": "round",
+          stroke: COLORS.surface, "stroke-width": 3.5, "stroke-linecap": "round",
         }))
       })
       arms.forEach(([dx1, dy1, dx2, dy2]) => {
         svg.appendChild(svgEl("line", {
           x1: x+dx1, y1: cy+dy1, x2: x+dx2, y2: cy+dy2,
-          stroke: "#EF4444", "stroke-width": 2.5, "stroke-linecap": "round",
+          stroke: COLORS.neg, "stroke-width": 2.5, "stroke-linecap": "round",
         }))
       })
     })
@@ -273,12 +295,12 @@ export default class extends Controller {
     const badgeY = 0
     svg.appendChild(svgEl("rect", {
       x: endX - badgeW / 2, y: badgeY, width: badgeW, height: badgeH, rx: 4,
-      fill: "#4338CA",
+      fill: COLORS.accent,
     }))
     const endBadge = svgEl("text", {
       x: endX, y: badgeY + badgeH / 2,
       "text-anchor": "middle", "dominant-baseline": "middle",
-      fill: "#FFFFFF", "font-size": 9, "font-weight": "bold",
+      fill: COLORS.surface, "font-size": 9, "font-weight": "bold",
     })
     endBadge.textContent = "END"
     svg.appendChild(endBadge)
