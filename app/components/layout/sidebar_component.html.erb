@@ -1,0 +1,30 @@
+<aside class="nav-sidebar">
+  <div class="px-5 py-5">
+    <%= link_to helpers.root_path, class: "block" do %>
+      <%= image_tag "/logo-header.png", alt: "VS.Mobile for KGY", width: 517, height: 229, class: "mx-auto h-auto w-40 max-w-full" %>
+    <% end %>
+  </div>
+
+  <nav class="nav-rail" aria-label="メインナビゲーション">
+    <% primary_items.each do |label, path, active, icon| %>
+      <%= link_to path, class: nav_item_classes(active) do %>
+        <%= nav_icon(icon) %>
+        <span><%= label %></span>
+      <% end %>
+    <% end %>
+
+    <% if admin_items.any? %>
+      <div class="nav-section-label">Admin</div>
+      <% admin_items.each do |label, path, active, icon| %>
+        <%= link_to path, class: nav_item_classes(active) do %>
+          <%= nav_icon(icon) %>
+          <span><%= label %></span>
+        <% end %>
+      <% end %>
+    <% end %>
+  </nav>
+
+  <div class="p-4">
+    <%= render Layout::UserMenuComponent.new(current_user: current_user, viewing_as_user: viewing_as_user, viewing_as_someone_else: viewing_as_someone_else?, switchable_users: switchable_users, placement: :top) %>
+  </div>
+</aside>
