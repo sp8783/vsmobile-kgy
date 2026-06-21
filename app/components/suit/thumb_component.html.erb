@@ -1,0 +1,7 @@
+<div class="<%= wrapper_classes %>">
+  <% if suit.image_filename.present? %>
+    <%= image_tag "/mobile_suits/#{suit.image_filename}", alt: suit.name, class: "h-full w-full object-contain" %>
+  <% else %>
+    <span class="text-xs font-bold text-subtle">NO IMAGE</span>
+  <% end %>
+</div>

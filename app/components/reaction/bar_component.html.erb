@@ -1,0 +1,5 @@
+<div class="flex flex-wrap gap-2">
+  <% emojis.each do |emoji| %>
+    <%= render "reactions/reaction_button", match: match, master_emoji: emoji, current_user: current_user, can_react: can_react %>
+  <% end %>
+</div>

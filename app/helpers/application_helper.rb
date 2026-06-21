@@ -10,6 +10,7 @@ module ApplicationHelper
 
   def render_markdown(text)
     return "" if text.blank?
+
     sanitize(
       MARKDOWN_RENDERER.render(text),
       tags: %w[p br strong em a ul ol li h1 h2 h3 h4 h5 blockquote code pre s del table thead tbody tr th td hr],
@@ -17,22 +18,45 @@ module ApplicationHelper
     )
   end
 
+  # サイドバーと同じナビアイコンを view から使う（Layout::Navigation の定義を共有）
+  def nav_icon_svg(key, css_class: "h-5 w-5")
+    paths = Layout::Navigation::NAV_ICON_PATHS[key] || ""
+    raw(%(<svg class="#{css_class}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">#{paths}</svg>))
+  end
+
+  def safe_external_url(url)
+    uri = URI.parse(url.to_s)
+    %w[http https].include?(uri.scheme) ? url : "#"
+  rescue URI::InvalidURIError
+    "#"
+  end
 
   def cost_badge(cost)
-    style = case cost.to_i
-    when 3000
-      "background-color: #FEE2E2; color: #991B1B;" # 赤
-    when 2500
-      "background-color: #FFEDD5; color: #C2410C;" # オレンジ
-    when 2000
-      "background-color: #FEF9C3; color: #A16207;" # 黄
-    when 1500
-      "background-color: #DCFCE7; color: #166534;" # 緑
-    else
-      "background-color: #F3F4F6; color: #1F2937;" # グレー
-    end
+    render Ui::CostBadgeComponent.new(cost: cost)
+  end
 
-    content_tag(:span, cost, class: "px-2 inline-flex text-xs leading-5 font-semibold rounded-full", style: style)
+  # ヒートマップの最大濃度（アクセント%）と、文字を白系に切り替える閾値
+  HEAT_MAX = 100
+  HEAT_DARK_THRESHOLD = 80
+
+  # 0〜1 の割合 → アクセント%（0〜HEAT_MAX）
+  def heat_pct(fraction)
+    ([ [ fraction.to_f, 0.0 ].max, 1.0 ].min * HEAT_MAX).round
+  end
+
+  # 勝率(0〜100) → アクセント%。勝率をそのまま線形割り当て
+  def winrate_heat_pct(win_rate)
+    heat_pct(win_rate.to_f / 100.0)
+  end
+
+  # アクセント% からセル背景色を生成
+  def heat_bg(pct)
+    "color-mix(in oklab, var(--color-accent) #{pct}%, var(--color-surface-2))"
+  end
+
+  # 濃いセル（白文字に切り替えるべきか）
+  def heat_dark?(pct)
+    pct >= HEAT_DARK_THRESHOLD
   end
 
   # centiseconds を "M:SS" 形式の文字列に変換する
@@ -74,7 +98,7 @@ module ApplicationHelper
     costs = cost_combo.split("+").map(&:strip)
     safe_join([
       cost_badge(costs[0].to_i),
-      content_tag(:span, "+", class: "mx-1 text-gray-500"),
+      content_tag(:span, "+", class: "mx-1 text-muted"),
       cost_badge(costs[1].to_i)
     ])
   end
