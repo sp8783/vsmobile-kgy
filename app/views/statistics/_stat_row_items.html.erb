@@ -1,0 +1,21 @@
+<%# 戦績行アイテム（_stat_rows から呼ばれる）。sorts があれば data-sort-<key> を付与 %>
+<% sorts = local_assigns[:sorts] %>
+<% rows.each do |row| %>
+  <% wr = row[:win_rate].to_f %>
+  <div class="st-srow"<% if sorts %><% sorts.each do |key, _, vp| %> data-sort-<%= key %>="<%= vp.call(row) %>"<% end %><% end %>>
+    <div class="st-srtop">
+      <% suit = thumb&.call(row) %>
+      <% if thumb %>
+        <span class="suit-thumb suit-thumb-sm"><% if suit&.image_filename.present? %><%= image_tag "/mobile_suits/#{suit.image_filename}", alt: suit.name, loading: "lazy" %><% end %></span>
+      <% end %>
+      <div class="st-srmeta">
+        <div class="st-srl1">
+          <span class="st-srnm"><%= name.call(row) %></span>
+          <span class="st-srwr <%= "neg" if wr < 50 %>"><%= row[:win_rate] %>%</span>
+        </div>
+        <div class="st-srsub"><% Array(sub.call(row)).each do |line| %><div><%= line %></div><% end %></div>
+      </div>
+    </div>
+    <div class="st-winbar"><div class="wfill <%= "neg" if wr < 50 %>" style="width:<%= wr %>%"></div><div class="ref50"></div></div>
+  </div>
+<% end %>

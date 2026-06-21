@@ -1,0 +1,37 @@
+<%# コストペアの三角マトリクス（順不同・下三角）。
+     locals: cp_mtx ([小,大]=>stats), costs, metric (:usage|:winrate) %>
+<% max_usage = (cp_mtx.values.map { |s| s[:usage_rate].to_f }.max || 0) %>
+<% max_usage = 1 if max_usage <= 0 %>
+<div class="st-cmwrap">
+  <div class="st-trimatrix">
+    <div class="st-cmcorner"></div>
+    <% costs.each do |c| %><div class="st-cmh"><%= cost_badge(c) %></div><% end %>
+    <% costs.each_with_index do |rc, ri| %>
+      <div class="st-cmh"><%= cost_badge(rc) %></div>
+      <% costs.each_with_index do |cc, ci| %>
+        <% if ci > ri %>
+          <div class="st-tric-blank"></div>
+        <% else %>
+          <% cell = cp_mtx[[rc, cc].sort] %>
+          <% if cell && cell[:total].to_i.positive? %>
+            <% if metric == :usage %>
+              <% pct = heat_pct(cell[:usage_rate].to_f / max_usage) %>
+              <% val = cell[:usage_rate].round %>
+              <% sub = "#{number_with_delimiter(cell[:total])}戦" %>
+            <% else %>
+              <% pct = winrate_heat_pct(cell[:win_rate]) %>
+              <% val = cell[:win_rate].round %>
+              <% sub = "#{number_with_delimiter(cell[:wins])}勝#{number_with_delimiter(cell[:total] - cell[:wins])}敗" %>
+            <% end %>
+            <div class="st-tric <%= "is-dark" if heat_dark?(pct) %>" style="background:<%= heat_bg(pct) %>">
+              <span class="wr"><%= val %><span class="pct">%</span></span>
+              <span class="n"><%= sub %></span>
+            </div>
+          <% else %>
+            <div class="st-tric empty">-</div>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  </div>
+</div>

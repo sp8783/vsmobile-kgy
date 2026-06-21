@@ -1,0 +1,24 @@
+<%# 機体別/プレイヤー別/イベント別の共通戦績行（勝率バー付き）
+     rows / name:->(row) / sub:->(row){String or [lines]} / thumb:->(row){MobileSuit}（任意）
+     sorts:[[key,label,->(row){値}], ...]（任意）でソートバーを表示 %>
+<% rows ||= [] %>
+<% thumb ||= nil %>
+<% sorts = local_assigns[:sorts] %>
+<% empty_text ||= "データがありません" %>
+<% if rows.empty? %>
+  <div class="m-pbody"><p class="text-sm font-bold text-muted"><%= empty_text %></p></div>
+<% elsif sorts %>
+  <div data-controller="sortable">
+    <div class="st-sortbar">
+      <span class="st-sortlab">並び替え</span>
+      <% sorts.each_with_index do |(key, label, _), i| %>
+        <button type="button" class="st-sortbtn <%= "is-active" if i.zero? %>" data-sortable-target="btn" data-key="<%= key %>" data-dir="desc" data-action="sortable#sort"><%= label %><span class="st-sortdir"><%= "▼" if i.zero? %></span></button>
+      <% end %>
+    </div>
+    <div data-sortable-target="list">
+      <%= render "statistics/stat_row_items", rows: rows, thumb: thumb, name: name, sub: sub, sorts: sorts %>
+    </div>
+  </div>
+<% else %>
+  <%= render "statistics/stat_row_items", rows: rows, thumb: thumb, name: name, sub: sub %>
+<% end %>

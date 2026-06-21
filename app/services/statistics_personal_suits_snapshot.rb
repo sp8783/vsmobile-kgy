@@ -11,8 +11,6 @@ class StatisticsPersonalSuitsSnapshot < StatisticsPersonalTabSnapshotBase
   def mobile_suits_list
     mobile_suit_aggregates[:suits].values.map do |entry|
       stats = entry[:stats_mps]
-      avg_kills = average(stats, :kills)
-      avg_deaths = average(stats, :deaths)
 
       {
         mobile_suit: entry[:mobile_suit],
@@ -21,10 +19,30 @@ class StatisticsPersonalSuitsSnapshot < StatisticsPersonalTabSnapshotBase
         win_rate: percentage(entry[:wins], entry[:total]),
         top_partner_suits: top_entries(entry[:partner_suits]),
         last_used_at: entry[:last_used_at],
-        avg_score: average(stats, :score)&.round(1),
-        kd_ratio: kd_ratio(avg_kills, avg_deaths)
+        avg_damage_dealt: average(stats, :damage_dealt)&.round,
+        avg_damage_received: average(stats, :damage_received)&.round,
+        avg_exburst_damage: average(stats, :exburst_damage)&.round,
+        avg_exburst_count: average(stats, :exburst_count)&.round(2),
+        ol_rate: overlimit_rate(stats),
+        first_life_cs: first_life_avg(stats)
       }
     end.sort_by { |entry| -entry[:total] }
+  end
+
+  def overlimit_rate(stats)
+    valid = stats.reject { |match_player| own_overlimit_flag(match_player).nil? }
+    return nil if valid.empty?
+
+    percentage(valid.count { |match_player| own_overlimit_flag(match_player) == false }, valid.size)
+  end
+
+  def own_overlimit_flag(match_player)
+    match_player.team_number == 1 ? match_player.match.team1_ex_overlimit_before_end : match_player.match.team2_ex_overlimit_before_end
+  end
+
+  def first_life_avg(stats)
+    values = stats.filter_map { |match_player| match_player.survival_times&.first }
+    values.any? ? (values.sum.to_f / values.size).round : nil
   end
 
   def opponent_suits_list

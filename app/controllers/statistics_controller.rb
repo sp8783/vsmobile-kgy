@@ -8,18 +8,19 @@ class StatisticsController < ApplicationController
   before_action :apply_filters
 
   def index
-    @active_tab = params[:tab] || "overall"
+    # デフォルトは個人「総合」。ゲストは個人統計不可なので全体ランキングを既定に
+    @active_tab = params[:tab] || (viewing_as_user.is_guest ? "highlights" : "overview")
 
     # ゲストユーザー（または管理者がゲスト視点切り替え中）は個人統計タブにアクセス不可
     if viewing_as_user.is_guest && PERSONAL_TABS.include?(@active_tab)
-      redirect_to statistics_path(tab: "overall"), alert: "ゲストユーザーには個人統計データがありません"
+      redirect_to statistics_path(tab: "highlights"), alert: "ゲストユーザーには個人統計データがありません"
       return
     end
 
     case @active_tab
     when *PERSONAL_SNAPSHOT_TABS
       assign_view_state(StatisticsPersonalTabSnapshot.new(tab: @active_tab, filtered_matches: @filtered_matches).to_h)
-    when "overall"
+    when "overall_solo", "overall_team"
       assign_view_state(StatisticsOverallSnapshot.new(filter_events: @filter_events).to_h)
     when "performance"
       assign_view_state(
@@ -33,6 +34,7 @@ class StatisticsController < ApplicationController
       )
     when "highlights"
       assign_view_state(StatisticsHighlightsSnapshot.new(filter_events: @filter_events).to_h)
+      assign_view_state(StatisticsOverallSnapshot.new(filter_events: @filter_events).to_h)
     end
 
     set_filter_options

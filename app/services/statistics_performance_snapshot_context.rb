@@ -224,6 +224,20 @@ class StatisticsPerformanceSnapshotContext
     end
   end
 
+  # 自己比較用：指定 match_players の「撃墜された機体（died）」の平均生存cs を機体目ごとに返す
+  def user_survival_died_by_life(match_players)
+    survivors = match_players.select { |match_player| match_player.survival_times.present? }
+    return [] if survivors.empty?
+
+    max_lives = survivors.map { |match_player| match_player.survival_times.size }.max.to_i
+    max_lives.times.map do |index|
+      with_life = survivors.select { |match_player| match_player.survival_times.size > index }
+      died = with_life.reject { |match_player| survived_life?(match_player, index) }
+      values = died.filter_map { |match_player| match_player.survival_times[index] }
+      values.any? ? average_value(values, precision: 0) : nil
+    end
+  end
+
   def own_overlimit_flag(match_player)
     match_player.team_number == 1 ? match_player.match.team1_ex_overlimit_before_end : match_player.match.team2_ex_overlimit_before_end
   end
