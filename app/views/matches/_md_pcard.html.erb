@@ -1,0 +1,78 @@
+<%# 対戦統計カード（1プレイヤー）。mock match.html の pcard
+    locals: player, is_winner %>
+<%
+  st = player.survival_times || []
+  # バー満タンの基準値。固定にすることで試合間の比較（高ダメ試合のインパクト）を保つ。
+  # 実データの上限（与1864 / 被1970）に合わせて 2000。超過は下の min で 100% にクランプ。
+  dmax = 2000
+  dealt_w = [100, (player.damage_dealt.to_f / dmax * 100).round].min
+  recv_w = [100, (player.damage_received.to_f / dmax * 100).round].min
+  ex_left = if is_winner
+    nil
+  elsif player.last_death_ex_available || player.survive_loss_ex_available
+    true
+  elsif player.last_death_ex_available == false || player.survive_loss_ex_available == false
+    false
+  end
+%>
+<div class="md-pcard">
+  <div class="md-pc-head">
+    <span class="suit-thumb suit-thumb-md">
+      <% if player.mobile_suit&.image_filename.present? %>
+        <%= image_tag "/mobile_suits/#{player.mobile_suit.image_filename}", alt: player.mobile_suit.name, loading: "lazy" %>
+      <% else %>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 16l4.6-4.6a2 2 0 0 1 2.8 0L16 16M14 14l1.6-1.6a2 2 0 0 1 2.8 0L20 14M14 8h.01M6 20h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2z"/></svg>
+      <% end %>
+    </span>
+    <div class="md-pc-id">
+      <div class="md-pc-namerow">
+        <span class="md-rankb <%= "r1" if player.match_rank == 1 %>"><%= player.match_rank %></span>
+        <span class="nm"><%= player.user.nickname %></span>
+        <% if local_assigns[:streaming] %><span class="md-stream">配信台</span><% end %>
+      </div>
+      <% if player.mobile_suit %>
+        <div class="md-pc-suitrow">
+          <span class="pcs-n"><%= player.mobile_suit.name %></span>
+          <span class="md-cb md-cb-<%= player.mobile_suit.cost %>"><%= player.mobile_suit.cost %></span>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="md-pc-score">
+    <span class="v"><%= number_with_delimiter(player.score) if player.score %></span>
+    <span class="l">Score</span>
+    <span class="kd">撃墜 <b><%= player.kills %></b> / 被撃墜 <b><%= player.deaths %></b></span>
+  </div>
+
+  <div class="md-dbars">
+    <div class="md-dbar"><span class="dl">与ダメ</span><div class="dt"><div class="df dealt" style="width:<%= dealt_w %>%"></div></div><span class="dv"><%= number_with_delimiter(player.damage_dealt) if player.damage_dealt %></span></div>
+    <div class="md-dbar"><span class="dl">被ダメ</span><div class="dt"><div class="df recv" style="width:<%= recv_w %>%"></div></div><span class="dv"><%= number_with_delimiter(player.damage_received) if player.damage_received %></span></div>
+  </div>
+
+  <div class="md-stiles">
+    <div class="md-stile"><div class="l">EXダメ</div><div class="v"><%= number_with_delimiter(player.exburst_damage) if player.exburst_damage %></div></div>
+    <div class="md-stile"><div class="l">EX回数</div><div class="v"><%= player.exburst_count %></div></div>
+    <div class="md-stile"><div class="l">EX中被撃墜</div><div class="v"><%= player.exburst_deaths %></div></div>
+  </div>
+
+  <div class="md-pc-foot">
+    <% if ex_left.nil? %>
+      <span class="md-chiplab">EX残し <b>―</b></span>
+    <% elsif ex_left %>
+      <span class="md-chiplab exleft yes">EX残し あり</span>
+    <% else %>
+      <span class="md-chiplab">EX残し <b>なし</b></span>
+    <% end %>
+  </div>
+
+  <% if st.any? %>
+    <div class="md-surv">
+      <span class="svh">生存時間</span>
+      <% st.each_with_index do |t, n| %>
+        <% alive = (n == st.size - 1 && st.size > player.deaths.to_i) %>
+        <span class="sv"><span class="md-svtag <%= alive ? "alive" : "dead" %>"><%= alive ? "生存" : "被撃破" %></span><%= n + 1 %>機目 <%= format_survival_cs(t) %></span>
+      <% end %>
+    </div>
+  <% end %>
+</div>
