@@ -1,6 +1,6 @@
-const CACHE_NAME = 'vsmobile-kgy-v3';
+const CACHE_NAME = 'vsmobile-kgy-v4';
+// 静的アセットのみ事前キャッシュする（HTML ページ '/' はキャッシュしない）
 const ASSETS_TO_CACHE = [
-  '/',
   '/logo-login.png',
   '/logo-header.png',
   '/favicon-32.png',
@@ -36,12 +36,21 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// Fetch event - serve from cache, fallback to network
+// Fetch event
+// - ナビゲーション(HTML)は network-first（常に最新を取得、オフライン時のみキャッシュへフォールバック）
+// - 静的アセットは cache-first
 self.addEventListener('fetch', (event) => {
+  const request = event.request;
+
+  if (request.mode === 'navigate') {
+    event.respondWith(
+      fetch(request).catch(() => caches.match(request))
+    );
+    return;
+  }
+
   event.respondWith(
-    caches.match(event.request).then((response) => {
-      return response || fetch(event.request);
-    })
+    caches.match(request).then((response) => response || fetch(request))
   );
 });
 
