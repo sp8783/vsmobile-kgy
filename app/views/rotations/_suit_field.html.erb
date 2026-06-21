@@ -1,0 +1,30 @@
+<%# 機体選択フィールド（お気に入り画像クイック選択＋検索ドロップダウン）
+    locals: field_name, player, selected, all_mobile_suits %>
+<% favs = player.user_favorite_suits.order(:slot).includes(:mobile_suit).map(&:mobile_suit).compact %>
+<div class="r-rf-field" data-controller="suit-quickpick">
+  <label for="<%= field_name %>"><%= player.nickname %> <span class="req">*</span></label>
+
+  <% if favs.any? %>
+    <div class="r-qp">
+      <% favs.each do |s| %>
+        <button type="button" class="r-qp-btn <%= "is-active" if s.id == selected %>"
+                data-action="suit-quickpick#pick" data-suit-id="<%= s.id %>"
+                data-suit-quickpick-target="btn" title="<%= s.name %>" aria-label="<%= s.name %>">
+          <span class="r-qp-img">
+            <% if s.image_filename.present? %>
+              <%= image_tag "/mobile_suits/#{s.image_filename}", alt: s.name, loading: "lazy" %>
+            <% else %>
+              <svg viewBox="0 0 24 24" aria-hidden="true" style="width:20px;height:20px;stroke:var(--color-subtle);fill:none;stroke-width:1.4"><path d="M4 16l4.6-4.6a2 2 0 0 1 2.8 0L16 16M14 8h.01M6 20h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2z"/></svg>
+            <% end %>
+          </span>
+          <span class="r-qp-nm"><%= s.name %></span>
+        </button>
+      <% end %>
+    </div>
+  <% end %>
+
+  <%= select_tag field_name,
+    safe_join([content_tag(:option, "機体を選択...", value: "")]) + mobile_suit_options_with_favorites(all_mobile_suits, player, [selected].compact),
+    class: "ui-form-control",
+    data: { controller: "enhanced-select", "suit-quickpick-target": "select", has_favorites: player.user_favorite_suits.any? } %>
+</div>

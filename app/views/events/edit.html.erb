@@ -1,11 +1,19 @@
-<div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-  <h1 class="text-3xl font-bold text-gray-900 mb-6">イベント編集</h1>
+<div class="ui-page mx-auto max-w-2xl">
+  <div class="ui-page-header">
+    <div>
+      <p class="ui-eyebrow">Event</p>
+      <h1 class="ui-title">イベント編集</h1>
+    </div>
+  </div>
 
-  <div class="bg-white shadow sm:rounded-lg p-6">
+  <div class="ui-card p-5 sm:p-6">
     <%= render "form", event: @event %>
   </div>
 
-  <div class="mt-6 flex justify-end">
-    <%= button_to "イベントを削除", event_path(@event), method: :delete, data: { turbo_confirm: "本当に削除しますか？このイベントに紐づく試合とローテーションもすべて削除されます。" }, class: "text-red-600 hover:text-red-900 text-sm" %>
+  <div class="mt-5 flex justify-end">
+    <%= button_to "イベントを削除", event_path(@event),
+        method: :delete,
+        data: { turbo_confirm: "本当に削除しますか？このイベントに紐づく試合とローテーションもすべて削除されます。" },
+        class: "ui-btn ui-btn-danger" %>
   </div>
 </div>

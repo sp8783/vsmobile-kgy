@@ -1,0 +1,36 @@
+<div class="ui-page mx-auto max-w-3xl">
+  <div class="ui-page-header">
+    <div>
+      <%= link_to "ローテーションに戻る", rotation_path(@rotation), class: "ui-btn ui-btn-ghost ui-btn-small mb-3" %>
+      <p class="ui-eyebrow">Rotation</p>
+      <h1 class="ui-title">ローテーション編集</h1>
+      <p class="ui-subtitle">イベント: <%= @rotation.event.name %></p>
+    </div>
+  </div>
+
+  <%= render Ui::CardComponent.new(padded: true) do %>
+    <%= form_with model: @rotation, local: true, class: "space-y-5" do |f| %>
+      <% if @rotation.errors.any? %>
+        <div class="ui-alert ui-alert-danger">
+          <p class="font-black"><%= pluralize(@rotation.errors.count, "件のエラー") %>があります</p>
+          <ul class="mt-2 list-disc pl-5 text-sm">
+            <% @rotation.errors.full_messages.each do |message| %>
+              <li><%= message %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+
+      <div>
+        <%= f.label :round_number, "周回数", class: "ui-label" %>
+        <%= f.number_field :round_number, min: 1, class: "ui-form-control" %>
+        <p class="mt-2 text-sm font-bold text-subtle">生成済みの対戦表はそのまま、表示上の周回数のみ更新します。</p>
+      </div>
+
+      <div class="flex justify-end gap-2">
+        <%= link_to "キャンセル", rotation_path(@rotation), class: "ui-btn ui-btn-muted" %>
+        <%= f.submit "保存", class: "ui-btn ui-btn-primary cursor-pointer" %>
+      </div>
+    <% end %>
+  <% end %>
+</div>
