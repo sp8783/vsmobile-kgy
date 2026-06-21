@@ -1,126 +1,66 @@
-<div class="py-8">
-  <div class="mb-6">
-    <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">ローテーション一覧</h1>
-    <p class="mt-2 text-sm text-gray-600">イベントごとのローテーション表を管理できます</p>
+<div class="m-pagehead">
+  <div>
+    <h1>ローテーション一覧</h1>
+    <div class="m-sub">イベントごとのローテーション表を管理できます。</div>
   </div>
+</div>
 
-  <% if @rotations.any? %>
-    <!-- モバイル用カードビュー -->
-    <div class="mobile-only-view space-y-4">
-      <% @rotations.each do |rotation| %>
-        <% completed_count = rotation.rotation_matches.count { |rm| rm.match.present? } %>
-        <% progress = rotation.rotation_matches.count > 0 ? (completed_count.to_f / rotation.rotation_matches.count * 100) : 0 %>
-        <%= link_to rotation_path(rotation), class: "block bg-white shadow rounded-lg p-4 hover:bg-gray-50" do %>
-          <div class="flex items-center justify-between mb-2">
-            <div class="text-sm font-medium text-blue-600"><%= rotation.display_name %></div>
-            <% if rotation.is_active %>
-              <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-purple-100 text-purple-800">アクティブ</span>
-            <% else %>
-              <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">非アクティブ</span>
-            <% end %>
-          </div>
-          <div class="text-sm text-gray-900"><%= rotation.event.name %></div>
-          <div class="text-xs text-gray-500"><%= rotation.event.held_on.strftime('%Y/%m/%d') %></div>
-          <div class="flex items-center justify-between mt-3">
-            <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-purple-100 text-purple-800"><%= rotation.round_number %>周目</span>
-            <span class="text-xs text-gray-600"><%= completed_count %> / <%= rotation.rotation_matches.count %> 試合</span>
-          </div>
-          <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
-            <div class="bg-blue-600 h-2 rounded-full" style="width: <%= progress %>%"></div>
-          </div>
-        <% end %>
-      <% end %>
+<% if @rotations.any? %>
+  <div class="dtbl-card">
+    <div class="dtbl-bar">
+      <div class="cnt">全 <b><%= @rotations.size %></b> 個</div>
     </div>
-
-    <!-- デスクトップ用テーブルビュー -->
-    <div class="desktop-only-view bg-white shadow overflow-hidden sm:rounded-lg">
-      <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-50">
+    <div class="dtbl-scroll">
+      <table class="dtbl">
+        <thead>
           <tr>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              イベント
-            </th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              周回
-            </th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              進捗
-            </th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              状態
-            </th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              作成日
-            </th>
-            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-              アクション
-            </th>
+            <th>イベント</th><th>周回</th><th>進捗</th><th>状態</th><th>作成日</th><th class="right">操作</th>
           </tr>
         </thead>
-        <tbody class="bg-white divide-y divide-gray-200">
+        <tbody>
           <% @rotations.each do |rotation| %>
-            <tr class="hover:bg-gray-50 cursor-pointer" onclick="window.location='<%= rotation_path(rotation) %>'">
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm text-gray-900">
-                  <%= rotation.event.name %>
-                </div>
-                <div class="text-xs text-gray-500">
-                  <%= rotation.event.held_on.strftime('%Y/%m/%d') %>
-                </div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
-                  <%= rotation.round_number %>周目
-                </span>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <% completed_count = rotation.rotation_matches.count { |rm| rm.match.present? } %>
-                <div class="text-sm text-gray-900">
-                  <%= completed_count %> / <%= rotation.rotation_matches.count %> 試合
-                </div>
-                <div class="w-full bg-gray-200 rounded-full h-2 mt-1">
-                  <% progress = rotation.rotation_matches.count > 0 ? (completed_count.to_f / rotation.rotation_matches.count * 100) : 0 %>
-                  <div class="bg-blue-600 h-2 rounded-full" style="width: <%= progress %>%"></div>
+            <% completed_count = rotation.rotation_matches.count { |rm| rm.match.present? } %>
+            <% total_count = rotation.rotation_matches.count %>
+            <% pct = total_count.positive? ? (completed_count.to_f / total_count * 100).round : 0 %>
+            <tr data-controller="card-link" data-card-link-url-value="<%= rotation_path(rotation) %>" data-action="click->card-link#navigate">
+              <td class="name" data-l="イベント"><span class="lnk"><%= rotation.event.name %></span><div class="muted" style="font-weight:600;margin-top:2px"><span class="m-num"><%= rotation.event.held_on.strftime("%Y/%m/%d") %></span></div></td>
+              <td data-l="周回"><span class="r-rpill"><%= rotation.round_number %>周目</span></td>
+              <td data-l="進捗">
+                <div style="min-width:120px">
+                  <div class="muted" style="font-size:11px;margin-bottom:4px"><span class="m-num"><%= completed_count %> / <%= total_count %></span> 試合</div>
+                  <div class="ev-rot-r"><div class="ptrack" style="width:120px;margin:0"><div class="pfill" style="width:<%= pct %>%"></div></div></div>
                 </div>
               </td>
-              <td class="px-6 py-4 whitespace-nowrap">
+              <td data-l="状態">
                 <% if rotation.is_active %>
-                  <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
-                    アクティブ
-                  </span>
+                  <span class="r-rpill live"><span class="r-livedot"></span>アクティブ</span>
                 <% else %>
-                  <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
-                    非アクティブ
-                  </span>
+                  <span class="r-rpill">非アクティブ</span>
                 <% end %>
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                <%= rotation.created_at.strftime('%Y/%m/%d') %>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium" onclick="event.stopPropagation()">
-                <% if current_user.is_admin %>
-                  <%= button_to "削除", rotation, method: :delete, data: { turbo_confirm: "本当に削除しますか？" }, class: "text-red-600 hover:text-red-900 inline", form: { style: "display: inline;" } %>
-                <% end %>
+              <td class="muted" data-l="作成日"><span class="m-num"><%= rotation.created_at.strftime("%Y/%m/%d") %></span></td>
+              <td class="actions" data-l="操作">
+                <div class="rowact">
+                  <% if current_user.is_admin? %>
+                    <%= button_to "削除", rotation, method: :delete, data: { turbo_confirm: "本当に削除しますか？" }, class: "m-btn-ghost", style: "color:var(--color-neg)" %>
+                  <% else %>
+                    <%= link_to "詳細", rotation_path(rotation), class: "m-btn-ghost" %>
+                  <% end %>
+                </div>
               </td>
             </tr>
           <% end %>
         </tbody>
       </table>
     </div>
-  <% else %>
-    <div class="bg-white shadow sm:rounded-lg p-6">
-      <div class="text-center">
-        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-        </svg>
-        <h3 class="mt-2 text-sm font-medium text-gray-900">ローテーションがありません</h3>
-        <% if current_user.is_admin? %>
-          <p class="mt-1 text-sm text-gray-500">まずはイベントページからローテーションを作成してください。</p>
-        <% else %>
-          <p class="mt-1 text-sm text-gray-500">管理者によってローテーションが作成されるとここに表示されます。</p>
-        <% end %>
-      </div>
-    </div>
-  <% end %>
-</div>
-
+  </div>
+<% else %>
+  <div class="m-panel m-pbody">
+    <h2 class="text-lg font-black text-ink">ローテーションがありません</h2>
+    <% if current_user.is_admin? %>
+      <p class="mt-2 text-sm font-bold text-muted">まずはイベントページからローテーションを作成してください。</p>
+    <% else %>
+      <p class="mt-2 text-sm font-bold text-muted">管理者によってローテーションが作成されるとここに表示されます。</p>
+    <% end %>
+  </div>
+<% end %>

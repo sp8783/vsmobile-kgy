@@ -1,55 +1,44 @@
-<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-  <div class="mb-6">
-    <%= link_to "← イベント一覧に戻る", events_path, class: "text-blue-600 hover:text-blue-500" %>
+<div class="ui-page">
+  <div class="ui-page-header">
+    <div>
+      <%= link_to "イベント一覧に戻る", events_path, class: "ui-btn ui-btn-ghost ui-btn-small mb-3" %>
+      <p class="text-xs font-black uppercase tracking-wide text-subtle">Import</p>
+      <h1 class="font-display text-3xl font-black text-ink">試合データCSVインポート</h1>
+    </div>
   </div>
 
-  <h1 class="text-3xl font-bold text-gray-900 mb-6">試合データCSVインポート</h1>
-
   <% if alert %>
-    <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+    <div class="ui-alert ui-alert-danger">
       <%= alert %>
     </div>
   <% end %>
 
-
-  <div class="bg-white shadow sm:rounded-lg p-6 mb-6">
-    <h2 class="text-lg font-medium text-gray-900 mb-4">CSVフォーマット</h2>
-    <div class="bg-gray-50 p-4 rounded text-sm font-mono">
-      <p class="mb-2">日付,プレイヤー1,使用機体1,プレイヤー2,使用機体2,プレイヤー3,使用機体3,プレイヤー4,使用機体4,勝敗1,勝敗2,勝敗3,勝敗4</p>
-      <p class="text-gray-600">2025/01/15,太郎,νガンダム,次郎,サザビー,三郎,Hi-νガンダム,四郎,ナイチンゲール,1,1,0,0</p>
+  <%= render Ui::CardComponent.new(title: "CSVフォーマット", subtitle: "1行目はヘッダー行、UTF-8 エンコーディング推奨です。") do %>
+    <div class="rounded-lg bg-surface-2 p-4 font-mono text-xs font-semibold text-ink shadow-inner-soft">
+      <p class="break-words">日付,プレイヤー1,使用機体1,プレイヤー2,使用機体2,プレイヤー3,使用機体3,プレイヤー4,使用機体4,勝敗1,勝敗2,勝敗3,勝敗4</p>
+      <p class="mt-2 break-words text-muted">2025/01/15,太郎,νガンダム,次郎,サザビー,三郎,Hi-νガンダム,四郎,ナイチンゲール,1,1,0,0</p>
     </div>
-    <div class="mt-4 text-sm text-gray-600">
-      <h3 class="font-semibold mb-2">注意事項:</h3>
-      <ul class="list-disc list-inside space-y-1">
-        <li>1行目はヘッダー行（列名）</li>
-        <li>日付は「YYYY/MM/DD」または「YYYY-MM-DD」形式</li>
-        <li>プレイヤー名はユーザー管理画面の「表示名（ニックネーム）」と完全一致</li>
-        <li>機体名は機体マスタと完全一致</li>
-        <li>勝敗は「1」(勝利)または「0」(敗北)</li>
-        <li>チーム1: プレイヤー1-2、チーム2: プレイヤー3-4</li>
-        <li>勝敗1が「1」の場合、チーム1の勝利となります</li>
-        <li>UTF-8エンコーディング推奨</li>
-      </ul>
+    <div class="mt-4 grid gap-2 text-sm font-semibold text-muted sm:grid-cols-2">
+      <p>日付は「YYYY/MM/DD」または「YYYY-MM-DD」形式</p>
+      <p>プレイヤー名はユーザー管理画面の表示名と完全一致</p>
+      <p>機体名は機体マスタと完全一致</p>
+      <p>勝敗は「1」(勝利)または「0」(敗北)</p>
+      <p>チーム1: プレイヤー1-2、チーム2: プレイヤー3-4</p>
+      <p>勝敗1が「1」の場合、チーム1の勝利</p>
     </div>
-  </div>
+  <% end %>
 
-  <%= form_with url: admin_imports_path, multipart: true, class: "space-y-6" do |form| %>
-    <div class="bg-white shadow sm:rounded-lg p-6">
-      <div class="mb-4 p-4 bg-blue-50 border border-blue-200 rounded">
-        <p class="text-sm text-blue-800">
-          <strong>自動イベント作成:</strong> CSVの日付列から自動的にイベントを作成します。同じ日付のイベントが既に存在する場合は、そのイベントに試合を追加します。
-        </p>
-      </div>
-
+  <%= form_with url: admin_imports_path, multipart: true, class: "space-y-4" do |form| %>
+    <%= render Ui::CardComponent.new(title: "アップロード", subtitle: "CSVの日付列からイベントを自動作成します。既存イベントがある日付は、そのイベントに試合を追加します。") do %>
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2">CSVファイル</label>
-        <%= file_field_tag :file, accept: ".csv", class: "w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" %>
+        <label class="ui-label">CSVファイル</label>
+        <%= file_field_tag :file, accept: ".csv", class: "ui-form-control" %>
       </div>
-    </div>
+    <% end %>
 
-    <div class="flex justify-end space-x-3">
-      <%= link_to "キャンセル", events_path, class: "px-4 py-2 bg-gray-600 text-white font-semibold rounded-md hover:bg-gray-700" %>
-      <%= submit_tag "インポート", class: "px-4 py-2 bg-indigo-600 text-white font-semibold rounded-md hover:bg-indigo-700", data: { turbo_confirm: "CSVファイルをインポートしますか？" } %>
+    <div class="flex justify-end gap-2">
+      <%= link_to "キャンセル", events_path, class: "ui-btn ui-btn-muted" %>
+      <%= submit_tag "インポート", class: "ui-btn ui-btn-primary", data: { turbo_confirm: "CSVファイルをインポートしますか？" } %>
     </div>
   <% end %>
 </div>

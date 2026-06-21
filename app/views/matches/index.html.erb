@@ -1,524 +1,400 @@
 <turbo-frame id="matches-content" data-turbo-action="advance">
-<div class="py-8">
-  <div class="page-header">
-    <div>
-      <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">対戦履歴</h1>
-      <p class="mt-2 text-sm text-gray-600">試合の一覧を表示・フィルタリングできます</p>
-    </div>
-    <% if current_user.is_admin? %>
-      <div class="flex flex-wrap gap-2">
-        <% if @latest_event %>
-          <%= link_to "新規登録", new_event_match_path(@latest_event), class: "bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded", data: { turbo_frame: "_top" } %>
-        <% end %>
-        <%= link_to "CSVインポート", new_admin_import_path, class: "bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded", data: { turbo_frame: "_top" } %>
+  <div <%= 'data-controller="bulk-select"'.html_safe if current_user.is_admin? %>>
+    <div class="m-pagehead">
+      <div>
+        <h1>対戦履歴</h1>
+        <div class="m-sub">試合の一覧を表示・フィルタリングできます。</div>
       </div>
-    <% end %>
-  </div>
-
-  <!-- フィルターセクション -->
-  <%
-    _bp = { sort: @sort, per: @per_page, flip_team: @flip_team ? "1" : nil,
-            only_favorites: @filter_only_favorites ? "1" : nil,
-            stat_player_id: @filter_stat_player_id, ol_filter: @filter_ol_filter,
-            stat_filters: @filter_stat_filters,
-            damage_dealt_val: @filter_damage_dealt_val, damage_dealt_dir: @filter_damage_dealt_dir,
-            damage_received_val: @filter_damage_received_val, damage_received_dir: @filter_damage_received_dir }
-    _cur = { events: @filter_events, users: @filter_users, users_mode: @filter_users_mode,
-             streaming_users: @filter_streaming_users, mobile_suits: @filter_mobile_suits, costs: @filter_costs,
-             suit_scope: @filter_suit_scope == "mine" ? "mine" : nil,
-             team_player_ids: @filter_team_player_ids }
-    _all = _bp.merge(_cur)
-
-    _btn_on  = "px-3 py-1.5 text-sm font-medium rounded-md transition-colors bg-indigo-600 text-white"
-    _btn_off = "px-3 py-1.5 text-sm font-medium rounded-md transition-colors bg-gray-100 text-gray-700 hover:bg-gray-200"
-
-    _toggle = ->(key, val, extra = {}) {
-      arr = _cur[key]
-      new_arr = arr.include?(val) ? arr - [val] : arr + [val]
-      matches_path(_all.merge(key => new_arr).merge(extra))
-    }
-  %>
-  <div class="bg-white rounded-xl shadow-sm ring-1 ring-gray-900/5 mb-6 px-5 py-4 space-y-3">
-
-    <!-- イベント -->
-    <div class="flex items-center gap-2">
-      <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide w-24 shrink-0">イベント</span>
-      <div class="flex flex-wrap gap-2">
-        <%= link_to "全イベント", matches_path(_all.merge(events: [])), class: @filter_events.empty? ? _btn_on : _btn_off %>
-        <% @all_events.each do |event| %>
-          <%= link_to event.name, _toggle.call(:events, event.id), class: @filter_events.include?(event.id) ? _btn_on : _btn_off %>
-        <% end %>
-      </div>
-    </div>
-
-    <!-- 参加ユーザー -->
-    <div class="flex items-center gap-2">
-      <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide w-24 shrink-0">参加</span>
-      <div class="flex flex-wrap gap-2">
-        <div class="inline-flex rounded-md border border-gray-200 bg-white text-xs font-medium overflow-hidden shrink-0">
-          <%= link_to "OR", matches_path(_all.merge(users_mode: "or")), class: "block px-2 py-1.5 transition-colors #{@filter_users_mode == 'or' ? 'bg-indigo-600 text-white' : 'text-gray-500 hover:bg-gray-50'}" %>
-          <%= link_to "AND", matches_path(_all.merge(users_mode: "and")), class: "block px-2 py-1.5 border-l border-gray-200 transition-colors #{@filter_users_mode == 'and' ? 'bg-indigo-600 text-white' : 'text-gray-500 hover:bg-gray-50'}" %>
-        </div>
-        <%= link_to "全員", matches_path(_all.merge(users: [])), class: @filter_users.empty? ? _btn_on : _btn_off %>
-        <% @all_users.each do |user| %>
-          <%= link_to user.nickname, _toggle.call(:users, user.id), class: @filter_users.include?(user.id) ? _btn_on : _btn_off %>
-        <% end %>
-      </div>
-    </div>
-
-    <!-- チーム指定 -->
-    <%
-      _team_toggle = ->(user_id) {
-        if @filter_team_player_ids.include?(user_id)
-          matches_path(_all.merge(team_player_ids: @filter_team_player_ids - [user_id]))
-        elsif @filter_team_player_ids.length < 2
-          matches_path(_all.merge(team_player_ids: @filter_team_player_ids + [user_id]))
-        else
-          matches_path(_all.merge(team_player_ids: [@filter_team_player_ids[1], user_id]))
-        end
-      }
-    %>
-    <div class="flex items-center gap-2">
-      <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide w-24 shrink-0">同チーム</span>
-      <div class="flex flex-wrap gap-2">
-        <% @all_users.each do |user| %>
-          <%= link_to user.nickname, _team_toggle.call(user.id),
-              class: @filter_team_player_ids.include?(user.id) ? _btn_on : _btn_off %>
-        <% end %>
-        <% if @filter_team_player_ids.any? %>
-          <%= link_to matches_path(_all.merge(team_player_ids: [])),
-              class: "flex items-center gap-1 text-xs text-gray-400 hover:text-red-500 transition-colors shrink-0" do %>
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-            </svg>
-            クリア
+      <% if current_user.is_admin? %>
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+          <% if @latest_event %>
+            <%= link_to "新規登録", new_event_match_path(@latest_event), class: "m-btn m-btn-primary", data: { turbo_frame: "_top" } %>
           <% end %>
-        <% end %>
-      </div>
-    </div>
-
-    <!-- 配信台ユーザー -->
-    <% _visible_streaming = @filter_users.any? ? @all_users.select { |u| @filter_users.include?(u.id) } : @all_users %>
-    <div class="flex items-center gap-2">
-      <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide w-24 shrink-0">配信台</span>
-      <div class="flex flex-wrap gap-2">
-        <%= link_to "全員", matches_path(_all.merge(streaming_users: [])), class: @filter_streaming_users.empty? ? _btn_on : _btn_off %>
-        <% _visible_streaming.each do |user| %>
-          <%= link_to user.nickname, _toggle.call(:streaming_users, user.id), class: @filter_streaming_users.include?(user.id) ? _btn_on : _btn_off %>
-        <% end %>
-      </div>
-    </div>
-
-    <!-- 機体・コスト -->
-    <div class="flex flex-wrap items-center gap-3">
-      <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide w-24 shrink-0">機体・コスト</span>
-      <% if @filter_mobile_suits.any? || @filter_costs.any? %>
-        <div class="inline-flex rounded-md border border-gray-200 bg-white text-xs font-medium overflow-hidden shrink-0">
-          <%= link_to "全プレイヤー", matches_path(_all.merge(suit_scope: nil)),
-              class: "block px-2 py-1.5 transition-colors #{@filter_suit_scope != 'mine' ? 'bg-indigo-600 text-white' : 'text-gray-500 hover:bg-gray-50'}" %>
-          <%= link_to "自分のみ", matches_path(_all.merge(suit_scope: "mine")),
-              class: "block px-2 py-1.5 border-l border-gray-200 transition-colors #{@filter_suit_scope == 'mine' ? 'bg-indigo-600 text-white' : 'text-gray-500 hover:bg-gray-50'}" %>
+          <%= link_to "CSVインポート", new_admin_import_path, class: "m-btn-ghost", data: { turbo_frame: "_top" } %>
         </div>
-      <% end %>
-      <div class="flex rounded-xl bg-gray-100 p-1 gap-0.5 shrink-0">
-        <%= link_to "全体", matches_path(_all.merge(costs: [], mobile_suits: [], suit_scope: nil)),
-            class: "px-3 py-1.5 rounded-lg text-sm font-semibold transition-all whitespace-nowrap #{@filter_costs.empty? && @filter_mobile_suits.empty? ? 'bg-white shadow text-gray-900' : 'text-gray-500 hover:text-gray-700'}" %>
-        <% [[3000, 'bg-red-500 text-white shadow-sm', 'text-red-500 hover:bg-red-100/80'],
-            [2500, 'bg-orange-500 text-white shadow-sm', 'text-orange-500 hover:bg-orange-100/80'],
-            [2000, 'bg-yellow-400 text-gray-900 shadow-sm', 'text-yellow-600 hover:bg-yellow-100/80'],
-            [1500, 'bg-green-500 text-white shadow-sm', 'text-green-600 hover:bg-green-100/80']].each do |cost, active_cls, inactive_cls| %>
-          <% is_cost_active = @filter_costs == [cost] && @filter_mobile_suits.empty? %>
-          <% cost_url = is_cost_active ? matches_path(_all.merge(costs: [], mobile_suits: [], suit_scope: nil)) : matches_path(_all.merge(costs: [cost], mobile_suits: [])) %>
-          <%= link_to cost.to_s, cost_url,
-              class: "px-3 py-1.5 rounded-lg text-sm font-semibold transition-all whitespace-nowrap #{is_cost_active ? active_cls : inactive_cls}" %>
-        <% end %>
-      </div>
-      <div class="flex-1 min-w-[180px] max-w-xs">
-        <select id="match-suit-select" class="w-full" data-controller="suit-select" data-has-favorites="<%= viewing_as_user&.user_favorite_suits&.any? %>">
-          <option value="">機体を検索...</option>
-          <% _visible_suits = @filter_costs.any? ? @all_mobile_suits.select { |s| @filter_costs.include?(s.cost) } : @all_mobile_suits %>
-          <%= mobile_suit_options_with_favorites(_visible_suits, viewing_as_user, @filter_mobile_suits) %>
-        </select>
-      </div>
-      <% unless @filter_costs.empty? && @filter_mobile_suits.empty? %>
-        <%= link_to matches_path(_all.merge(costs: [], mobile_suits: [], suit_scope: nil)),
-            class: "flex items-center gap-1 text-xs text-gray-400 hover:text-red-500 transition-colors shrink-0" do %>
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-          </svg>
-          クリア
-        <% end %>
       <% end %>
     </div>
 
-    <!-- お気に入り機体 -->
     <%
-      _fav_suits = viewing_as_user&.user_favorite_suits&.order(:slot)&.includes(:mobile_suit)&.to_a || []
-      _fav_toggle = ->(suit_id) {
-        new_arr = @filter_mobile_suits.include?(suit_id) ? @filter_mobile_suits - [suit_id] : @filter_mobile_suits + [suit_id]
-        matches_path(_all.merge(mobile_suits: new_arr, suit_scope: new_arr.any? ? "mine" : nil))
+      bp = {
+        sort: @sort,
+        per: @per_page,
+        flip_team: @flip_team ? "1" : nil,
+        only_favorites: @filter_only_favorites ? "1" : nil,
+        stat_player_id: @filter_stat_player_id,
+        ol_filter: @filter_ol_filter,
+        stat_filters: @filter_stat_filters,
+        damage_dealt_val: @filter_damage_dealt_val,
+        damage_dealt_dir: @filter_damage_dealt_dir,
+        damage_received_val: @filter_damage_received_val,
+        damage_received_dir: @filter_damage_received_dir
+      }
+      cur = {
+        events: @filter_events,
+        users: @filter_users,
+        users_mode: @filter_users_mode,
+        streaming_users: @filter_streaming_users,
+        mobile_suits: @filter_mobile_suits,
+        costs: @filter_costs,
+        suit_scope: @filter_suit_scope == "mine" ? "mine" : nil,
+        team_player_ids: @filter_team_player_ids
+      }
+      all_params = bp.merge(cur)
+      chip_on = "mh-ch on"
+      chip_off = "mh-ch"
+      toggle = ->(key, val, extra = {}) {
+        arr = cur[key]
+        new_arr = arr.include?(val) ? arr - [val] : arr + [val]
+        matches_path(all_params.merge(key => new_arr).merge(extra))
       }
     %>
-    <% if _fav_suits.any? %>
-      <div class="flex items-center gap-2">
-        <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide w-24 shrink-0">お気に入り機体</span>
-        <div class="flex flex-wrap gap-2">
-          <% _fav_suits.each do |fav| %>
-            <%= link_to fav.mobile_suit.name, _fav_toggle.call(fav.mobile_suit.id),
-                class: @filter_mobile_suits.include?(fav.mobile_suit.id) ? _btn_on : _btn_off %>
-          <% end %>
-        </div>
-      </div>
-    <% end %>
 
-    <!-- お気に入り試合 -->
-    <% if viewing_as_user&.regular_user? %>
-      <div class="flex items-center gap-2">
-        <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide w-24 shrink-0">お気に入り試合</span>
-        <div class="flex flex-wrap gap-2">
-          <%= link_to matches_path(_all.merge(only_favorites: @filter_only_favorites ? nil : "1", page: nil)),
-              class: "flex items-center gap-1.5 #{@filter_only_favorites ? _btn_on : _btn_off}" do %>
-            <svg class="w-3.5 h-3.5" fill="<%= @filter_only_favorites ? 'currentColor' : 'none' %>" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M5 4a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 20V4z"/>
-            </svg>
-            保存済みのみ
-          <% end %>
-        </div>
-      </div>
-    <% end %>
-
-    <!-- 詳細条件（折りたたみ） -->
-    <% stat_section_active = @filter_ol_filter.present? || @filter_stat_filters.any? || @filter_stat_player_id.present? || @filter_damage_dealt_val.present? || @filter_damage_received_val.present? %>
-    <details class="group/detail rounded-xl border border-gray-200 overflow-hidden" <%= 'open' if stat_section_active %>>
-      <summary class="stat-summary select-none cursor-pointer flex items-center justify-between px-4 py-3 border-b border-transparent group-open/detail:border-gray-200 hover:bg-gray-50 transition-colors">
-        <span class="flex items-center gap-2 text-sm font-semibold <%= stat_section_active ? 'text-indigo-600' : 'text-gray-500' %>">
-          <svg class="h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-          </svg>
-          詳細条件
-          <% if stat_section_active %>
-            <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-bold bg-indigo-600 text-white">設定中</span>
+    <%
+      stat_active = @filter_ol_filter.present? || @filter_stat_filters.any? || @filter_stat_player_id.present? || @filter_damage_dealt_val.present? || @filter_damage_received_val.present?
+      active_count = [
+        @filter_events.any?, @filter_users.any?, @filter_team_player_ids.any?,
+        @filter_streaming_users.any?, (@filter_costs.any? || @filter_mobile_suits.any?),
+        @filter_only_favorites, stat_active
+      ].count(true)
+    %>
+    <details class="mh-filterbox" <%= "open" if active_count.positive? %>>
+      <summary>
+        <span class="mh-filterbar-l">
+          <svg viewBox="0 0 24 24"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
+          フィルター
+          <% if active_count.positive? %>
+            <span class="badge"><%= active_count %></span>
+          <% else %>
+            <span class="muted">すべて表示</span>
           <% end %>
         </span>
-        <svg class="h-4 w-4 shrink-0 text-gray-400 transition-transform duration-200 group-open/detail:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-        </svg>
+        <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
       </summary>
 
-      <div class="px-4 py-4">
-        <%= form_with url: matches_path, method: :get, local: true, class: "space-y-4" do |form| %>
-          <!-- 主要フィルターを hidden で引き継ぐ -->
-          <% @filter_events.each do |id| %><input type="hidden" name="events[]" value="<%= id %>"><% end %>
-          <% @filter_users.each do |id| %><input type="hidden" name="users[]" value="<%= id %>"><% end %>
-          <input type="hidden" name="users_mode" value="<%= @filter_users_mode %>">
-          <% @filter_streaming_users.each do |id| %><input type="hidden" name="streaming_users[]" value="<%= id %>"><% end %>
-          <% @filter_mobile_suits.each do |id| %><input type="hidden" name="mobile_suits[]" value="<%= id %>"><% end %>
-          <% @filter_costs.each do |c| %><input type="hidden" name="costs[]" value="<%= c %>"><% end %>
-          <% if @filter_suit_scope == "mine" %><input type="hidden" name="suit_scope" value="mine"><% end %>
-          <% if @flip_team %><input type="hidden" name="flip_team" value="1"><% end %>
-          <% if @filter_only_favorites %><input type="hidden" name="only_favorites" value="1"><% end %>
-          <% @filter_team_player_ids.each do |id| %><input type="hidden" name="team_player_ids[]" value="<%= id %>"><% end %>
-          <input type="hidden" name="sort" value="<%= @sort %>">
-          <input type="hidden" name="per" value="<%= @per_page %>">
+    <div class="mh-fpanel">
+      <div class="mh-frow">
+        <div class="mh-fk">イベント</div>
+        <div class="mh-chips">
+          <%= link_to "全イベント", matches_path(all_params.merge(events: [])), class: @filter_events.empty? ? chip_on : chip_off %>
+          <% @all_events.each do |event| %>
+            <%= link_to event.name, toggle.call(:events, event.id), class: @filter_events.include?(event.id) ? chip_on : chip_off %>
+          <% end %>
+        </div>
+      </div>
 
-          <!-- 対象プレイヤー -->
-          <div>
-            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">対象プレイヤー</label>
-            <div class="relative inline-block w-full sm:w-56">
-              <select name="stat_player_id"
-                      class="w-full appearance-none rounded-lg border border-gray-300 bg-white pl-3 pr-8 py-2 text-sm text-gray-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+      <div class="mh-frow">
+        <div class="mh-fk">参加</div>
+        <div class="mh-chips">
+          <div class="mh-seg">
+            <%= link_to "OR", matches_path(all_params.merge(users_mode: "or")), class: class_names(@filter_users_mode == "or" && "on") %>
+            <%= link_to "AND", matches_path(all_params.merge(users_mode: "and")), class: class_names(@filter_users_mode == "and" && "on") %>
+          </div>
+          <%= link_to "全員", matches_path(all_params.merge(users: [])), class: @filter_users.empty? ? chip_on : chip_off %>
+          <% @all_users.each do |user| %>
+            <%= link_to user.nickname, toggle.call(:users, user.id), class: @filter_users.include?(user.id) ? chip_on : chip_off %>
+          <% end %>
+        </div>
+      </div>
+
+      <%
+        team_toggle = ->(user_id) {
+          if @filter_team_player_ids.include?(user_id)
+            matches_path(all_params.merge(team_player_ids: @filter_team_player_ids - [user_id]))
+          elsif @filter_team_player_ids.length < 2
+            matches_path(all_params.merge(team_player_ids: @filter_team_player_ids + [user_id]))
+          else
+            matches_path(all_params.merge(team_player_ids: [@filter_team_player_ids[1], user_id]))
+          end
+        }
+      %>
+      <div class="mh-frow">
+        <div class="mh-fk">同チーム</div>
+        <div class="mh-chips">
+          <% @all_users.each do |user| %>
+            <%= link_to user.nickname, team_toggle.call(user.id), class: @filter_team_player_ids.include?(user.id) ? chip_on : chip_off %>
+          <% end %>
+          <% if @filter_team_player_ids.any? %>
+            <%= link_to "クリア", matches_path(all_params.merge(team_player_ids: [])), class: "mh-ch danger" %>
+          <% end %>
+        </div>
+      </div>
+
+      <% visible_streaming = @filter_users.any? ? @all_users.select { |u| @filter_users.include?(u.id) } : @all_users %>
+      <div class="mh-frow">
+        <div class="mh-fk">配信台</div>
+        <div class="mh-chips">
+          <%= link_to "全員", matches_path(all_params.merge(streaming_users: [])), class: @filter_streaming_users.empty? ? chip_on : chip_off %>
+          <% visible_streaming.each do |user| %>
+            <%= link_to user.nickname, toggle.call(:streaming_users, user.id), class: @filter_streaming_users.include?(user.id) ? chip_on : chip_off %>
+          <% end %>
+        </div>
+      </div>
+
+      <div class="mh-frow">
+        <div class="mh-fk">機体・コスト</div>
+        <div class="mh-chips">
+          <% if @filter_mobile_suits.any? || @filter_costs.any? %>
+            <div class="mh-seg">
+              <%= link_to "全員", matches_path(all_params.merge(suit_scope: nil)), class: class_names(@filter_suit_scope != "mine" && "on") %>
+              <%= link_to "自分のみ", matches_path(all_params.merge(suit_scope: "mine")), class: class_names(@filter_suit_scope == "mine" && "on") %>
+            </div>
+          <% end %>
+
+          <div class="mh-cseg">
+            <%= link_to "全体", matches_path(all_params.merge(costs: [], mobile_suits: [], suit_scope: nil)),
+                class: class_names(@filter_costs.empty? && @filter_mobile_suits.empty? && "on") %>
+            <% [3000, 2500, 2000, 1500].each do |cost| %>
+              <% active = @filter_costs == [cost] && @filter_mobile_suits.empty? %>
+              <% cost_url = active ? matches_path(all_params.merge(costs: [], mobile_suits: [], suit_scope: nil)) : matches_path(all_params.merge(costs: [cost], mobile_suits: [])) %>
+              <%= link_to cost.to_s, cost_url, class: class_names("c#{cost}", active && "on") %>
+            <% end %>
+          </div>
+
+          <% visible_suits = @filter_costs.any? ? @all_mobile_suits.select { |s| @filter_costs.include?(s.cost) } : @all_mobile_suits %>
+          <select id="match-suit-select" class="mh-fsearch" data-controller="suit-select" data-has-favorites="<%= viewing_as_user&.user_favorite_suits&.any? %>">
+            <option value="">機体を検索...</option>
+            <%= mobile_suit_options_with_favorites(visible_suits, viewing_as_user, @filter_mobile_suits) %>
+          </select>
+
+          <% unless @filter_costs.empty? && @filter_mobile_suits.empty? %>
+            <%= link_to "クリア", matches_path(all_params.merge(costs: [], mobile_suits: [], suit_scope: nil)), class: "mh-ch danger" %>
+          <% end %>
+        </div>
+      </div>
+
+      <%
+        fav_suits = viewing_as_user&.user_favorite_suits&.order(:slot)&.includes(:mobile_suit)&.to_a || []
+        fav_toggle = ->(suit_id) {
+          new_arr = @filter_mobile_suits.include?(suit_id) ? @filter_mobile_suits - [suit_id] : @filter_mobile_suits + [suit_id]
+          matches_path(all_params.merge(mobile_suits: new_arr, suit_scope: new_arr.any? ? "mine" : nil))
+        }
+      %>
+      <% if fav_suits.any? %>
+        <div class="mh-frow">
+          <div class="mh-fk">お気に入り機体</div>
+          <div class="mh-chips">
+            <% fav_suits.each do |fav| %>
+              <%= link_to fav.mobile_suit.name, fav_toggle.call(fav.mobile_suit.id), class: @filter_mobile_suits.include?(fav.mobile_suit.id) ? chip_on : chip_off %>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+
+      <% if viewing_as_user&.regular_user? %>
+        <div class="mh-frow">
+          <div class="mh-fk">お気に入り試合</div>
+          <div class="mh-chips">
+            <%= link_to "保存済みのみ", matches_path(all_params.merge(only_favorites: @filter_only_favorites ? nil : "1", page: nil)), class: @filter_only_favorites ? chip_on : chip_off %>
+          </div>
+        </div>
+      <% end %>
+
+      <% stat_section_active = @filter_ol_filter.present? || @filter_stat_filters.any? || @filter_stat_player_id.present? || @filter_damage_dealt_val.present? || @filter_damage_received_val.present? %>
+      <details class="mh-fmore" <%= "open" if stat_section_active %>>
+        <summary>
+          <span class="lab">
+            <svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2"/></svg>
+            詳細条件
+            <% if stat_section_active %><span class="badge">設定中</span><% end %>
+          </span>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#8b93a6" stroke-width="2"><path d="M19 9l-7 7-7-7"/></svg>
+        </summary>
+
+        <div class="px-3 pb-3 pt-2">
+          <%= form_with url: matches_path, method: :get, local: true, class: "space-y-4" do |form| %>
+            <% @filter_events.each do |id| %><input type="hidden" name="events[]" value="<%= id %>"><% end %>
+            <% @filter_users.each do |id| %><input type="hidden" name="users[]" value="<%= id %>"><% end %>
+            <input type="hidden" name="users_mode" value="<%= @filter_users_mode %>">
+            <% @filter_streaming_users.each do |id| %><input type="hidden" name="streaming_users[]" value="<%= id %>"><% end %>
+            <% @filter_mobile_suits.each do |id| %><input type="hidden" name="mobile_suits[]" value="<%= id %>"><% end %>
+            <% @filter_costs.each do |c| %><input type="hidden" name="costs[]" value="<%= c %>"><% end %>
+            <% if @filter_suit_scope == "mine" %><input type="hidden" name="suit_scope" value="mine"><% end %>
+            <% if @flip_team %><input type="hidden" name="flip_team" value="1"><% end %>
+            <% if @filter_only_favorites %><input type="hidden" name="only_favorites" value="1"><% end %>
+            <% @filter_team_player_ids.each do |id| %><input type="hidden" name="team_player_ids[]" value="<%= id %>"><% end %>
+            <input type="hidden" name="sort" value="<%= @sort %>">
+            <input type="hidden" name="per" value="<%= @per_page %>">
+
+            <div>
+              <label class="ui-label">対象プレイヤー</label>
+              <select name="stat_player_id" class="ui-form-control max-w-xs">
                 <option value="">指定なし</option>
                 <% @all_users.each do |user| %>
-                  <option value="<%= user.id %>" <%= 'selected' if @filter_stat_player_id == user.id %>>
-                    <%= user.nickname %>
-                  </option>
+                  <option value="<%= user.id %>" <%= "selected" if @filter_stat_player_id == user.id %>><%= user.nickname %></option>
                 <% end %>
               </select>
-              <div class="pointer-events-none absolute inset-y-0 right-2 flex items-center text-gray-400">
-                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                </svg>
+            </div>
+
+            <div>
+              <label class="ui-label">OL条件</label>
+              <div class="ui-segment flex-wrap">
+                <% [["", "指定なし"], ["ol_unused_win", "OL未発動勝利"], ["ol_unused_loss", "OL未発動敗北"]].each do |value, label| %>
+                  <label class="cursor-pointer">
+                    <input type="radio" name="ol_filter" value="<%= value %>" <%= "checked" if @filter_ol_filter.to_s == value %> class="peer sr-only">
+                    <span class="ui-segment-item"><%= label %></span>
+                  </label>
+                <% end %>
               </div>
             </div>
-          </div>
 
-          <!-- OL条件 -->
-          <div>
-            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">OL条件</label>
-            <div class="inline-flex rounded-lg border border-gray-200 bg-gray-50 p-0.5 gap-px">
-              <% [["", "指定なし"], ["ol_unused_win", "OL未発動勝利"], ["ol_unused_loss", "OL未発動敗北"]].each do |value, label| %>
-                <label class="cursor-pointer">
-                  <input type="radio" name="ol_filter" value="<%= value %>"
-                         <%= 'checked' if @filter_ol_filter.to_s == value %>
-                         class="peer sr-only">
-                  <span class="block px-3 py-1.5 rounded-md text-sm font-medium transition-all whitespace-nowrap text-gray-500 hover:text-gray-700 peer-checked:bg-white peer-checked:text-indigo-700 peer-checked:shadow-sm">
-                    <%= label %>
-                  </span>
-                </label>
-              <% end %>
-            </div>
-          </div>
-
-          <!-- EX条件 -->
-          <div>
-            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">EX条件</label>
-            <div class="flex flex-wrap gap-2">
-              <% [["ex_leftover_win", "EXバーストを使わせず勝利"], ["ex_leftover_loss", "EXバーストを残して敗北"], ["exburst_death", "EXバースト中被撃墜あり"]].each do |value, label| %>
-                <label class="cursor-pointer select-none">
-                  <input type="checkbox" name="stat_filters[]" value="<%= value %>"
-                         <%= 'checked' if @filter_stat_filters.include?(value) %>
-                         class="peer sr-only">
-                  <span class="inline-flex items-center px-3 py-1.5 rounded-full border text-sm font-medium transition-all border-gray-200 text-gray-400 bg-white hover:border-gray-300 hover:text-gray-600 peer-checked:bg-indigo-600 peer-checked:text-white peer-checked:border-indigo-600">
-                    <%= label %>
-                  </span>
-                </label>
-              <% end %>
-            </div>
-          </div>
-
-          <!-- ダメージ -->
-          <div>
-            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">ダメージ</label>
-            <div class="flex flex-wrap gap-3">
-              <div class="flex items-center gap-2 bg-white rounded-lg border border-gray-200 px-3 py-2 shadow-sm">
-                <span class="text-xs font-medium text-gray-500 whitespace-nowrap">与ダメ</span>
-                <input type="number" name="damage_dealt_val" min="0" placeholder="—"
-                       value="<%= @filter_damage_dealt_val %>"
-                       class="w-20 bg-transparent border-0 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-0 p-0">
-                <div class="inline-flex rounded-md border border-gray-200 bg-white text-xs font-medium overflow-hidden">
-                  <label class="cursor-pointer">
-                    <input type="radio" name="damage_dealt_dir" value="gte" <%= 'checked' if @filter_damage_dealt_dir != 'lte' %> class="peer sr-only">
-                    <span class="block px-2 py-1 transition-colors text-gray-500 peer-checked:bg-indigo-600 peer-checked:text-white">以上</span>
+            <div>
+              <label class="ui-label">EX条件</label>
+              <div class="flex flex-wrap gap-2">
+                <% [["ex_leftover_win", "EXバーストを使わせず勝利"], ["ex_leftover_loss", "EXバーストを残して敗北"], ["exburst_death", "EXバースト中被撃墜あり"]].each do |value, label| %>
+                  <label class="cursor-pointer select-none">
+                    <input type="checkbox" name="stat_filters[]" value="<%= value %>" <%= "checked" if @filter_stat_filters.include?(value) %> class="peer sr-only">
+                    <span class="ui-chip peer-checked:bg-accent peer-checked:text-on-accent"><%= label %></span>
                   </label>
-                  <label class="cursor-pointer border-l border-gray-200">
-                    <input type="radio" name="damage_dealt_dir" value="lte" <%= 'checked' if @filter_damage_dealt_dir == 'lte' %> class="peer sr-only">
-                    <span class="block px-2 py-1 transition-colors text-gray-500 peer-checked:bg-indigo-600 peer-checked:text-white">以下</span>
-                  </label>
+                <% end %>
+              </div>
+            </div>
+
+            <div>
+              <label class="ui-label">ダメージ</label>
+              <div class="grid gap-3 md:grid-cols-2">
+                <div class="rounded-lg bg-bg p-3 shadow-inner-soft">
+                  <span class="mb-2 block text-xs font-black text-subtle">与ダメ</span>
+                  <input type="number" name="damage_dealt_val" min="0" placeholder="なし" value="<%= @filter_damage_dealt_val %>" class="ui-form-control">
+                  <div class="ui-segment mt-2">
+                    <% [["gte", "以上"], ["lte", "以下"]].each do |value, label| %>
+                      <label class="cursor-pointer">
+                        <input type="radio" name="damage_dealt_dir" value="<%= value %>" <%= "checked" if (value == "gte" && @filter_damage_dealt_dir != "lte") || @filter_damage_dealt_dir == value %> class="peer sr-only">
+                        <span class="ui-segment-item"><%= label %></span>
+                      </label>
+                    <% end %>
+                  </div>
                 </div>
-              </div>
-              <div class="flex items-center gap-2 bg-white rounded-lg border border-gray-200 px-3 py-2 shadow-sm">
-                <span class="text-xs font-medium text-gray-500 whitespace-nowrap">被ダメ</span>
-                <input type="number" name="damage_received_val" min="0" placeholder="—"
-                       value="<%= @filter_damage_received_val %>"
-                       class="w-20 bg-transparent border-0 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-0 p-0">
-                <div class="inline-flex rounded-md border border-gray-200 bg-white text-xs font-medium overflow-hidden">
-                  <label class="cursor-pointer">
-                    <input type="radio" name="damage_received_dir" value="gte" <%= 'checked' if @filter_damage_received_dir != 'lte' %> class="peer sr-only">
-                    <span class="block px-2 py-1 transition-colors text-gray-500 peer-checked:bg-indigo-600 peer-checked:text-white">以上</span>
-                  </label>
-                  <label class="cursor-pointer border-l border-gray-200">
-                    <input type="radio" name="damage_received_dir" value="lte" <%= 'checked' if @filter_damage_received_dir == 'lte' %> class="peer sr-only">
-                    <span class="block px-2 py-1 transition-colors text-gray-500 peer-checked:bg-indigo-600 peer-checked:text-white">以下</span>
-                  </label>
+
+                <div class="rounded-lg bg-bg p-3 shadow-inner-soft">
+                  <span class="mb-2 block text-xs font-black text-subtle">被ダメ</span>
+                  <input type="number" name="damage_received_val" min="0" placeholder="なし" value="<%= @filter_damage_received_val %>" class="ui-form-control">
+                  <div class="ui-segment mt-2">
+                    <% [["gte", "以上"], ["lte", "以下"]].each do |value, label| %>
+                      <label class="cursor-pointer">
+                        <input type="radio" name="damage_received_dir" value="<%= value %>" <%= "checked" if (value == "gte" && @filter_damage_received_dir != "lte") || @filter_damage_received_dir == value %> class="peer sr-only">
+                        <span class="ui-segment-item"><%= label %></span>
+                      </label>
+                    <% end %>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          <!-- ボタン -->
-          <div class="flex items-center justify-end gap-3 pt-2 border-t border-gray-100">
-            <%= link_to "クリア", matches_path(_all.merge(stat_player_id: nil, ol_filter: nil, stat_filters: [], damage_dealt_val: nil, damage_received_val: nil)), class: "px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors" %>
-            <%= form.submit "適用", class: "px-5 py-2 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 rounded-lg shadow-sm transition-colors cursor-pointer" %>
-          </div>
-        <% end %>
-      </div>
+            <div class="flex flex-wrap justify-end gap-3">
+              <%= link_to "クリア", matches_path(all_params.merge(stat_player_id: nil, ol_filter: nil, stat_filters: [], damage_dealt_val: nil, damage_received_val: nil)), class: "m-btn-ghost" %>
+              <%= form.submit "適用", class: "m-btn m-btn-primary cursor-pointer" %>
+            </div>
+          <% end %>
+        </div>
+      </details>
+    </div>
     </details>
 
-  </div>
-
-  <!-- 一括削除フォーム -->
-  <% if current_user.is_admin? && @matches.any? %>
-    <%= form_with url: bulk_destroy_matches_path, method: :delete, id: "bulk-delete-form", class: "mb-4" do |f| %>
-      <div class="bg-white shadow sm:rounded-lg p-4 flex items-center justify-between">
-        <div class="flex items-center space-x-4">
-          <label class="flex items-center">
-            <input type="checkbox" id="select-all" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-            <span class="ml-2 text-sm text-gray-700">すべて選択</span>
-          </label>
-          <span id="selected-count" class="text-sm text-gray-600">0件選択中</span>
+    <% if current_user.is_admin? && @matches.any? %>
+      <%= form_with url: bulk_destroy_matches_path, method: :delete, id: "bulk-delete-form", class: "mb-0" do |f| %>
+        <div class="mh-selbar">
+          <button type="button" class="mh-seltoggle" data-bulk-select-target="toggle" data-action="bulk-select#toggleMode">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 11l3 3 8-8M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg>
+            <span class="lbl-off">選択</span>
+            <span class="lbl-on">選択モードを終了</span>
+          </button>
+          <div class="mh-selactions" data-bulk-select-target="actions" hidden>
+            <label class="mh-selall">
+              <input type="checkbox" data-bulk-select-target="all" data-action="bulk-select#toggleAll">
+              すべて選択
+            </label>
+            <span class="mh-selcount" data-bulk-select-target="count">0件選択中</span>
+            <%= button_tag "選択した試合を削除", type: "submit", class: "m-btn-ghost", style: "color:var(--color-neg)", data: { turbo_confirm: "選択した試合を削除してもよろしいですか？" } %>
+          </div>
         </div>
-        <%= button_tag type: "submit", class: "bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded", data: { turbo_confirm: "選択した試合を削除してもよろしいですか？" } do %>
-          選択した試合を削除
-        <% end %>
-      </div>
+      <% end %>
     <% end %>
-  <% end %>
 
-  <div class="bg-white shadow sm:rounded-lg">
-    <div class="px-4 py-3 border-b border-gray-200 flex flex-wrap items-center justify-between gap-2">
-      <div class="flex flex-wrap items-center gap-4">
-        <p class="text-sm text-gray-600">全 <%= @matches.total_count %> 試合</p>
-        <div class="flex items-center gap-2 text-sm text-gray-600">
-          <span>ソート:</span>
+    <div class="mh-toolbar">
+      <div class="m-cnt">全 <b><%= @matches.total_count %></b> 試合</div>
+      <div class="right">
+        <% if viewing_as_user&.regular_user? %>
+          <%= link_to "⇆ 自チームを左に", matches_path(all_params.merge(flip_team: @flip_team ? nil : "1", page: nil)),
+              title: "自分が参加した試合で、自チームを左側に表示します",
+              class: class_names("mh-ch", @flip_team && "on") %>
+        <% end %>
+        <div class="mh-seg">
           <% [["latest", "新しい順"], ["oldest", "古い順"], ["reactions", "リアクション順"]].each do |value, label| %>
-            <% if value == @sort %>
-              <span class="px-3 py-1 text-sm font-semibold text-white bg-indigo-600 border border-indigo-600 rounded-lg"><%= label %></span>
-            <% else %>
-              <%= link_to label,
-                    matches_path(_all.merge(sort: value)),
-                    class: "px-3 py-1 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-300 transition" %>
-            <% end %>
+            <%= link_to label, matches_path(all_params.merge(sort: value)), class: class_names(value == @sort && "on") %>
           <% end %>
         </div>
-      </div>
-      <div class="flex items-center gap-3">
-        <% if viewing_as_user&.regular_user? %>
-          <%= link_to matches_path(_all.merge(flip_team: @flip_team ? nil : "1", page: nil)),
-                title: "自分が参加した試合で、自チームを左側に表示します",
-                class: "flex items-center gap-1.5 px-3 py-1 text-sm font-medium rounded-lg border transition whitespace-nowrap #{@flip_team ? 'bg-indigo-600 text-white border-indigo-600' : 'text-gray-500 bg-white border-gray-300 hover:border-indigo-300 hover:text-indigo-600'}" do %>
-            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
-            </svg>
-            自チームを左に
-          <% end %>
-        <% end %>
-        <%= render "shared/per_page_selector", per_page: @per_page, url_builder: ->(n) { matches_path(_all.merge(per: n)) } %>
+        <%= render "shared/per_page_selector", per_page: @per_page, url_builder: ->(n) { matches_path(all_params.merge(per: n)) } %>
       </div>
     </div>
-    <ul class="divide-y divide-gray-100">
-      <% @matches.each do |match| %>
-        <%
-          _all_mp       = match.match_players.sort_by { |mp| [mp.team_number, mp.position] }
-          _team1        = _all_mp.select { |mp| mp.team_number == 1 }
-          _team2        = _all_mp.select { |mp| mp.team_number == 2 }
-          _streaming_id = _team1.first&.id
 
-          if @flip_team && viewing_as_user
-            _user_team = _all_mp.find { |mp| mp.user_id == viewing_as_user.id }&.team_number
-            if _user_team == 2
-              _left_players, _right_players = _team2, _team1
-              _left_wins = match.winning_team == 2
+    <% if @matches.any? %>
+      <div class="mh-list">
+        <% @matches.each do |match| %>
+          <%
+            all_mp = match.match_players.sort_by { |mp| [mp.team_number, mp.position] }
+            team1 = all_mp.select { |mp| mp.team_number == 1 }
+            team2 = all_mp.select { |mp| mp.team_number == 2 }
+            streaming_id = team1.first&.id
+
+            if @flip_team && viewing_as_user
+              user_team = all_mp.find { |mp| mp.user_id == viewing_as_user.id }&.team_number
+              if user_team == 2
+                left_players, right_players = team2, team1
+                left_wins = match.winning_team == 2
+              else
+                left_players, right_players = team1, team2
+                left_wins = match.winning_team == 1
+              end
+              left_label = "自チーム"; right_label = "相手チーム"
             else
-              _left_players, _right_players = _team1, _team2
-              _left_wins = match.winning_team == 1
+              left_players, right_players = team1, team2
+              left_wins = match.winning_team == 1
+              left_label = "チーム1"; right_label = "チーム2"
             end
-            _left_label  = "自チーム"
-            _right_label = "相手チーム"
-          else
-            _left_players, _right_players = _team1, _team2
-            _left_wins    = match.winning_team == 1
-            _left_label   = "チーム1"
-            _right_label  = "チーム2"
-          end
+          %>
+          <div class="mh-card <%= "admin" if current_user.is_admin? %>"<%= ' data-bulk-select-target="card" data-action="click->bulk-select#cardClick"'.html_safe if current_user.is_admin? %>>
+            <%= link_to "", match_path(match), class: "mh-cardlink", "aria-label": "試合詳細を見る", data: { turbo_frame: "_top" } %>
+            <% if current_user.is_admin? %>
+              <span class="mh-selmark" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M5 12l5 5 9-9"/></svg>
+              </span>
+              <input type="checkbox" name="match_ids[]" value="<%= match.id %>" form="bulk-delete-form" class="sr-only" data-bulk-select-target="item" tabindex="-1" aria-hidden="true">
+            <% end %>
 
-          _cost_badge = ->(cost) {
-            case cost
-            when 3000 then "bg-red-100 text-red-700"
-            when 2500 then "bg-orange-100 text-orange-700"
-            when 2000 then "bg-yellow-100 text-yellow-700"
-            when 1500 then "bg-green-100 text-green-700"
-            else           "bg-gray-100 text-gray-500"
-            end
-          }
-        %>
-        <li class="<%= current_user.is_admin? ? 'pl-10' : '' %> relative">
-          <% if current_user.is_admin? %>
-            <div class="absolute left-2 top-4 z-10">
-              <input type="checkbox" name="match_ids[]" value="<%= match.id %>" form="bulk-delete-form" class="match-checkbox rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-            </div>
-          <% end %>
-
-          <div class="px-5 py-5">
-            <%# メタ行 %>
-            <div class="flex items-center justify-between mb-3">
-              <div class="flex items-center flex-wrap gap-2">
-                <%= link_to match_path(match), class: "text-sm text-gray-400 hover:text-blue-600 transition-colors", data: { turbo_frame: "_top" } do %>
-                  <%= match.played_at.strftime('%Y年%m月%d日') %>
-                <% end %>
-                <span class="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-indigo-50 text-indigo-600">
-                  <%= match.event.name %>
-                </span>
-                <% if match.video_url %>
-                  <%= link_to match.video_url, target: "_blank", rel: "noopener noreferrer",
-                      class: "inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-red-50 text-red-600 text-xs font-semibold hover:bg-red-100 transition-colors" do %>
-                    <img src="/youtube_social_icon_red.png" alt="YouTube" class="h-3.5">
-                    配信
-                  <% end %>
-                <% end %>
-              </div>
-              <%= render "favorite_matches/favorite_button", match: match, is_favorited: @my_favorite_match_ids.include?(match.id) %>
+            <div class="mh-meta">
+              <span class="date"><%= match.played_at.strftime("%Y年%m月%d日") %></span>
+              <span class="epill"><%= match.event.name %></span>
+              <% if match.video_url %>
+                <%= render "shared/broadcast_link", url: match.video_url, link_class: "vid" %>
+              <% end %>
+              <span class="favslot">
+                <%= render "favorite_matches/favorite_button", match: match, is_favorited: @my_favorite_match_ids.include?(match.id) %>
+              </span>
             </div>
 
-            <%# 対戦カード %>
-            <div class="block cursor-pointer"
-                 data-controller="card-link"
-                 data-card-link-url-value="<%= match_path(match) %>"
-                 data-action="click->card-link#navigate">
-              <%= render "matches/match_teams",
-                    left_players: _left_players,
-                    right_players: _right_players,
-                    left_wins: _left_wins,
-                    left_label: _left_label,
-                    right_label: _right_label,
-                    streaming_player_id: _streaming_id %>
-            </div>
+            <%= render "matches/mh_teams",
+                  left_players: left_players, right_players: right_players,
+                  left_wins: left_wins, left_label: left_label, right_label: right_label,
+                  streaming_player_id: streaming_id %>
 
-            <%# リアクションバー %>
-            <div class="mt-3">
+            <div class="mh-rbar">
               <%= turbo_stream_from "match_#{match.id}_reactions_compact" %>
               <%= render "reactions/reaction_bar", match: match, compact: true, emojis: @emojis %>
             </div>
           </div>
-        </li>
+        <% end %>
+      </div>
+
+      <% if @matches.respond_to?(:total_pages) && @matches.total_pages > 1 %>
+        <div class="flex flex-col items-center gap-4 pt-6">
+          <%= paginate @matches, params: { per: @per_page, sort: @sort } %>
+          <%= render "shared/per_page_selector", per_page: @per_page, url_builder: ->(n) { matches_path(all_params.merge(per: n)) } %>
+        </div>
       <% end %>
-    </ul>
-    <% if @matches.respond_to?(:total_pages) && @matches.total_pages > 1 %>
-      <div class="px-4 py-4 flex flex-col items-center gap-4 border-t border-gray-200">
-        <%= paginate @matches, params: { per: @per_page, sort: @sort } %>
-        <%= render "shared/per_page_selector", per_page: @per_page, url_builder: ->(n) { matches_path(_all.merge(per: n)) } %>
+    <% else %>
+      <div class="m-panel m-pbody text-center">
+        <p class="text-sm font-bold text-muted">対戦記録がまだありません</p>
       </div>
     <% end %>
   </div>
-
-  <% if @matches.empty? %>
-    <div class="text-center py-12">
-      <p class="text-gray-500">対戦記録がまだありません</p>
-    </div>
-  <% end %>
-</div>
-
 </turbo-frame>
-
-<% if current_user.is_admin? %>
-  <script>
-    // Turbo Frame 内で即実行（フレーム更新のたびに再実行される）
-    (function() {
-      const selectAllCheckbox = document.getElementById('select-all');
-      const matchCheckboxes = document.querySelectorAll('.match-checkbox');
-      const selectedCount = document.getElementById('selected-count');
-
-      function updateSelectedCount() {
-        const checkedCount = document.querySelectorAll('.match-checkbox:checked').length;
-        if (selectedCount) selectedCount.textContent = `${checkedCount}件選択中`;
-      }
-
-      if (selectAllCheckbox) {
-        selectAllCheckbox.addEventListener('change', function() {
-          matchCheckboxes.forEach(cb => { cb.checked = this.checked; });
-          updateSelectedCount();
-        });
-      }
-
-      matchCheckboxes.forEach(cb => {
-        cb.addEventListener('change', function() {
-          updateSelectedCount();
-          if (selectAllCheckbox) {
-            selectAllCheckbox.checked = Array.from(matchCheckboxes).every(c => c.checked);
-          }
-        });
-      });
-    })();
-  </script>
-<% end %>
-
-<style>
-  /* summary デフォルトマーカー非表示 */
-  .stat-summary { list-style: none; }
-  .stat-summary::-webkit-details-marker { display: none; }
-  /* 詳細条件パネル開閉アニメーション */
-  details.group\/detail > div { animation: filterSlideIn 160ms ease-out; }
-  @keyframes filterSlideIn {
-    from { opacity: 0; transform: translateY(-6px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-</style>

@@ -1,0 +1,16 @@
+<%# locals: data, tone ("good" | "bad") %>
+<% ms = data[:mobile_suit] %>
+<div class="s-srow">
+  <span class="suit-thumb suit-thumb-md">
+    <% if ms.image_filename.present? %>
+      <%= image_tag "/mobile_suits/#{ms.image_filename}", alt: ms.name, loading: "lazy" %>
+    <% else %>
+      <svg viewBox="0 0 24 24" aria-hidden="true" style="width:20px;height:20px;stroke:var(--color-subtle);fill:none;stroke-width:1.4"><path d="M4 16l4.6-4.6a2 2 0 0 1 2.8 0L16 16M14 8h.01M6 20h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2z"/></svg>
+    <% end %>
+  </span>
+  <div class="s-srow-nm">
+    <%= ms.name %>
+    <div class="s-srow-sub"><span class="m-num"><%= data[:wins] %></span>勝 / <span class="m-num"><%= data[:total] %></span>戦</div>
+  </div>
+  <span class="s-srow-val <%= tone %>"><%= data[:win_rate] %><span class="u">%</span></span>
+</div>

@@ -1,134 +1,70 @@
-<div class="py-8">
-  <div class="page-header">
-    <div>
-      <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">イベント一覧</h1>
-      <p class="mt-2 text-sm text-gray-600">イベントの管理と試合記録の閲覧ができます</p>
-    </div>
-    <% if current_user.is_admin? %>
-      <div class="flex flex-wrap gap-2">
-        <%= link_to "新規作成", new_event_path, class: "bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded" %>
-      </div>
-    <% end %>
+<div class="m-pagehead">
+  <div>
+    <h1>イベント一覧</h1>
+    <div class="m-sub">イベントの管理と試合記録の閲覧ができます。</div>
   </div>
+  <% if current_user.is_admin? %>
+    <%= link_to "新規作成", new_event_path, class: "m-btn m-btn-primary" %>
+  <% end %>
+</div>
 
-  <% if @events.any? %>
-    <!-- モバイル用カードビュー -->
-    <div class="mobile-only-view space-y-4">
-      <% @events.each do |event| %>
-        <div class="bg-white shadow rounded-lg p-4">
-          <div class="mb-2">
-            <div class="mb-1">
-              <%= link_to event.name, event_path(event), class: "text-sm font-medium text-blue-600 hover:text-blue-800" %>
-            </div>
-            <div class="flex items-center gap-2 text-xs text-gray-500">
-              <span class="px-2 py-0.5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                <%= event.held_on.strftime('%Y/%m/%d') %>
-              </span>
-              <span><%= event.matches.count %> 件の試合</span>
-            </div>
-            <% if event.broadcast_url.present? %>
-              <div class="mt-2">
-                <%= link_to event.broadcast_url, target: "_blank", rel: "noopener noreferrer", class: "inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-red-50 text-red-700 text-xs font-semibold hover:bg-red-100 transition-colors" do %>
-                  <img src="/youtube_social_icon_red.png" alt="YouTube" class="h-3.5">
-                  配信を見る
-                <% end %>
-              </div>
-            <% end %>
-          </div>
-          <% if event.description.present? %>
-            <div class="text-xs text-gray-500 mb-2 line-clamp-2"><%= event.description %></div>
-          <% end %>
-          <% if current_user.is_admin? %>
-            <div class="pt-2 border-t border-gray-100">
-              <%= link_to "編集", edit_event_path(event), class: "text-xs text-blue-600 hover:text-blue-900" %>
-            </div>
-          <% end %>
-        </div>
-      <% end %>
+<% if @events.any? %>
+  <div class="dtbl-card">
+    <div class="dtbl-bar">
+      <div class="cnt">全 <b><%= @events.size %></b> 件</div>
     </div>
-
-    <!-- デスクトップ用テーブルビュー -->
-    <div class="desktop-only-view bg-white shadow overflow-hidden sm:rounded-lg">
-      <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-50">
+    <div class="dtbl-scroll">
+      <table class="dtbl">
+        <thead>
           <tr>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              イベント名
-            </th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              配信リンク
-            </th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              開催日
-            </th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              説明
-            </th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              試合数
-            </th>
-            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-              アクション
-            </th>
+            <th>イベント名</th>
+            <th>配信</th>
+            <th>開催日</th>
+            <th>説明</th>
+            <th>試合数</th>
+            <th class="right">操作</th>
           </tr>
         </thead>
-        <tbody class="bg-white divide-y divide-gray-200">
+        <tbody>
           <% @events.each do |event| %>
-            <tr class="hover:bg-gray-50 cursor-pointer" onclick="window.location='<%= event_path(event) %>'">
-              <td class="px-6 py-4 whitespace-nowrap">
-                <span class="text-sm font-medium text-blue-600"><%= event.name %></span>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap" onclick="event.stopPropagation()">
+            <tr data-controller="card-link"
+                data-card-link-url-value="<%= event_path(event) %>"
+                data-action="click->card-link#navigate">
+              <td class="name" data-l="イベント名"><span class="lnk"><%= event.name %></span></td>
+              <td data-l="配信">
                 <% if event.broadcast_url.present? %>
-                  <%= link_to event.broadcast_url, target: "_blank", rel: "noopener noreferrer", class: "inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-red-50 text-red-700 text-xs font-semibold hover:bg-red-100 transition-colors" do %>
-                    <img src="/youtube_social_icon_red.png" alt="YouTube" class="h-3.5">
-                    配信を見る
-                  <% end %>
+                  <%= render "shared/broadcast_link", url: event.broadcast_url, link_class: "ev-chip-yt" %>
                 <% else %>
-                  <span class="text-sm text-gray-400">-</span>
+                  <span class="text-subtle">-</span>
                 <% end %>
               </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                  <%= event.held_on.strftime('%Y/%m/%d') %>
-                </span>
-              </td>
-              <td class="px-6 py-4">
-                <div class="text-sm text-gray-500 max-w-xs truncate">
-                  <%= event.description.presence || "-" %>
+              <td data-l="開催日"><span class="m-num"><%= event.held_on.strftime("%Y/%m/%d") %></span></td>
+              <td class="muted" data-l="説明"><%= event.description.presence || "-" %></td>
+              <td class="muted" data-l="試合数"><span class="m-num"><%= event.matches.count %></span> 件</td>
+              <td class="actions" data-l="操作">
+                <div class="rowact">
+                  <% if current_user.is_admin? %>
+                    <%= link_to "編集", edit_event_path(event), class: "m-btn-ghost" %>
+                    <%= button_to "削除", event, method: :delete, class: "m-btn-ghost", style: "color:var(--color-neg)", data: { turbo_confirm: "イベント「#{event.name}」を削除してもよろしいですか？関連する試合やローテーションもすべて削除されます。" } %>
+                  <% else %>
+                    <%= link_to "詳細", event_path(event), class: "m-btn-ghost" %>
+                  <% end %>
                 </div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm text-gray-900">
-                  <%= event.matches.count %> 件
-                </div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium" onclick="event.stopPropagation()">
-                <% if current_user.is_admin? %>
-                  <%= link_to "編集", edit_event_path(event), class: "text-blue-600 hover:text-blue-900 mr-3" %>
-                  <%= button_to "削除", event, method: :delete, data: { turbo_confirm: "イベント「#{event.name}」を削除してもよろしいですか？関連する試合やローテーションもすべて削除されます。" }, class: "text-red-600 hover:text-red-900 inline", form: { style: "display: inline;" } %>
-                <% end %>
               </td>
             </tr>
           <% end %>
         </tbody>
       </table>
     </div>
-  <% else %>
-    <div class="bg-white shadow sm:rounded-lg p-6">
-      <div class="text-center">
-        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-        </svg>
-        <h3 class="mt-2 text-sm font-medium text-gray-900">イベントがありません</h3>
-        <% if current_user.is_admin? %>
-          <p class="mt-1 text-sm text-gray-500">新規作成ボタンからイベントを作成してください。</p>
-          <%= link_to "最初のイベントを作成", new_event_path, class: "mt-4 inline-block text-blue-600 hover:text-blue-500" %>
-        <% else %>
-          <p class="mt-1 text-sm text-gray-500">管理者によってイベントが作成されるとここに表示されます。</p>
-        <% end %>
-      </div>
-    </div>
-  <% end %>
-</div>
-
+  </div>
+<% else %>
+  <div class="m-panel m-pbody">
+    <h2 class="text-lg font-black text-ink">イベントがありません</h2>
+    <% if current_user.is_admin? %>
+      <p class="mt-2 text-sm font-bold text-muted">新規作成ボタンからイベントを作成してください。</p>
+      <div class="mt-4"><%= link_to "最初のイベントを作成", new_event_path, class: "m-btn m-btn-primary" %></div>
+    <% else %>
+      <p class="mt-2 text-sm font-bold text-muted">管理者によってイベントが作成されるとここに表示されます。</p>
+    <% end %>
+  </div>
+<% end %>

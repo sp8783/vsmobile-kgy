@@ -1,0 +1,37 @@
+<%# 対戦履歴カードのチーム表示。mock list.html の teamBox 構造
+    locals: left_players, right_players, left_wins, left_label, right_label, streaming_player_id %>
+<div class="mh-teams">
+  <% [[left_label, left_players, left_wins], [right_label, right_players, !left_wins]].each do |label, players, win| %>
+    <div class="mh-team <%= win ? "win" : "lose" %>">
+      <div class="mh-tlabel">
+        <span class="tn"><%= label %></span>
+        <span class="mh-tag <%= win ? "win" : "lose" %>"><%= win ? "WIN" : "LOSE" %></span>
+      </div>
+      <% players.each do |mp| %>
+        <% streaming = mp.id == streaming_player_id %>
+        <div class="mh-player">
+          <span class="suit-thumb suit-thumb-md mh-psuit">
+            <% if mp.mobile_suit&.image_filename.present? %>
+              <%= image_tag "/mobile_suits/#{mp.mobile_suit.image_filename}", alt: mp.mobile_suit.name, loading: "lazy" %>
+            <% else %>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3 4h-6l3-4zM7 6h10l1 5-6 3-6-3 1-5zM6 11l-3 3 4 6h10l4-6-3-3"/></svg>
+            <% end %>
+          </span>
+          <div class="mh-pinfo">
+            <div class="mh-pn <%= "streaming" if streaming %>">
+              <%= mp.user&.nickname %>
+              <% if streaming %><span class="stream">配信台</span><% end %>
+            </div>
+            <div class="mh-ps">
+              <% if mp.mobile_suit %>
+                <%= link_to mp.mobile_suit.name, mobile_suit_path(mp.mobile_suit), class: "sn hover:text-accent", data: { turbo_frame: "_top" } %>
+                <%= cost_badge(mp.mobile_suit.cost) %>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+    <% if label == left_label %><div class="mh-vsmid">VS</div><% end %>
+  <% end %>
+</div>

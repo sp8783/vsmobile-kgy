@@ -1,0 +1,20 @@
+<%# locals: label, value, community(optional), invert(optional, true なら低いほど良い) — スナップショットの1行 %>
+<% invert = local_assigns.fetch(:invert, false) %>
+<div class="m-rank">
+  <div class="m-l">
+    <div>
+      <div class="m-nm"><%= label %></div>
+      <% if community.present? %>
+        <div class="m-sub">コミュニティ平均 <span class="m-num"><%= number_with_delimiter(community) %></span></div>
+      <% end %>
+    </div>
+  </div>
+  <div class="m-snapval">
+    <span class="m-wr"><%= value.nil? ? "なし" : number_with_delimiter(value) %></span>
+    <% if value.present? && community.present? && community.to_f.positive? %>
+      <% diff = ((value.to_f - community.to_f) / community.to_f * 100).round %>
+      <% good = invert ? diff <= 0 : diff >= 0 %>
+      <span class="m-snapdiff <%= good ? "up" : "down" %>"><%= diff >= 0 ? "+#{diff}" : diff %>%</span>
+    <% end %>
+  </div>
+</div>

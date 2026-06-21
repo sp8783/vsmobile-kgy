@@ -20,6 +20,26 @@ class Match < ApplicationRecord
   validates :winning_team, presence: true, inclusion: { in: [ 1, 2 ] }
   validates :match_players, length: { is: 4 }
 
+  def won_by?(team_number)
+    winning_team == team_number
+  end
+
+  def partner_for(match_player_or_user_id)
+    my_match_player = resolve_match_player(match_player_or_user_id)
+    return unless my_match_player
+
+    team_match_players(my_match_player.team_number).find do |match_player|
+      match_player.user_id != my_match_player.user_id
+    end
+  end
+
+  def opponents_for(match_player_or_user_id)
+    my_match_player = resolve_match_player(match_player_or_user_id)
+    return [] unless my_match_player
+
+    match_players.select { |match_player| match_player.team_number != my_match_player.team_number }
+  end
+
   # イベント内での試合番号を取得（古い順に1から採番）
   def match_number
     event.matches.where("played_at < ?", played_at).count + 1
@@ -80,5 +100,17 @@ class Match < ApplicationRecord
     else
       reactions.where(master_emoji: master_emoji).includes(:user).map { |r| r.user.nickname }
     end
+  end
+
+  private
+
+  def team_match_players(team_number)
+    match_players.select { |match_player| match_player.team_number == team_number }
+  end
+
+  def resolve_match_player(match_player_or_user_id)
+    return match_player_or_user_id if match_player_or_user_id.is_a?(MatchPlayer)
+
+    match_players.find { |match_player| match_player.user_id == match_player_or_user_id }
   end
 end

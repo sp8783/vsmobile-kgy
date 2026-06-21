@@ -1,0 +1,7 @@
+<div>
+  <div class="mb-2 flex items-center justify-between text-xs font-bold text-muted">
+    <span>進捗</span>
+    <span class="tabular-nums"><%= current %> / <%= total %></span>
+  </div>
+  <progress class="ui-progress" value="<%= current %>" max="<%= total.nonzero? || 1 %>"><%= current %></progress>
+</div>

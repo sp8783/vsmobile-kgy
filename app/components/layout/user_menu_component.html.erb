@@ -1,0 +1,50 @@
+<div class="relative" data-controller="user-switcher">
+  <% if current_user.is_admin? %>
+    <button type="button" data-action="click->user-switcher#toggle" class="flex w-full items-center gap-3 rounded-lg bg-surface-2 px-3 py-3 text-left transition hover:bg-hover">
+      <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent text-sm font-bold text-on-accent"><%= avatar_initial %></span>
+      <span class="min-w-0 flex-1">
+        <% if viewing_as_someone_else? %>
+          <span class="block text-xs font-bold text-accent">視点切り替え中</span>
+          <span class="block truncate text-sm font-bold text-ink"><%= viewing_as_user.nickname %></span>
+          <span class="block truncate text-xs text-muted"><%= viewing_as_user.username %></span>
+        <% else %>
+          <span class="block truncate text-sm font-bold text-ink"><%= current_user.nickname %></span>
+          <span class="block truncate text-xs text-muted"><%= current_user.username %></span>
+        <% end %>
+      </span>
+    </button>
+
+    <div data-user-switcher-target="dropdown" class="<%= dropdown_classes %>">
+      <% if viewing_as_someone_else? %>
+        <button type="button" data-action="click->user-switcher#clearView" class="block w-full px-4 py-3 text-left text-sm font-bold text-accent hover:bg-hover">管理者視点に戻す</button>
+      <% end %>
+      <div class="max-h-56 overflow-y-auto py-1">
+        <% switchable_users.each do |user| %>
+          <% next if viewing_as_someone_else? && user.id == viewing_as_user.id %>
+          <button type="button" data-action="click->user-switcher#switchView" data-user-id="<%= user.id %>" class="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm font-bold text-ink hover:bg-hover">
+            <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-surface-2 text-xs text-accent"><%= user.nickname.to_s.first %></span>
+            <span class="truncate"><%= user.nickname %></span>
+          </button>
+        <% end %>
+      </div>
+    </div>
+  <% else %>
+    <div class="flex items-center gap-3 rounded-lg bg-surface-2 px-3 py-3">
+      <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent text-sm font-bold text-on-accent"><%= avatar_initial %></span>
+      <span class="min-w-0">
+        <span class="block truncate text-sm font-bold text-ink"><%= current_user.nickname %></span>
+        <span class="block truncate text-xs text-muted"><%= current_user.username %></span>
+      </span>
+    </div>
+  <% end %>
+
+  <div class="mt-3 grid gap-2">
+    <% unless current_user.is_guest? %>
+      <%= link_to "マイページ", helpers.my_page_path, class: "nav-item #{helpers.current_page?(helpers.my_page_path) ? 'nav-item-active' : ''}" %>
+    <% end %>
+    <% unless current_user.username == "guest" %>
+      <%= link_to "設定", helpers.edit_profile_path, class: "nav-item" %>
+    <% end %>
+    <%= button_to "ログアウト", helpers.destroy_user_session_path, method: :delete, class: "nav-item w-full" %>
+  </div>
+</div>

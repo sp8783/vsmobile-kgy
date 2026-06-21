@@ -1,0 +1,30 @@
+<%# 使用率ドーナツ（コスト色の単一リング）＋凡例。
+     locals: rows = [{cost:, usage_rate:, usage_count:}, ...] %>
+<%
+  order = [ 3000, 2500, 2000, 1500 ]
+  data = order.map { |c| (rows || []).find { |r| r[:cost] == c } || { cost: c, usage_rate: 0, usage_count: 0 } }
+  total = data.sum { |d| d[:usage_count].to_i }
+  seg_color = ->(cost) { "var(--color-cost-#{cost}-fill)" }
+  acc = 0.0
+  grad = data.map do |d|
+    frac = total.positive? ? d[:usage_count].to_f / total * 100 : 0
+    start = acc
+    acc += frac
+    "#{seg_color.call(d[:cost])} #{start.round(2)}% #{acc.round(2)}%"
+  end.join(", ")
+%>
+<div class="st-donut-wrap">
+  <div class="st-donut" style="background: conic-gradient(<%= total.positive? ? grad : "var(--color-surface-2) 0 100%" %>)">
+    <div class="st-donut-c"><span class="t">使用率</span></div>
+  </div>
+  <div class="st-donut-legend">
+    <% data.each do |d| %>
+      <div class="st-donut-li">
+        <span class="sw" style="background: <%= seg_color.call(d[:cost]) %>"></span>
+        <span class="cs"><%= d[:cost] %></span>
+        <span class="pc"><%= d[:usage_rate] %>%</span>
+        <span class="cn">使用 <%= number_with_delimiter(d[:usage_count]) %></span>
+      </div>
+    <% end %>
+  </div>
+</div>

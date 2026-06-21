@@ -1,0 +1,7 @@
+<div class="<%= classes("ui-card ui-card-pad", class_name) %>">
+  <div class="<%= value_classes %>"><%= value %><% if suffix.present? %><span class="text-base"><%= suffix %></span><% end %></div>
+  <div class="ui-stat-label"><%= label %></div>
+  <% if meta.present? %>
+    <div class="mt-2 text-xs font-bold text-subtle"><%= meta %></div>
+  <% end %>
+</div>

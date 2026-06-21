@@ -1,0 +1,18 @@
+<section class="<%= card_classes %>">
+  <% if title.present? || subtitle.present? || actions.present? %>
+    <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+      <div>
+        <% if title.present? %>
+          <h2 class="ui-section-title"><%= title %></h2>
+        <% end %>
+        <% if subtitle.present? %>
+          <p class="mt-1 text-sm ui-muted"><%= subtitle %></p>
+        <% end %>
+      </div>
+      <% if actions.present? %>
+        <div class="flex flex-wrap gap-2"><%= actions %></div>
+      <% end %>
+    </div>
+  <% end %>
+  <%= content %>
+</section>

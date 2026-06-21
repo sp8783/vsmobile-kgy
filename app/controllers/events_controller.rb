@@ -1,7 +1,4 @@
-require "net/http"
-
 class EventsController < ApplicationController
-  include TimestampParseable
   before_action :authenticate_user!
   before_action :require_admin, only: [ :new, :create, :edit, :update, :destroy, :edit_timestamps, :update_timestamps, :trigger_analysis, :trigger_scraping, :post_broadcast_to_discord ]
   before_action :set_event, only: [ :show, :edit, :update, :destroy, :edit_timestamps, :update_timestamps, :trigger_analysis, :trigger_scraping, :post_broadcast_to_discord ]
@@ -11,25 +8,7 @@ class EventsController < ApplicationController
   end
 
   def show
-    sort = params[:sort].presence_in(%w[oldest reactions]) || "oldest"
-    @sort = sort
-    @per_page = [ 10, 20, 50 ].include?(params[:per].to_i) ? params[:per].to_i : 20
-
-    base_scope = sort == "reactions" ? @event.matches.by_reactions_oldest : @event.matches.by_oldest
-    @matches = base_scope
-                 .includes(:event, :rotation_match, match_players: [ :user, :mobile_suit ], reactions: :user)
-                 .page(params[:page]).per(@per_page)
-    @rotations = @event.rotations.order(created_at: :asc)
-    @emojis = MasterEmoji.active.ordered
-
-    ordered_ids = @event.matches.order(:played_at, :id).pluck(:id)
-    @match_numbers = ordered_ids.each_with_index.to_h { |id, i| [ id, i + 1 ] }
-
-    @my_favorite_match_ids = if viewing_as_user
-      FavoriteMatch.where(user_id: viewing_as_user.id, match_id: @matches.map(&:id)).pluck(:match_id).to_set
-    else
-      Set.new
-    end
+    assign_view_state(EventMatchListing.new(event: @event, params: params, viewing_as_user: viewing_as_user).to_h)
   end
 
   def new
@@ -58,125 +37,62 @@ class EventsController < ApplicationController
   end
 
   def edit_timestamps
-    @matches = @event.matches.includes(match_players: [ :user, :mobile_suit ]).order(:played_at, :id)
-    existing = @matches.map { |m| format_timestamp(m.video_timestamp) }
-    @timestamps_text = existing.any?(&:present?) ? existing.join("\n") : ""
+    timestamp_batch = EventTimestampBatch.new(event: @event)
+    @matches = timestamp_batch.matches
+    @timestamps_text = timestamp_batch.existing_text
   end
 
   def update_timestamps
-    @matches = @event.matches.includes(match_players: [ :user, :mobile_suit ]).order(:played_at, :id)
-    raw_text = params[:timestamps].to_s
-    lines = raw_text.split("\n").map(&:strip)
+    timestamp_batch = EventTimestampBatch.new(event: @event)
+    @matches = timestamp_batch.matches
+    result = timestamp_batch.update(params[:timestamps].to_s)
 
-    # 末尾の空行を除去
-    lines.pop while lines.last&.empty?
-
-    if lines.size != @matches.size
-      flash.now[:alert] = "行数（#{lines.size}）と試合数（#{@matches.size}）が一致しません。"
-      @timestamps_text = raw_text
+    if result.success?
+      redirect_to event_path(@event), notice: "タイムスタンプを保存しました。"
+    else
+      flash.now[:alert] = result.error_message
+      @timestamps_text = result.timestamps_text
       render :edit_timestamps, status: :unprocessable_entity
-      return
     end
-
-    timestamps = lines.map.with_index do |line, i|
-      if line.blank?
-        flash.now[:alert] = "#{i + 1}行目が空です。すべての行にタイムスタンプを入力してください。"
-        @timestamps_text = raw_text
-        render :edit_timestamps, status: :unprocessable_entity
-        return
-      end
-      seconds = parse_timestamp(line)
-      if seconds.nil?
-        flash.now[:alert] = "#{i + 1}行目「#{line}」の形式が不正です。H:MM:SS または MM:SS の形式で入力してください。"
-        @timestamps_text = raw_text
-        render :edit_timestamps, status: :unprocessable_entity
-        return
-      end
-      seconds
-    end
-
-    ActiveRecord::Base.transaction do
-      @matches.each_with_index do |match, i|
-        match.update!(video_timestamp: timestamps[i])
-      end
-    end
-
-    redirect_to event_path(@event), notice: "タイムスタンプを保存しました。"
   end
 
   def trigger_analysis
-    repo = ENV["GITHUB_REPO"].presence
-    workflow_id = ENV["GITHUB_WORKFLOW_ID"].presence
-    token = ENV["GITHUB_TOKEN"].presence
-
-    if repo.blank? || workflow_id.blank? || token.blank?
-      return redirect_to event_path(@event), alert: "GitHub Actions の設定が不完全です（GITHUB_REPO / GITHUB_WORKFLOW_ID / GITHUB_TOKEN を確認してください）。"
-    end
-
-    uri = URI("https://api.github.com/repos/#{repo}/actions/workflows/#{workflow_id}/dispatches")
-    http = Net::HTTP.new(uri.host, uri.port)
-    http.use_ssl = true
-
-    req = Net::HTTP::Post.new(uri.path, {
-      "Authorization" => "Bearer #{token}",
-      "Accept" => "application/vnd.github+json",
-      "Content-Type" => "application/json",
-      "X-GitHub-Api-Version" => "2022-11-28"
-    })
-    req.body = {
-      ref: "main",
+    dispatch_result = GithubActionsWorkflowDispatcher.new(
+      repo: ENV["GITHUB_REPO"].presence,
+      workflow_id: ENV["GITHUB_WORKFLOW_ID"].presence,
+      token: ENV["GITHUB_TOKEN"].presence,
       inputs: {
         event_id: @event.id.to_s,
         broadcast_url: @event.broadcast_url
-      }
-    }.to_json
+      },
+      missing_config_message: "GitHub Actions の設定が不完全です（GITHUB_REPO / GITHUB_WORKFLOW_ID / GITHUB_TOKEN を確認してください）。",
+      exception_message_prefix: "解析開始でエラーが発生しました"
+    ).call
 
-    res = http.request(req)
-
-    if res.is_a?(Net::HTTPNoContent)
+    if dispatch_result.success?
       redirect_to event_path(@event), notice: "解析を開始しました。完了後にタイムスタンプが自動登録されます。"
     else
-      redirect_to event_path(@event), alert: "GitHub Actions のトリガーに失敗しました（HTTP #{res.code}）。"
+      redirect_to event_path(@event), alert: dispatch_result.error_message
     end
-  rescue => e
-    redirect_to event_path(@event), alert: "解析開始でエラーが発生しました: #{e.message}"
   end
 
   def trigger_scraping
-    repo        = ENV["SCRAPER_GITHUB_REPO"].presence
-    workflow_id = ENV["SCRAPER_GITHUB_WORKFLOW_ID"].presence
-    token       = ENV["GITHUB_TOKEN"].presence
-
-    if repo.blank? || workflow_id.blank? || token.blank?
-      return redirect_to event_path(@event), alert: "スクレイパーの設定が不完全です（SCRAPER_GITHUB_REPO / SCRAPER_GITHUB_WORKFLOW_ID / GITHUB_TOKEN を確認してください）。"
-    end
-
-    uri = URI("https://api.github.com/repos/#{repo}/actions/workflows/#{workflow_id}/dispatches")
-    http = Net::HTTP.new(uri.host, uri.port)
-    http.use_ssl = true
-
-    req = Net::HTTP::Post.new(uri.path, {
-      "Authorization" => "Bearer #{token}",
-      "Accept" => "application/vnd.github+json",
-      "Content-Type" => "application/json",
-      "X-GitHub-Api-Version" => "2022-11-28"
-    })
-    req.body = {
-      ref: "main",
+    dispatch_result = GithubActionsWorkflowDispatcher.new(
+      repo: ENV["SCRAPER_GITHUB_REPO"].presence,
+      workflow_id: ENV["SCRAPER_GITHUB_WORKFLOW_ID"].presence,
+      token: ENV["GITHUB_TOKEN"].presence,
       inputs: {
         event_id: @event.id.to_s
-      }
-    }.to_json
+      },
+      missing_config_message: "スクレイパーの設定が不完全です（SCRAPER_GITHUB_REPO / SCRAPER_GITHUB_WORKFLOW_ID / GITHUB_TOKEN を確認してください）。",
+      exception_message_prefix: "スクレイピング開始でエラーが発生しました"
+    ).call
 
-    res = http.request(req)
-
-    if res.is_a?(Net::HTTPNoContent)
+    if dispatch_result.success?
       redirect_to event_path(@event), notice: "統計スクレイピングを開始しました。完了後に統計データが自動登録されます。"
     else
-      redirect_to event_path(@event), alert: "GitHub Actions のトリガーに失敗しました（HTTP #{res.code}）。"
+      redirect_to event_path(@event), alert: dispatch_result.error_message
     end
-  rescue => e
-    redirect_to event_path(@event), alert: "スクレイピング開始でエラーが発生しました: #{e.message}"
   end
 
   def post_broadcast_to_discord
@@ -190,26 +106,25 @@ class EventsController < ApplicationController
   end
 
   def destroy
-    name = @event.name
+    result = EventDeletionWorkflow.new(event: @event).call
 
-    ActiveRecord::Base.transaction do
-      # イベントに関連する試合のrotation_matchesの参照を解除
-      match_ids = @event.matches.pluck(:id)
-      RotationMatch.where(match_id: match_ids).update_all(match_id: nil) if match_ids.any?
-
-      # イベントを削除（dependent: destroyでmatchesとrotationsも削除される）
-      @event.destroy
+    if result.success?
+      redirect_to events_path, notice: "イベント「#{result.event_name}」を削除しました。"
+    else
+      redirect_to event_path(@event), alert: "削除に失敗しました: #{result.error_message}"
     end
-
-    redirect_to events_path, notice: "イベント「#{name}」を削除しました。"
-  rescue => e
-    redirect_to event_path(@event), alert: "削除に失敗しました: #{e.message}"
   end
 
   private
 
   def set_event
     @event = Event.find(params[:id])
+  end
+
+  def assign_view_state(attributes)
+    attributes.each do |name, value|
+      instance_variable_set("@#{name}", value)
+    end
   end
 
   def event_params

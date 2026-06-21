@@ -1,24 +1,17 @@
 module MobileSuitsHelper
   COST_STYLES = {
-    3000 => { badge: "bg-red-100 text-red-700",    tab_active: "bg-red-500 text-white shadow-sm",       tab_inactive: "text-red-500 hover:bg-red-100/80",     bar: "bg-red-400" },
-    2500 => { badge: "bg-orange-100 text-orange-700", tab_active: "bg-orange-500 text-white shadow-sm", tab_inactive: "text-orange-500 hover:bg-orange-100/80", bar: "bg-orange-400" },
-    2000 => { badge: "bg-yellow-100 text-yellow-700", tab_active: "bg-yellow-400 text-gray-900 shadow-sm", tab_inactive: "text-yellow-600 hover:bg-yellow-100/80", bar: "bg-yellow-400" },
-    1500 => { badge: "bg-green-100 text-green-700",  tab_active: "bg-green-500 text-white shadow-sm",   tab_inactive: "text-green-600 hover:bg-green-100/80",    bar: "bg-green-400" }
+    3000 => { badge: "cost-badge cost-badge-3000", tab_active: "bg-cost-3000 text-on-accent shadow-card", tab_inactive: "text-cost-3000 hover:bg-cost-3000-bg", bar: "bg-cost-3000" },
+    2500 => { badge: "cost-badge cost-badge-2500", tab_active: "bg-cost-2500 text-on-accent shadow-card", tab_inactive: "text-cost-2500 hover:bg-cost-2500-bg", bar: "bg-cost-2500" },
+    2000 => { badge: "cost-badge cost-badge-2000", tab_active: "bg-cost-2000 text-ink shadow-card", tab_inactive: "text-cost-2000 hover:bg-cost-2000-bg", bar: "bg-cost-2000" },
+    1500 => { badge: "cost-badge cost-badge-1500", tab_active: "bg-cost-1500 text-on-accent shadow-card", tab_inactive: "text-cost-1500 hover:bg-cost-1500-bg", bar: "bg-cost-1500" }
   }.freeze
 
   def cost_badge_classes(cost)
-    COST_STYLES.dig(cost, :badge) || "bg-gray-100 text-gray-700"
+    COST_STYLES.dig(cost, :badge) || "cost-badge"
   end
 
   def cost_bar_classes(cost)
-    COST_STYLES.dig(cost, :bar) || "bg-gray-400"
-  end
-
-  def safe_external_url(url)
-    uri = URI.parse(url.to_s)
-    %w[http https].include?(uri.scheme) ? url : "#"
-  rescue URI::InvalidURIError
-    "#"
+    COST_STYLES.dig(cost, :bar) || "bg-muted"
   end
 
   # "フルアーマー：7強化型：8" のような連結スペック文字列を
