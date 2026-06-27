@@ -1,10 +1,17 @@
 <%#
   配信アーカイブ（YouTube）へのリンクボタン。表記「配信を見る」をここで一元管理する。
+  ゲスト閲覧時はボタンの見た目は維持しつつ、動画リンクへ遷移できない非リンク要素にする。
   locals:
     url        : 配信URL
     link_class : リンクに適用する CSS クラス
     img_class  : YouTube アイコンに付与するクラス（任意。CSS 側で img サイズ指定がない場合に使う）
 %>
-<%= link_to safe_external_url(url), target: "_blank", rel: "noopener noreferrer", class: link_class do %>
-<%= image_tag "/youtube_social_icon_red.png", alt: "YouTube", class: local_assigns[:img_class] %>配信を見る
+<% if guest_view? %>
+  <span class="<%= link_class %> is-guest-disabled" role="link" aria-disabled="true" title="ゲストは配信ページへ移動できません">
+    <%= image_tag "/youtube_social_icon_red.png", alt: "YouTube", class: local_assigns[:img_class] %>配信を見る
+  </span>
+<% else %>
+  <%= link_to safe_external_url(url), target: "_blank", rel: "noopener noreferrer", class: link_class do %>
+  <%= image_tag "/youtube_social_icon_red.png", alt: "YouTube", class: local_assigns[:img_class] %>配信を見る
+  <% end %>
 <% end %>
