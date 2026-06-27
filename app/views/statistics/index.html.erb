@@ -76,7 +76,7 @@
     </div>
   </div>
 
-  <% unless current_user.is_admin %>
+  <% unless current_user.is_admin || guest_view? %>
     <div class="st-userbar">
       <span class="lab">ユーザー</span>
       <%= link_to "#{current_user.nickname}（自分）", statistics_path(tab: @active_tab), class: class_names("st-chip", viewing_as_user.id == current_user.id && "on") %>
@@ -300,7 +300,7 @@
       vs_html = ->(match) {
         t1 = match.match_players.select { |p| p.team_number == 1 }.sort_by(&:position)
         t2 = match.match_players.select { |p| p.team_number == 2 }.sort_by(&:position)
-        names = ->(team) { safe_join(team.map { |p| safe_join([ p.user.nickname, "（", mobile_suit_link(p.mobile_suit, class: "st-hlsuit"), "）" ]) }, " & ") }
+        names = ->(team) { safe_join(team.map { |p| safe_join([ player_name(p.user), "（", mobile_suit_link(p.mobile_suit, class: "st-hlsuit"), "）" ]) }, " & ") }
         c1 = match.winning_team == 1 ? "win" : ""
         c2 = match.winning_team == 2 ? "win" : ""
         %(<div class="st-hlvs"><span class="#{c1}">#{names.call(t1)}</span><span class="vs">vs</span><span class="#{c2}">#{names.call(t2)}</span></div>)
@@ -308,7 +308,7 @@
       hl_card = ->(label, icon, value, mp, match) {
         head = %(<div class="st-hlhead"><div class="ic">#{hl_icons[icon]}</div><div class="t">#{esc.call(label)}</div></div>)
         next %(<div class="st-hlcard">#{head}<div class="st-hlempty">データがありません</div></div>).html_safe if value.nil? || match.nil?
-        player = mp ? %(<div class="st-hlplayer"><span>#{esc.call(mp.user.nickname)}</span><span class="dot">・</span>#{mobile_suit_link(mp.mobile_suit, class: "st-hlsuit")}#{cost_badge(mp.mobile_suit.cost)}</div>) : ""
+        player = mp ? %(<div class="st-hlplayer"><span>#{esc.call(player_name(mp.user))}</span><span class="dot">・</span>#{mobile_suit_link(mp.mobile_suit, class: "st-hlsuit")}#{cost_badge(mp.mobile_suit.cost)}</div>) : ""
         video = match.video_url ? render("shared/broadcast_link", url: match.video_url, link_class: "st-hlvideo") : ""
         foot = %(<div class="st-hlfoot">) +
           link_to("試合詳細 →", match_path(match), class: "st-hllink") +

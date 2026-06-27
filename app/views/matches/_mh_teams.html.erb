@@ -19,7 +19,7 @@
           </span>
           <div class="mh-pinfo">
             <div class="mh-pn <%= "streaming" if streaming %>">
-              <%= mp.user&.nickname %>
+              <%= player_name(mp.user) %>
               <% if streaming %><span class="stream">配信台</span><% end %>
             </div>
             <div class="mh-ps">

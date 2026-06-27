@@ -24,7 +24,7 @@
     <%= javascript_importmap_tags %>
   </head>
 
-  <body>
+  <body data-guest-view="<%= guest_view? ? "true" : "false" %>">
     <%= render Layout::ShellComponent.new(
       user_signed_in: user_signed_in?,
       current_user: current_user,

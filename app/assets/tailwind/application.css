@@ -117,6 +117,36 @@
     color: var(--color-accent);
   }
 
+  /* ゲスト閲覧時に無効化した「配信を見る」ボタン。
+     押せないことが分かるようグレーアウト＋not-allowed カーソルにし、
+     ホバーで理由を吹き出し表示する（title をそのまま利用）。
+     opacity は擬似要素の吹き出しまで透過させるため使わない。 */
+  .is-guest-disabled {
+    position: relative;
+    cursor: not-allowed;
+    filter: grayscale(1);
+    color: var(--color-subtle);
+  }
+  .is-guest-disabled:hover::after {
+    content: attr(title);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-bottom: 6px;
+    white-space: nowrap;
+    background: var(--color-ink);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1.4;
+    padding: 4px 8px;
+    border-radius: 6px;
+    box-shadow: var(--shadow-card);
+    z-index: 50;
+    pointer-events: none;
+  }
+
   .page-shell {
     min-width: 0;
     min-height: 100vh;
@@ -2174,7 +2204,7 @@
   @media (min-width: 680px) { .st-hlgrid { grid-template-columns: 1fr 1fr; } }
   @media (min-width: 1080px) { .st-hlgrid { grid-template-columns: 1fr 1fr 1fr; } }
   .st-hlcard { position: relative; display: flex; flex-direction: column; padding: 16px 18px; background: var(--color-surface); border-radius: var(--m-r); box-shadow: var(--shadow-card); transition: box-shadow .15s, transform .15s; }
-  .st-hlcard:hover { box-shadow: var(--shadow-floating); transform: translateY(-1px); }
+  .st-hlcard:hover { box-shadow: var(--shadow-floating); transform: translateY(-1px); z-index: 20; }
   .st-hlhead { display: flex; align-items: center; gap: 9px; }
   .st-hlhead .ic { width: 40px; height: 40px; border-radius: 11px; display: grid; place-items: center; flex-shrink: 0; color: var(--color-accent); background: color-mix(in oklab, var(--color-accent) 12%, transparent); }
   .st-hlhead .ic svg { width: 21px; height: 21px; fill: currentColor; }
