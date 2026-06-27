@@ -24,7 +24,7 @@ class StatisticsPersonalPartnersSnapshot < StatisticsPersonalTabSnapshotBase
       entry[:user] = partner.user
       entry[:total] += 1
       entry[:wins] += 1 if match_player.won?
-      entry[:suit_combinations]["#{match_player.mobile_suit.name} & #{partner.mobile_suit.name}"] += 1
+      entry[:suit_combinations][[ match_player.mobile_suit, partner.mobile_suit ]] += 1
       entry[:last_played_at] = latest_time(entry[:last_played_at], match_player.match.played_at)
     end
 

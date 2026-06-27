@@ -19,12 +19,12 @@
           </span>
           <div class="mh-pinfo">
             <div class="mh-pn <%= "streaming" if streaming %>">
-              <%= mp.user&.nickname %>
+              <%= player_name(mp.user) %>
               <% if streaming %><span class="stream">配信台</span><% end %>
             </div>
             <div class="mh-ps">
               <% if mp.mobile_suit %>
-                <%= link_to mp.mobile_suit.name, mobile_suit_path(mp.mobile_suit), class: "sn hover:text-accent", data: { turbo_frame: "_top" } %>
+                <%= mobile_suit_link(mp.mobile_suit, class: "sn hover:text-accent") %>
                 <%= cost_badge(mp.mobile_suit.cost) %>
               <% end %>
             </div>

@@ -105,6 +105,48 @@
 }
 
 @layer components {
+  /* 機体名リンク（mobile_suit_link ヘルパー）。既定色は親要素を継承し、ホバーで青に。
+     position/z-index でカード全面を覆うストレッチリンク（.st-hllink::after 等）より
+     上に出し、カード内でも機体名をクリックできるようにする。 */
+  .suit-link {
+    position: relative;
+    z-index: 1;
+    transition: color 0.15s ease;
+  }
+  .suit-link:hover {
+    color: var(--color-accent);
+  }
+
+  /* ゲスト閲覧時に無効化した「配信を見る」ボタン。
+     押せないことが分かるようグレーアウト＋not-allowed カーソルにし、
+     ホバーで理由を吹き出し表示する（title をそのまま利用）。
+     opacity は擬似要素の吹き出しまで透過させるため使わない。 */
+  .is-guest-disabled {
+    position: relative;
+    cursor: not-allowed;
+    filter: grayscale(1);
+    color: var(--color-subtle);
+  }
+  .is-guest-disabled:hover::after {
+    content: attr(title);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-bottom: 6px;
+    white-space: nowrap;
+    background: var(--color-ink);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1.4;
+    padding: 4px 8px;
+    border-radius: 6px;
+    box-shadow: var(--shadow-card);
+    z-index: 50;
+    pointer-events: none;
+  }
+
   .page-shell {
     min-width: 0;
     min-height: 100vh;
@@ -1117,7 +1159,8 @@
   .m-fav { display: flex; align-items: center; gap: 12px; padding: 13px 18px; border-bottom: 1px solid var(--color-line); }
   .m-fav:last-child { border-bottom: 0; }
   .m-fav .m-meta { flex: 1; min-width: 0; }
-  .m-fav .m-nm { font-weight: 650; color: var(--color-ink); }
+  .m-fav .m-nm { font-weight: 650; color: var(--color-ink); transition: color 0.15s ease; }
+  .m-fav:hover .m-nm { color: var(--color-accent); }
   .m-fav .m-sub { font-size: 11px; color: var(--color-subtle); margin-top: 2px; }
   .m-fav .m-bar2 { height: 5px; border-radius: var(--m-r-pill); background: var(--color-surface-2); overflow: hidden; margin-top: 7px; }
   .m-fav .m-bar2 .m-f { height: 100%; background: var(--m-grad); border-radius: var(--m-r-pill); }
@@ -2057,7 +2100,6 @@
   /* 多項目（機体別）は横スクロールのピル列。ネイティブ select を避け描画の差異をなくす */
   .st-sortbar-scroll { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: thin; }
   .st-sortbar-scroll .st-sortlab, .st-sortbar-scroll .st-sortbtn { flex-shrink: 0; }
-  .st-srmetric { color: var(--color-accent); font-weight: 700; }
 
   /* ===== 機体別/プレイヤー別/イベント別の戦績行（勝率バー付き）===== */
   .st-srow { padding: 14px 18px 16px; border-bottom: 1px solid var(--color-line); }
@@ -2070,8 +2112,11 @@
   .st-srsub { font-size: 11px; color: var(--color-subtle); margin-top: 3px; line-height: 1.55; }
   .st-srsub b { color: var(--color-muted); font-weight: 700; }
   .st-winbar { position: relative; height: 9px; border-radius: var(--m-r-pill); background: var(--color-surface-2); }
-  .st-winbar .wfill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: var(--m-r-pill); background: var(--m-grad); min-width: 3px; }
+  .st-winbar .wfill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: var(--m-r-pill); background: var(--m-grad); min-width: 3px; transition: width 0.2s ease; }
   .st-winbar .ref50 { position: absolute; left: 50%; top: -4px; bottom: -4px; width: 2px; border-radius: 2px; background: color-mix(in oklab, var(--color-ink) 38%, transparent); }
+  /* 機体別タブの指標連動バー：50%基準線は勝率指標のときだけ表示する */
+  .st-winbar-metric .ref50 { display: none; }
+  .st-winbar-metric.show-ref .ref50 { display: block; }
 
   /* ===== イベント別 参加統計（列揃えテーブル）===== */
   .st-evtable { padding: 2px 8px 8px; }
@@ -2159,7 +2204,7 @@
   @media (min-width: 680px) { .st-hlgrid { grid-template-columns: 1fr 1fr; } }
   @media (min-width: 1080px) { .st-hlgrid { grid-template-columns: 1fr 1fr 1fr; } }
   .st-hlcard { position: relative; display: flex; flex-direction: column; padding: 16px 18px; background: var(--color-surface); border-radius: var(--m-r); box-shadow: var(--shadow-card); transition: box-shadow .15s, transform .15s; }
-  .st-hlcard:hover { box-shadow: var(--shadow-floating); transform: translateY(-1px); }
+  .st-hlcard:hover { box-shadow: var(--shadow-floating); transform: translateY(-1px); z-index: 20; }
   .st-hlhead { display: flex; align-items: center; gap: 9px; }
   .st-hlhead .ic { width: 40px; height: 40px; border-radius: 11px; display: grid; place-items: center; flex-shrink: 0; color: var(--color-accent); background: color-mix(in oklab, var(--color-accent) 12%, transparent); }
   .st-hlhead .ic svg { width: 21px; height: 21px; fill: currentColor; }

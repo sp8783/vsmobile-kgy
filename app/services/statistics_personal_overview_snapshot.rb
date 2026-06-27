@@ -155,7 +155,8 @@ class StatisticsPersonalOverviewSnapshot < StatisticsPersonalTabSnapshotBase
       label: label,
       value: value,
       kind: kind,
-      sub: "#{match_player.mobile_suit&.name} ・ #{match_player.match.event.name}"
+      mobile_suit: match_player.mobile_suit,
+      event_name: match_player.match.event.name
     }
   end
 

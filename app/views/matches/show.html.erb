@@ -56,7 +56,7 @@
           <div class="md-rplayer">
             <div class="md-rp-top">
               <span class="md-rankb <%= "r1" if p.match_rank == 1 %>"><%= p.match_rank %></span>
-              <span class="md-rp-name <%= "streaming" if streaming %>"><%= p.user.nickname %></span>
+              <span class="md-rp-name <%= "streaming" if streaming %>"><%= player_name(p.user) %></span>
               <% if streaming %><span class="md-stream">配信台</span><% end %>
             </div>
             <div class="md-rp-suit">
@@ -71,7 +71,7 @@
                 <div class="lab">使用機体</div>
                 <div class="sn">
                   <% if p.mobile_suit %>
-                    <%= link_to p.mobile_suit.name, mobile_suit_path(p.mobile_suit), class: "hover:text-accent" %>
+                    <%= mobile_suit_link(p.mobile_suit, class: "hover:text-accent") %>
                     <span class="md-cb md-cb-<%= p.mobile_suit.cost %>"><%= p.mobile_suit.cost %></span>
                   <% end %>
                 </div>
@@ -144,7 +144,7 @@
                 <% players.each do |player| %>
                   <% st = player.survival_times || [] %>
                   <tr>
-                    <td class="l"><span class="md-rankb <%= "r1" if player.match_rank == 1 %>"><%= player.match_rank %></span> <%= player.user.nickname %></td>
+                    <td class="l"><span class="md-rankb <%= "r1" if player.match_rank == 1 %>"><%= player.match_rank %></span> <%= player_name(player.user) %></td>
                     <td><%= number_with_delimiter(player.score) if player.score %></td>
                     <td><%= player.kills %></td>
                     <td><%= player.deaths %></td>
@@ -212,7 +212,8 @@
   <div class="md-sec">
     <h2>タイムライン</h2>
     <div class="md-tlpanel">
-      <div class="overflow-x-auto" data-controller="match-timeline" data-match-timeline-json-value="<%= _timeline_data.to_json %>"></div>
+      <%# ゲスト閲覧時は実名を含む _player_order を除去（クライアント未使用のため表示に影響なし） %>
+      <div class="overflow-x-auto" data-controller="match-timeline" data-match-timeline-json-value="<%= (guest_view? ? _timeline_data.except("_player_order") : _timeline_data).to_json %>"></div>
       <div class="mt-4 space-y-3 text-xs font-semibold text-muted">
         <div>
           <span class="font-black text-subtle">上段 / EXバースト系</span>

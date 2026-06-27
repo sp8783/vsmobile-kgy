@@ -89,13 +89,13 @@
         <div class="m-nowmatch">
           <span class="m-lab">現在 ・ 第<%= @rotation_current_match_index.to_i + 1 %>試合</span>
           <div class="m-nm-team">
-            <span class="m-nm-p"><%= @current_rotation_match.team1_player1.nickname %><span class="m-stream"><svg viewBox="0 0 24 24"><path d="M23 7l-7 5 7 5V7zM1 5h15v14H1z"/></svg>配信台</span></span>
-            <span class="m-nm-p m-sub"><%= @current_rotation_match.team1_player2.nickname %></span>
+            <span class="m-nm-p"><%= player_name(@current_rotation_match.team1_player1) %><span class="m-stream"><svg viewBox="0 0 24 24"><path d="M23 7l-7 5 7 5V7zM1 5h15v14H1z"/></svg>配信台</span></span>
+            <span class="m-nm-p m-sub"><%= player_name(@current_rotation_match.team1_player2) %></span>
           </div>
           <span class="m-vs">VS</span>
           <div class="m-nm-team">
-            <span class="m-nm-p"><%= @current_rotation_match.team2_player1.nickname %></span>
-            <span class="m-nm-p m-sub"><%= @current_rotation_match.team2_player2.nickname %></span>
+            <span class="m-nm-p"><%= player_name(@current_rotation_match.team2_player1) %></span>
+            <span class="m-nm-p m-sub"><%= player_name(@current_rotation_match.team2_player2) %></span>
           </div>
         </div>
       <% end %>
@@ -198,7 +198,7 @@
               <div class="m-l">
                 <span class="m-no <%= index.zero? ? "m-top" : "" %>"><%= index + 1 %></span>
                 <div>
-                  <div class="m-nm"><%= partner[:user].nickname %></div>
+                  <div class="m-nm"><%= player_name(partner[:user]) %></div>
                   <div class="m-sub m-num"><%= partner[:wins] %>勝 <%= partner[:total] - partner[:wins] %>敗</div>
                 </div>
               </div>

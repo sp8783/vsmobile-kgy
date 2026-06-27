@@ -27,12 +27,12 @@
     <div class="md-pc-id">
       <div class="md-pc-namerow">
         <span class="md-rankb <%= "r1" if player.match_rank == 1 %>"><%= player.match_rank %></span>
-        <span class="nm"><%= player.user.nickname %></span>
+        <span class="nm"><%= player_name(player.user) %></span>
         <% if local_assigns[:streaming] %><span class="md-stream">配信台</span><% end %>
       </div>
       <% if player.mobile_suit %>
         <div class="md-pc-suitrow">
-          <span class="pcs-n"><%= player.mobile_suit.name %></span>
+          <span class="pcs-n"><%= mobile_suit_link(player.mobile_suit) %></span>
           <span class="md-cb md-cb-<%= player.mobile_suit.cost %>"><%= player.mobile_suit.cost %></span>
         </div>
       <% end %>

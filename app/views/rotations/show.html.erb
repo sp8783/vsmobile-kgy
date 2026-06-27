@@ -80,14 +80,14 @@
       <div class="r-lvmatch">
         <div class="r-lvteam">
           <div class="tl">チーム1</div>
-          <div class="r-lvp stream"><%= @current_match.team1_player1.nickname %><span class="sm">配信台</span></div>
-          <div class="r-lvp"><%= @current_match.team1_player2.nickname %></div>
+          <div class="r-lvp stream"><%= player_name(@current_match.team1_player1) %><span class="sm">配信台</span></div>
+          <div class="r-lvp"><%= player_name(@current_match.team1_player2) %></div>
         </div>
         <div class="r-lvvs">VS</div>
         <div class="r-lvteam">
           <div class="tl">チーム2</div>
-          <div class="r-lvp"><%= @current_match.team2_player1.nickname %></div>
-          <div class="r-lvp"><%= @current_match.team2_player2.nickname %></div>
+          <div class="r-lvp"><%= player_name(@current_match.team2_player1) %></div>
+          <div class="r-lvp"><%= player_name(@current_match.team2_player2) %></div>
         </div>
       </div>
 
@@ -181,8 +181,8 @@
               <td class="r-tcell <%= match ? (match.winning_team == 1 ? "win" : "lose") : "" %>" data-l="チーム1">
                 <div class="r-tcellwrap">
                   <div class="r-tps">
-                    <div class="r-tp"><span class="r-tpn"><%= rm.team1_player1.nickname %><% if mps_by_position[1]&.mobile_suit %><span class="tsu"><%= mps_by_position[1].mobile_suit.name %></span><% end %></span><span class="sm">配信台</span></div>
-                    <div class="r-tp"><span class="r-tpn"><%= rm.team1_player2.nickname %><% if mps_by_position[2]&.mobile_suit %><span class="tsu"><%= mps_by_position[2].mobile_suit.name %></span><% end %></span></div>
+                    <div class="r-tp"><span class="r-tpn"><%= player_name(rm.team1_player1) %><% if mps_by_position[1]&.mobile_suit %><span class="tsu"><%= mobile_suit_link(mps_by_position[1].mobile_suit) %></span><% end %></span><span class="sm">配信台</span></div>
+                    <div class="r-tp"><span class="r-tpn"><%= player_name(rm.team1_player2) %><% if mps_by_position[2]&.mobile_suit %><span class="tsu"><%= mobile_suit_link(mps_by_position[2].mobile_suit) %></span><% end %></span></div>
                   </div>
                   <% if match %><span class="r-bx-tag <%= match.winning_team == 1 ? "win" : "lose" %>"><%= match.winning_team == 1 ? "WIN" : "LOSE" %></span><% end %>
                 </div>
@@ -191,8 +191,8 @@
               <td class="r-tcell <%= match ? (match.winning_team == 2 ? "win" : "lose") : "" %>" data-l="チーム2">
                 <div class="r-tcellwrap">
                   <div class="r-tps">
-                    <div class="r-tp"><span class="r-tpn"><%= rm.team2_player1.nickname %><% if mps_by_position[3]&.mobile_suit %><span class="tsu"><%= mps_by_position[3].mobile_suit.name %></span><% end %></span></div>
-                    <div class="r-tp"><span class="r-tpn"><%= rm.team2_player2.nickname %><% if mps_by_position[4]&.mobile_suit %><span class="tsu"><%= mps_by_position[4].mobile_suit.name %></span><% end %></span></div>
+                    <div class="r-tp"><span class="r-tpn"><%= player_name(rm.team2_player1) %><% if mps_by_position[3]&.mobile_suit %><span class="tsu"><%= mobile_suit_link(mps_by_position[3].mobile_suit) %></span><% end %></span></div>
+                    <div class="r-tp"><span class="r-tpn"><%= player_name(rm.team2_player2) %><% if mps_by_position[4]&.mobile_suit %><span class="tsu"><%= mobile_suit_link(mps_by_position[4].mobile_suit) %></span><% end %></span></div>
                   </div>
                   <% if match %><span class="r-bx-tag <%= match.winning_team == 2 ? "win" : "lose" %>"><%= match.winning_team == 2 ? "WIN" : "LOSE" %></span><% end %>
                 </div>
@@ -244,14 +244,14 @@
         <tbody>
           <% @player_statistics.each_value do |stats| %>
             <tr>
-              <td class="name" data-l="プレイヤー"><%= stats[:user].nickname %><% if stats[:user].id == current_user.id %><span class="r-youtag">あなた</span><% end %></td>
+              <td class="name" data-l="プレイヤー"><%= player_name(stats[:user]) %><% if stats[:user].id == current_user.id %><span class="r-youtag">あなた</span><% end %></td>
               <td class="c" data-l="試合数(済/計画)"><span class="r-frac"><b><%= stats[:registered_match_count] %></b><s> / <%= stats[:match_count] %></s></span></td>
               <td class="c" data-l="配信台(済/計画)"><span class="r-frac"><b><%= stats[:registered_streaming_count] %></b><s> / <%= stats[:streaming_count] %></s></span></td>
               <td data-l="よく組む相手">
                 <% if stats[:pair_counts].any? %>
                   <div class="r-reltop">
                     <% stats[:pair_counts].sort_by { |_, count| -count }.first(3).each do |partner_id, count| %>
-                      <div><b><%= User.find(partner_id).nickname %></b> <%= count %>回</div>
+                      <div><b><%= player_name(User.find(partner_id)) %></b> <%= count %>回</div>
                     <% end %>
                   </div>
                 <% else %><span class="text-subtle">-</span><% end %>
@@ -260,7 +260,7 @@
                 <% if stats[:opponent_counts].any? %>
                   <div class="r-reltop">
                     <% stats[:opponent_counts].sort_by { |_, count| -count }.first(3).each do |opponent_id, count| %>
-                      <div><b><%= User.find(opponent_id).nickname %></b> <%= count %>回</div>
+                      <div><b><%= player_name(User.find(opponent_id)) %></b> <%= count %>回</div>
                     <% end %>
                   </div>
                 <% else %><span class="text-subtle">-</span><% end %>

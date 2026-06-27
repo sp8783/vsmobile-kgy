@@ -17,8 +17,14 @@ export default class extends Controller {
     this.closeModal()
   }
 
+  // ゲスト閲覧時は「誰がリアクションしたか」を見せない（ツールチップ/モーダルを抑止）
+  get isGuestView() {
+    return document.body.dataset.guestView === "true"
+  }
+
   // PC: マウスホバーで表示
   showTooltip(event) {
+    if (this.isGuestView) return
     // タッチデバイスの場合はホバーを無視（長押しで対応）
     if (this.isTouchDevice()) return
 
@@ -43,6 +49,7 @@ export default class extends Controller {
 
   // スマホ: 長押し開始
   startLongPress(event) {
+    if (this.isGuestView) return
     const nicknames = this.element.dataset.nicknames
     if (!nicknames || nicknames.trim() === '') return
 
@@ -75,6 +82,7 @@ export default class extends Controller {
 
   // スマホ: モーダルを表示（Discord風）
   showModal() {
+    if (this.isGuestView) return
     const nicknames = this.element.dataset.nicknames
     if (!nicknames || nicknames.trim() === '') return
 
