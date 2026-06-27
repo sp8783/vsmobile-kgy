@@ -181,8 +181,8 @@
               <td class="r-tcell <%= match ? (match.winning_team == 1 ? "win" : "lose") : "" %>" data-l="チーム1">
                 <div class="r-tcellwrap">
                   <div class="r-tps">
-                    <div class="r-tp"><span class="r-tpn"><%= rm.team1_player1.nickname %><% if mps_by_position[1]&.mobile_suit %><span class="tsu"><%= mps_by_position[1].mobile_suit.name %></span><% end %></span><span class="sm">配信台</span></div>
-                    <div class="r-tp"><span class="r-tpn"><%= rm.team1_player2.nickname %><% if mps_by_position[2]&.mobile_suit %><span class="tsu"><%= mps_by_position[2].mobile_suit.name %></span><% end %></span></div>
+                    <div class="r-tp"><span class="r-tpn"><%= rm.team1_player1.nickname %><% if mps_by_position[1]&.mobile_suit %><span class="tsu"><%= mobile_suit_link(mps_by_position[1].mobile_suit) %></span><% end %></span><span class="sm">配信台</span></div>
+                    <div class="r-tp"><span class="r-tpn"><%= rm.team1_player2.nickname %><% if mps_by_position[2]&.mobile_suit %><span class="tsu"><%= mobile_suit_link(mps_by_position[2].mobile_suit) %></span><% end %></span></div>
                   </div>
                   <% if match %><span class="r-bx-tag <%= match.winning_team == 1 ? "win" : "lose" %>"><%= match.winning_team == 1 ? "WIN" : "LOSE" %></span><% end %>
                 </div>
@@ -191,8 +191,8 @@
               <td class="r-tcell <%= match ? (match.winning_team == 2 ? "win" : "lose") : "" %>" data-l="チーム2">
                 <div class="r-tcellwrap">
                   <div class="r-tps">
-                    <div class="r-tp"><span class="r-tpn"><%= rm.team2_player1.nickname %><% if mps_by_position[3]&.mobile_suit %><span class="tsu"><%= mps_by_position[3].mobile_suit.name %></span><% end %></span></div>
-                    <div class="r-tp"><span class="r-tpn"><%= rm.team2_player2.nickname %><% if mps_by_position[4]&.mobile_suit %><span class="tsu"><%= mps_by_position[4].mobile_suit.name %></span><% end %></span></div>
+                    <div class="r-tp"><span class="r-tpn"><%= rm.team2_player1.nickname %><% if mps_by_position[3]&.mobile_suit %><span class="tsu"><%= mobile_suit_link(mps_by_position[3].mobile_suit) %></span><% end %></span></div>
+                    <div class="r-tp"><span class="r-tpn"><%= rm.team2_player2.nickname %><% if mps_by_position[4]&.mobile_suit %><span class="tsu"><%= mobile_suit_link(mps_by_position[4].mobile_suit) %></span><% end %></span></div>
                   </div>
                   <% if match %><span class="r-bx-tag <%= match.winning_team == 2 ? "win" : "lose" %>"><%= match.winning_team == 2 ? "WIN" : "LOSE" %></span><% end %>
                 </div>

@@ -9,7 +9,7 @@
     <% end %>
   </span>
   <div class="s-srow-nm">
-    <%= ms.name %>
+    <%= mobile_suit_link(ms) %>
     <div class="s-srow-sub"><span class="m-num"><%= data[:wins] %></span>勝 / <span class="m-num"><%= data[:total] %></span>戦</div>
   </div>
   <span class="s-srow-val <%= tone %>"><%= data[:win_rate] %><span class="u">%</span></span>

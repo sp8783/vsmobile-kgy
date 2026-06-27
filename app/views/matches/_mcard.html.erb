@@ -16,7 +16,7 @@
           <%= render "shared/m_suit", suit: mp.mobile_suit %>
           <div>
             <div class="m-pn"><%= mp.user&.nickname %></div>
-            <div class="m-sn"><%= mp.mobile_suit&.name %></div>
+            <div class="m-sn"><%= mobile_suit_link(mp.mobile_suit, fallback: "") %></div>
           </div>
         </div>
       <% end %>
@@ -29,7 +29,7 @@
           <%= render "shared/m_suit", suit: mp.mobile_suit %>
           <div>
             <div class="m-pn"><%= mp.user&.nickname %></div>
-            <div class="m-sn"><%= mp.mobile_suit&.name %></div>
+            <div class="m-sn"><%= mobile_suit_link(mp.mobile_suit, fallback: "") %></div>
           </div>
         </div>
       <% end %>

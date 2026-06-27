@@ -71,7 +71,7 @@
                 <div class="lab">使用機体</div>
                 <div class="sn">
                   <% if p.mobile_suit %>
-                    <%= link_to p.mobile_suit.name, mobile_suit_path(p.mobile_suit), class: "hover:text-accent" %>
+                    <%= mobile_suit_link(p.mobile_suit, class: "hover:text-accent") %>
                     <span class="md-cb md-cb-<%= p.mobile_suit.cost %>"><%= p.mobile_suit.cost %></span>
                   <% end %>
                 </div>

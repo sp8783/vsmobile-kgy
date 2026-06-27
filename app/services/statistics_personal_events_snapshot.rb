@@ -22,7 +22,7 @@ class StatisticsPersonalEventsSnapshot < StatisticsPersonalTabSnapshotBase
       entry[:event] = event
       entry[:total] += 1
       entry[:wins] += 1 if match_player.won?
-      entry[:suits_used][match_player.mobile_suit.name] += 1
+      entry[:suits_used][match_player.mobile_suit] += 1
 
       partner = match_player.partner
       entry[:partners][partner.user.nickname] += 1 if partner
