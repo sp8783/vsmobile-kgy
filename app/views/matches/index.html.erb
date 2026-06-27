@@ -91,7 +91,7 @@
           </div>
           <%= link_to "全員", matches_path(all_params.merge(users: [])), class: @filter_users.empty? ? chip_on : chip_off %>
           <% @all_users.each do |user| %>
-            <%= link_to user.nickname, toggle.call(:users, user.id), class: @filter_users.include?(user.id) ? chip_on : chip_off %>
+            <%= link_to player_name(user),toggle.call(:users, user.id), class: @filter_users.include?(user.id) ? chip_on : chip_off %>
           <% end %>
         </div>
       </div>
@@ -111,7 +111,7 @@
         <div class="mh-fk">同チーム</div>
         <div class="mh-chips">
           <% @all_users.each do |user| %>
-            <%= link_to user.nickname, team_toggle.call(user.id), class: @filter_team_player_ids.include?(user.id) ? chip_on : chip_off %>
+            <%= link_to player_name(user),team_toggle.call(user.id), class: @filter_team_player_ids.include?(user.id) ? chip_on : chip_off %>
           <% end %>
           <% if @filter_team_player_ids.any? %>
             <%= link_to "クリア", matches_path(all_params.merge(team_player_ids: [])), class: "mh-ch danger" %>
@@ -125,7 +125,7 @@
         <div class="mh-chips">
           <%= link_to "全員", matches_path(all_params.merge(streaming_users: [])), class: @filter_streaming_users.empty? ? chip_on : chip_off %>
           <% visible_streaming.each do |user| %>
-            <%= link_to user.nickname, toggle.call(:streaming_users, user.id), class: @filter_streaming_users.include?(user.id) ? chip_on : chip_off %>
+            <%= link_to player_name(user),toggle.call(:streaming_users, user.id), class: @filter_streaming_users.include?(user.id) ? chip_on : chip_off %>
           <% end %>
         </div>
       </div>
@@ -220,7 +220,7 @@
               <select name="stat_player_id" class="ui-form-control max-w-xs">
                 <option value="">指定なし</option>
                 <% @all_users.each do |user| %>
-                  <option value="<%= user.id %>" <%= "selected" if @filter_stat_player_id == user.id %>><%= user.nickname %></option>
+                  <option value="<%= user.id %>" <%= "selected" if @filter_stat_player_id == user.id %>><%= player_name(user) %></option>
                 <% end %>
               </select>
             </div>

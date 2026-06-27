@@ -87,7 +87,7 @@
             <div class="s-rankrow">
               <span class="s-rk-no <%= "top" if i < 3 %>"><%= i + 1 %></span>
               <div class="s-rk-nm">
-                <%= d[:user].nickname %>
+                <%= player_name(d[:user]) %>
                 <div class="s-rk-sub"><span class="m-num"><%= d[:uses] %></span>回使用</div>
               </div>
               <span class="s-rk-wr"><%= d[:win_rate] %>%</span>
@@ -263,7 +263,7 @@
               <th class="l sticky">指標</th>
               <th class="ga">全体平均</th>
               <% all_players.each do |d| %>
-                <th><%= d[:user].nickname %><span class="pc">(<%= d[:stats_count] %>)</span></th>
+                <th><%= player_name(d[:user]) %><span class="pc">(<%= d[:stats_count] %>)</span></th>
               <% end %>
             </tr>
           </thead>

@@ -22,7 +22,7 @@
           <%= render Suit::ThumbComponent.new(suit: player.mobile_suit, size: _thumb_size) %>
           <div class="min-w-0 flex-1">
             <p class="truncate text-sm font-black <%= player.id == _streaming_player_id ? 'text-neg' : 'text-ink' %>">
-              <%= player.user.nickname %>
+              <%= player_name(player.user) %>
               <% if player.id == _streaming_player_id %>
                 <span class="ml-1 rounded bg-neg px-1.5 py-0.5 text-xs font-black text-on-accent">配信台</span>
               <% end %>
@@ -56,7 +56,7 @@
           <%= render Suit::ThumbComponent.new(suit: player.mobile_suit, size: _thumb_size) %>
           <div class="min-w-0 flex-1">
             <p class="truncate text-sm font-black <%= player.id == _streaming_player_id ? 'text-neg' : 'text-ink' %>">
-              <%= player.user.nickname %>
+              <%= player_name(player.user) %>
               <% if player.id == _streaming_player_id %>
                 <span class="ml-1 rounded bg-neg px-1.5 py-0.5 text-xs font-black text-on-accent">配信台</span>
               <% end %>
