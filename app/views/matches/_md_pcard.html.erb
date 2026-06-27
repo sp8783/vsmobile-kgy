@@ -32,7 +32,7 @@
       </div>
       <% if player.mobile_suit %>
         <div class="md-pc-suitrow">
-          <span class="pcs-n"><%= player.mobile_suit.name %></span>
+          <span class="pcs-n"><%= mobile_suit_link(player.mobile_suit) %></span>
           <span class="md-cb md-cb-<%= player.mobile_suit.cost %>"><%= player.mobile_suit.cost %></span>
         </div>
       <% end %>

@@ -39,6 +39,18 @@
   list_text = ->(items) {
     Array(items).first(3).map { |name, count| "#{name} #{count}回" }.join(" / ").presence || "-"
   }
+  # 機体ごとの羅列を機体詳細リンク付きで描画する。items: { suit => count }
+  suit_count_links = ->(items) {
+    entries = Array(items).first(3)
+    next "-" if entries.empty?
+    safe_join(entries.map { |suit, count| safe_join([ mobile_suit_link(suit), " #{count}回" ]) }, " / ")
+  }
+  # 相方との機体ペアの羅列をリンク付きで描画する。items: { [own_suit, partner_suit] => count }
+  suit_combo_links = ->(items) {
+    entries = Array(items).first(3)
+    next "-" if entries.empty?
+    safe_join(entries.map { |pair, count| safe_join([ mobile_suit_link(pair[0]), " & ", mobile_suit_link(pair[1]), " #{count}回" ]) }, " / ")
+  }
   # CSS 折れ線グラフ（data: [[label, rate, sub], ...]）
   st_line_chart = ->(data) {
     n = data.size
@@ -181,19 +193,19 @@
       <div data-tab-switch-target="panel" data-key="dominant">
         <div class="st-segcap">環境支配度（勝率 × 使用数）の高い順</div>
         <%= render "statistics/rank_rows", rows: @dominant_suits || [], limit: 10, thumb: ->(r) { r[:mobile_suit] },
-              name: ->(r) { r[:mobile_suit]&.name || "-" }, sub: ->(r) { "使用#{number_with_delimiter(r[:total])} ・ 勝率#{r[:win_rate]}%" },
+              name: ->(r) { mobile_suit_link(r[:mobile_suit]) }, sub: ->(r) { "使用#{number_with_delimiter(r[:total])} ・ 勝率#{r[:win_rate]}%" },
               value: ->(r) { number_with_delimiter(r[:dominance].to_i) }, bar: ->(r) { r[:dominance] } %>
       </div>
       <div data-tab-switch-target="panel" data-key="popular" hidden>
         <div class="st-segcap">使用回数の多い順</div>
         <%= render "statistics/rank_rows", rows: @popular_suits || [], limit: 10, thumb: ->(r) { r[:mobile_suit] },
-              name: ->(r) { r[:mobile_suit]&.name || "-" }, sub: ->(r) { "使用率#{r[:usage_rate]}%" },
+              name: ->(r) { mobile_suit_link(r[:mobile_suit]) }, sub: ->(r) { "使用率#{r[:usage_rate]}%" },
               value: ->(r) { "#{number_with_delimiter(r[:usage_count])}回" }, bar: ->(r) { r[:usage_count] } %>
       </div>
       <div data-tab-switch-target="panel" data-key="winrate" hidden>
         <div class="st-segcap">勝率の高い順（5戦以上）</div>
         <%= render "statistics/rank_rows", rows: @high_winrate_suits || [], limit: 10, thumb: ->(r) { r[:mobile_suit] },
-              name: ->(r) { r[:mobile_suit]&.name || "-" }, sub: ->(r) { "#{number_with_delimiter(r[:wins])}勝#{number_with_delimiter(r[:total] - r[:wins])}敗" },
+              name: ->(r) { mobile_suit_link(r[:mobile_suit]) }, sub: ->(r) { "#{number_with_delimiter(r[:wins])}勝#{number_with_delimiter(r[:total] - r[:wins])}敗" },
               value: ->(r) { "#{r[:win_rate]}%" }, bar: ->(r) { r[:win_rate] }, bar_full: 100, neg: ->(r) { r[:win_rate].to_f < 50 } %>
       </div>
     </div>
@@ -237,19 +249,19 @@
       <div data-tab-switch-target="panel" data-key="dominant">
         <div class="st-segcap">環境支配度（勝率 × 使用数）の高い順</div>
         <%= render "statistics/rank_rows", rows: @dominant_pairs || [], limit: 10, thumb: ->(r) { r[:mobile_suits] },
-              name: ->(r) { r[:mobile_suits].map { |s| s&.name || "-" }.join(" ＋ ") }, sub: ->(r) { "使用#{number_with_delimiter(r[:total])} ・ 勝率#{r[:win_rate]}%" },
+              name: ->(r) { safe_join(r[:mobile_suits].map { |s| mobile_suit_link(s) }, " ＋ ") }, sub: ->(r) { "使用#{number_with_delimiter(r[:total])} ・ 勝率#{r[:win_rate]}%" },
               value: ->(r) { number_with_delimiter(r[:dominance].to_i) }, bar: ->(r) { r[:dominance] } %>
       </div>
       <div data-tab-switch-target="panel" data-key="popular" hidden>
         <div class="st-segcap">使用回数の多い順</div>
         <%= render "statistics/rank_rows", rows: @popular_pairs || [], limit: 10, thumb: ->(r) { r[:mobile_suits] },
-              name: ->(r) { r[:mobile_suits].map { |s| s&.name || "-" }.join(" ＋ ") }, sub: ->(r) { "勝率#{r[:win_rate]}%" },
+              name: ->(r) { safe_join(r[:mobile_suits].map { |s| mobile_suit_link(s) }, " ＋ ") }, sub: ->(r) { "勝率#{r[:win_rate]}%" },
               value: ->(r) { "#{number_with_delimiter(r[:usage_count])}回" }, bar: ->(r) { r[:usage_count] } %>
       </div>
       <div data-tab-switch-target="panel" data-key="winrate" hidden>
         <div class="st-segcap">勝率の高い順（3戦以上）</div>
         <%= render "statistics/rank_rows", rows: @high_winrate_pairs || [], limit: 10, thumb: ->(r) { r[:mobile_suits] },
-              name: ->(r) { r[:mobile_suits].map { |s| s&.name || "-" }.join(" ＋ ") }, sub: ->(r) { "#{number_with_delimiter(r[:total])}戦・#{number_with_delimiter(r[:wins])}勝" },
+              name: ->(r) { safe_join(r[:mobile_suits].map { |s| mobile_suit_link(s) }, " ＋ ") }, sub: ->(r) { "#{number_with_delimiter(r[:total])}戦・#{number_with_delimiter(r[:wins])}勝" },
               value: ->(r) { "#{r[:win_rate]}%" }, bar: ->(r) { r[:win_rate] }, bar_full: 100, neg: ->(r) { r[:win_rate].to_f < 50 } %>
       </div>
     </div>
@@ -288,15 +300,15 @@
       vs_html = ->(match) {
         t1 = match.match_players.select { |p| p.team_number == 1 }.sort_by(&:position)
         t2 = match.match_players.select { |p| p.team_number == 2 }.sort_by(&:position)
-        names = ->(team) { team.map { |p| "#{p.user.nickname}（#{p.mobile_suit.name}）" }.join(" & ") }
+        names = ->(team) { safe_join(team.map { |p| safe_join([ p.user.nickname, "（", mobile_suit_link(p.mobile_suit, class: "st-hlsuit"), "）" ]) }, " & ") }
         c1 = match.winning_team == 1 ? "win" : ""
         c2 = match.winning_team == 2 ? "win" : ""
-        %(<div class="st-hlvs"><span class="#{c1}">#{esc.call(names.call(t1))}</span><span class="vs">vs</span><span class="#{c2}">#{esc.call(names.call(t2))}</span></div>)
+        %(<div class="st-hlvs"><span class="#{c1}">#{names.call(t1)}</span><span class="vs">vs</span><span class="#{c2}">#{names.call(t2)}</span></div>)
       }
       hl_card = ->(label, icon, value, mp, match) {
         head = %(<div class="st-hlhead"><div class="ic">#{hl_icons[icon]}</div><div class="t">#{esc.call(label)}</div></div>)
         next %(<div class="st-hlcard">#{head}<div class="st-hlempty">データがありません</div></div>).html_safe if value.nil? || match.nil?
-        player = mp ? %(<div class="st-hlplayer"><span>#{esc.call(mp.user.nickname)}</span><span class="dot">・</span>#{link_to(esc.call(mp.mobile_suit.name), mobile_suit_path(mp.mobile_suit), class: "st-hlsuit")}#{cost_badge(mp.mobile_suit.cost)}</div>) : ""
+        player = mp ? %(<div class="st-hlplayer"><span>#{esc.call(mp.user.nickname)}</span><span class="dot">・</span>#{mobile_suit_link(mp.mobile_suit, class: "st-hlsuit")}#{cost_badge(mp.mobile_suit.cost)}</div>) : ""
         video = match.video_url ? render("shared/broadcast_link", url: match.video_url, link_class: "st-hlvideo") : ""
         foot = %(<div class="st-hlfoot">) +
           link_to("試合詳細 →", match_path(match), class: "st-hllink") +
@@ -448,7 +460,7 @@
               <div class="m-l">
                 <span class="m-no <%= "m-top" if i.zero? %>"><%= i + 1 %></span>
                 <span class="suit-thumb suit-thumb-sm"><% if row[:mobile_suit]&.image_filename.present? %><%= image_tag "/mobile_suits/#{row[:mobile_suit].image_filename}", alt: row[:mobile_suit].name, loading: "lazy" %><% end %></span>
-                <div><div class="m-nm"><%= row[:mobile_suit]&.name %></div><div class="m-sub m-num">使用<%= row[:total] %> ・ 勝率<%= row[:win_rate] %>%</div></div>
+                <div><div class="m-nm"><%= mobile_suit_link(row[:mobile_suit], fallback: "") %></div><div class="m-sub m-num">使用<%= row[:total] %> ・ 勝率<%= row[:win_rate] %>%</div></div>
               </div>
               <span class="m-wr"><%= row[:win_rate] %>%</span>
             </div>
@@ -533,7 +545,7 @@
         <% if (@overview_best_records || []).any? %>
           <% @overview_best_records.each do |row| %>
             <div class="st-hlmini">
-              <div><div class="t"><%= row[:label] %></div><div class="c"><%= row[:sub] %></div></div>
+              <div><div class="t"><%= row[:label] %></div><div class="c"><%= safe_join([ mobile_suit_link(row[:mobile_suit]), " ・ ", row[:event_name] ]) %></div></div>
               <div class="v"><%= row[:kind] == :survival ? format_survival_cs(row[:value]) : number_with_delimiter(row[:value]) %></div>
             </div>
           <% end %>
@@ -991,7 +1003,7 @@
       <div class="m-phead"><h2>イベント別戦績</h2><span class="m-eyebrow">全<%= events_rows.size %>イベント</span></div>
       <%= render "statistics/stat_rows", rows: events_rows,
             name: ->(r) { r[:event].name },
-            sub: ->(r) { ["#{r[:total]}戦 #{r[:wins]}勝#{r[:total] - r[:wins]}敗 ・ #{r[:event].held_on.strftime("%Y/%m/%d")}", "機体: #{list_text.call(r[:top_suits])}"] },
+            sub: ->(r) { ["#{r[:total]}戦 #{r[:wins]}勝#{r[:total] - r[:wins]}敗 ・ #{r[:event].held_on.strftime("%Y/%m/%d")}", safe_join([ "機体: ", suit_count_links.call(r[:top_suits]) ])] },
             empty_text: "対象イベントがありません" %>
     </div>
 
@@ -1054,7 +1066,7 @@
                 <div class="st-srtop">
                   <span class="suit-thumb suit-thumb-sm"><% if row[:mobile_suit]&.image_filename.present? %><%= image_tag "/mobile_suits/#{row[:mobile_suit].image_filename}", alt: row[:mobile_suit].name, loading: "lazy" %><% end %></span>
                   <div class="st-srmeta">
-                    <div class="st-srl1"><span class="st-srnm"><%= row[:mobile_suit]&.name || "-" %></span><span class="st-srwr <%= "neg" if wr < 50 %>"><%= row[:win_rate] %>%</span></div>
+                    <div class="st-srl1"><span class="st-srnm"><%= mobile_suit_link(row[:mobile_suit]) %></span><span class="st-srwr <%= "neg" if wr < 50 %>"><%= row[:win_rate] %>%</span></div>
                     <div class="st-srsub"><div><%= row[:total] %>戦 <%= row[:wins] %>勝<%= row[:total] - row[:wins] %>敗 ・ 最終使用 <%= compact_date.call(row[:last_used_at]) %></div><div class="st-srmetric">使用 <%= row[:total] %>回</div></div>
                   </div>
                 </div>
@@ -1071,7 +1083,7 @@
       <div class="m-phead"><h2>対戦機体別戦績</h2><span class="m-eyebrow">全<%= (@opponent_suits_list || []).size %>機体 ・ 対戦回数順</span></div>
       <%= render "statistics/stat_rows", rows: @opponent_suits_list || [],
             thumb: ->(r) { r[:mobile_suit] },
-            name: ->(r) { r[:mobile_suit]&.name || "-" },
+            name: ->(r) { mobile_suit_link(r[:mobile_suit]) },
             sub: ->(r) { ["#{r[:total]}戦 #{r[:wins]}勝#{r[:total] - r[:wins]}敗", "最終対戦 #{compact_date.call(r[:last_faced_at])}"] },
             sorts: [["total", "対戦回数", ->(r) { r[:total] }], ["winrate", "勝率", ->(r) { r[:win_rate] }]],
             empty_text: "対戦機体の記録がありません" %>
@@ -1082,7 +1094,7 @@
       <div class="m-phead"><h2>パートナー別戦績</h2><span class="m-eyebrow">全<%= (@partners_list || []).size %>人 ・ 勝率順</span></div>
       <%= render "statistics/stat_rows", rows: @partners_list || [],
             name: ->(r) { r[:user].nickname },
-            sub: ->(r) { ["#{r[:total]}戦 #{r[:wins]}勝#{r[:total] - r[:wins]}敗", "よく組む: #{list_text.call(r[:top_combinations])}"] },
+            sub: ->(r) { ["#{r[:total]}戦 #{r[:wins]}勝#{r[:total] - r[:wins]}敗", safe_join([ "よく組む: ", suit_combo_links.call(r[:top_combinations]) ])] },
             sorts: [["winrate", "勝率", ->(r) { r[:win_rate] }], ["total", "対戦回数", ->(r) { r[:total] }]],
             empty_text: "パートナーの記録がありません" %>
     </div>

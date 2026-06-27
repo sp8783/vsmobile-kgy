@@ -28,9 +28,8 @@
               <% end %>
             </p>
             <div class="mt-1 flex flex-wrap items-center gap-1.5">
-              <%= link_to player.mobile_suit.name, mobile_suit_path(player.mobile_suit),
-                  class: "block max-w-full truncate text-xs font-bold text-muted transition hover:text-accent",
-                  data: { turbo_frame: "_top" } %>
+              <%= mobile_suit_link(player.mobile_suit,
+                  class: "block max-w-full truncate text-xs font-bold text-muted transition hover:text-accent") %>
               <%= cost_badge(player.mobile_suit.cost) %>
             </div>
           </div>
@@ -63,9 +62,8 @@
               <% end %>
             </p>
             <div class="mt-1 flex flex-wrap items-center gap-1.5">
-              <%= link_to player.mobile_suit.name, mobile_suit_path(player.mobile_suit),
-                  class: "block max-w-full truncate text-xs font-bold text-muted transition hover:text-accent",
-                  data: { turbo_frame: "_top" } %>
+              <%= mobile_suit_link(player.mobile_suit,
+                  class: "block max-w-full truncate text-xs font-bold text-muted transition hover:text-accent") %>
               <%= cost_badge(player.mobile_suit.cost) %>
             </div>
           </div>

@@ -105,6 +105,18 @@
 }
 
 @layer components {
+  /* 機体名リンク（mobile_suit_link ヘルパー）。既定色は親要素を継承し、ホバーで青に。
+     position/z-index でカード全面を覆うストレッチリンク（.st-hllink::after 等）より
+     上に出し、カード内でも機体名をクリックできるようにする。 */
+  .suit-link {
+    position: relative;
+    z-index: 1;
+    transition: color 0.15s ease;
+  }
+  .suit-link:hover {
+    color: var(--color-accent);
+  }
+
   .page-shell {
     min-width: 0;
     min-height: 100vh;
@@ -1117,7 +1129,8 @@
   .m-fav { display: flex; align-items: center; gap: 12px; padding: 13px 18px; border-bottom: 1px solid var(--color-line); }
   .m-fav:last-child { border-bottom: 0; }
   .m-fav .m-meta { flex: 1; min-width: 0; }
-  .m-fav .m-nm { font-weight: 650; color: var(--color-ink); }
+  .m-fav .m-nm { font-weight: 650; color: var(--color-ink); transition: color 0.15s ease; }
+  .m-fav:hover .m-nm { color: var(--color-accent); }
   .m-fav .m-sub { font-size: 11px; color: var(--color-subtle); margin-top: 2px; }
   .m-fav .m-bar2 { height: 5px; border-radius: var(--m-r-pill); background: var(--color-surface-2); overflow: hidden; margin-top: 7px; }
   .m-fav .m-bar2 .m-f { height: 100%; background: var(--m-grad); border-radius: var(--m-r-pill); }

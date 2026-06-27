@@ -199,10 +199,10 @@
         <div class="space-y-2 px-5 pb-5">
           <% if @popular_mobile_suits.any? %>
             <% @popular_mobile_suits.each_with_index do |suit, index| %>
-              <%= link_to mobile_suit_path(suit), class: "flex items-center gap-3 rounded-lg bg-bg px-4 py-3 shadow-inner-soft transition hover:shadow-card" do %>
+              <%= link_to mobile_suit_path(suit), class: "group flex items-center gap-3 rounded-lg bg-bg px-4 py-3 shadow-inner-soft transition hover:shadow-card" do %>
                 <span class="<%= index.zero? ? 'text-accent' : 'text-subtle' %> text-lg font-black tabular-nums">#<%= index + 1 %></span>
                 <div class="min-w-0 flex-1">
-                  <p class="truncate font-black text-ink"><%= suit.name %></p>
+                  <p class="truncate font-black text-ink transition group-hover:text-accent"><%= suit.name %></p>
                   <p class="text-xs font-bold text-subtle"><%= suit.series %></p>
                 </div>
                 <span class="text-sm font-black text-accent tabular-nums"><%= suit.usage_count %>回</span>
