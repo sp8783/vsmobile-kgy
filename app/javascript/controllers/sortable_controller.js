@@ -2,9 +2,11 @@ import { Controller } from "@hotwired/stimulus"
 
 // 戦績リストのクライアントサイド並べ替え。
 // ボタン式（少数キー）と セレクト＋昇降順ボタン式（多数キー）の両対応。
-// data-disp-<key> があれば、並べ替えキーに応じて各行の .st-srmetric を更新。
+// metric value が true の時は、並べ替えキーに連動して各行の右の数値(.st-srwr)と
+// バー(.st-winbar)を data-val-<key> / data-bar-<key> から更新する。
 export default class extends Controller {
   static targets = ["list", "btn", "select", "dirbtn"]
+  static values = { metric: Boolean }
 
   connect() {
     if (this.hasSelectTarget) {
@@ -54,9 +56,16 @@ export default class extends Controller {
   }
 
   applySort(key, dir) {
-    const dataKey = "sort" + key.charAt(0).toUpperCase() + key.slice(1)
+    const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1)
+    const dataKey = "sort" + cap(key)
+    // 指標にデータが無い行（表示値が "—"）は昇順・降順どちらでも常に最下部へ
+    const valKey = "val" + cap(key)
+    const noData = (el) => el.dataset[valKey] === "—"
     const rows = Array.from(this.listTarget.children)
     rows.sort((a, b) => {
+      const na = noData(a)
+      const nb = noData(b)
+      if (na !== nb) return na ? 1 : -1
       const an = parseFloat(a.dataset[dataKey])
       const bn = parseFloat(b.dataset[dataKey])
       let cmp
@@ -71,12 +80,30 @@ export default class extends Controller {
   }
 
   updateMetric() {
-    if (!this.currentKey) return
-    const dispKey = "disp" + this.currentKey.charAt(0).toUpperCase() + this.currentKey.slice(1)
-    this.listTarget.querySelectorAll(".st-srmetric").forEach((el) => {
-      const row = el.closest(".st-srow")
-      const v = row && row.dataset[dispKey]
-      if (v != null) el.textContent = v
+    if (!this.metricValue || !this.currentKey) return
+    const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1)
+    const valKey = "val" + cap(this.currentKey)
+    const barKey = "bar" + cap(this.currentKey)
+    const isRate = this.currentKey === "winrate"
+    this.listTarget.querySelectorAll(".st-srow").forEach((row) => {
+      const val = row.dataset[valKey]
+      const bar = parseFloat(row.dataset[barKey])
+      const neg = isRate && row.dataset.negWinrate === "1"
+
+      const srwr = row.querySelector(".st-srwr")
+      if (srwr && val != null) {
+        srwr.textContent = val
+        srwr.classList.toggle("neg", neg)
+      }
+
+      const fill = row.querySelector(".st-winbar .wfill")
+      if (fill && !isNaN(bar)) {
+        fill.style.width = bar + "%"
+        fill.classList.toggle("neg", neg)
+      }
+
+      const winbar = row.querySelector(".st-winbar")
+      if (winbar) winbar.classList.toggle("show-ref", isRate)
     })
   }
 }

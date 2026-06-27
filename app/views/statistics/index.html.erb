@@ -1034,25 +1034,34 @@
   <% elsif @active_tab == "mobile_suits" %>
     <%
       dmg = ->(v) { v ? number_with_delimiter(v) : "—" }
-      # [key, ピル表示, ソート値, 行に出す表示文字列, 既定方向]
+      # [key, ピル表示, ソート値(sp), 右の大きな数値表示(vp), 既定方向]
       suit_metrics = [
-        ["total", "使用回数", ->(r) { r[:total] }, ->(r) { "使用 #{r[:total]}回" }, "desc"],
-        ["winrate", "勝率", ->(r) { r[:win_rate] }, ->(r) { "勝率 #{r[:win_rate]}%" }, "desc"],
-        ["dealt", "与ダメ", ->(r) { r[:avg_damage_dealt] || 0 }, ->(r) { "与ダメージ #{dmg.call(r[:avg_damage_dealt])}" }, "desc"],
-        ["received", "被ダメ", ->(r) { r[:avg_damage_received] || 0 }, ->(r) { "被ダメージ #{dmg.call(r[:avg_damage_received])}" }, "asc"],
-        ["exdmg", "EXダメ", ->(r) { r[:avg_exburst_damage] || 0 }, ->(r) { "EXバーストダメージ #{dmg.call(r[:avg_exburst_damage])}" }, "desc"],
-        ["excount", "EX回数", ->(r) { r[:avg_exburst_count] || 0 }, ->(r) { "EXバースト発動 #{r[:avg_exburst_count] || "—"}回" }, "desc"],
-        ["ol", "OL率", ->(r) { r[:ol_rate] || 0 }, ->(r) { "OL発動率 #{r[:ol_rate] ? "#{r[:ol_rate]}%" : "—"}" }, "desc"],
-        ["life", "1機目生存", ->(r) { r[:first_life_cs] || 0 }, ->(r) { "1機目生存 #{format_survival_cs(r[:first_life_cs]) || "—"}" }, "desc"]
+        ["total", "使用回数", ->(r) { r[:total] }, ->(r) { "#{r[:total]}回" }, "desc"],
+        ["winrate", "勝率", ->(r) { r[:win_rate] }, ->(r) { "#{r[:win_rate]}%" }, "desc"],
+        ["dealt", "与ダメ", ->(r) { r[:avg_damage_dealt] || 0 }, ->(r) { dmg.call(r[:avg_damage_dealt]) }, "desc"],
+        ["received", "被ダメ", ->(r) { r[:avg_damage_received] || 0 }, ->(r) { dmg.call(r[:avg_damage_received]) }, "asc"],
+        ["exdmg", "EXダメ", ->(r) { r[:avg_exburst_damage] || 0 }, ->(r) { dmg.call(r[:avg_exburst_damage]) }, "desc"],
+        ["excount", "EX回数", ->(r) { r[:avg_exburst_count] || 0 }, ->(r) { r[:avg_exburst_count] ? "#{r[:avg_exburst_count]}回" : "—" }, "desc"],
+        ["ol", "OL率", ->(r) { r[:ol_rate] || 0 }, ->(r) { r[:ol_rate] ? "#{r[:ol_rate]}%" : "—" }, "desc"],
+        ["life", "1機目生存", ->(r) { r[:first_life_cs] || 0 }, ->(r) { format_survival_cs(r[:first_life_cs]) || "—" }, "desc"]
       ]
       suit_rows = @mobile_suits_list || []
+      # 相対バー用に各指標の最大値を算出（勝率は 0〜100 の絶対バー）
+      suit_bar_max = {}
+      suit_metrics.each { |key, _, sp, _, _| suit_bar_max[key] = suit_rows.map { |r| sp.call(r).to_f }.max.to_f }
+      suit_bar_w = ->(key, sp, r) {
+        next r[:win_rate].to_f if key == "winrate"
+        max = suit_bar_max[key]
+        max.positive? ? (sp.call(r).to_f / max * 100).round(2) : 0
+      }
+      suit_default = suit_metrics.first
     %>
     <div class="m-panel">
       <div class="m-phead"><h2>使用機体別戦績</h2><span class="m-eyebrow">全<%= suit_rows.size %>機体</span></div>
       <% if suit_rows.empty? %>
         <div class="m-pbody"><p class="text-sm font-bold text-muted">使用機体の記録がありません</p></div>
       <% else %>
-        <div data-controller="sortable">
+        <div data-controller="sortable" data-sortable-metric-value="true">
           <div class="st-sortbar st-sortbar-scroll">
             <span class="st-sortlab">並び替え</span>
             <% suit_metrics.each_with_index do |(key, label, _, _, dir), i| %>
@@ -1062,15 +1071,15 @@
           <div data-sortable-target="list">
             <% suit_rows.each do |row| %>
               <% wr = row[:win_rate].to_f %>
-              <div class="st-srow"<% suit_metrics.each do |key, _, sp, dp, _| %> data-sort-<%= key %>="<%= sp.call(row) %>" data-disp-<%= key %>="<%= dp.call(row) %>"<% end %>>
+              <div class="st-srow"<% suit_metrics.each do |key, _, sp, vp, _| %> data-sort-<%= key %>="<%= sp.call(row) %>" data-val-<%= key %>="<%= vp.call(row) %>" data-bar-<%= key %>="<%= suit_bar_w.call(key, sp, row) %>"<% end %> data-neg-winrate="<%= wr < 50 ? 1 : 0 %>">
                 <div class="st-srtop">
                   <span class="suit-thumb suit-thumb-sm"><% if row[:mobile_suit]&.image_filename.present? %><%= image_tag "/mobile_suits/#{row[:mobile_suit].image_filename}", alt: row[:mobile_suit].name, loading: "lazy" %><% end %></span>
                   <div class="st-srmeta">
-                    <div class="st-srl1"><span class="st-srnm"><%= mobile_suit_link(row[:mobile_suit]) %></span><span class="st-srwr <%= "neg" if wr < 50 %>"><%= row[:win_rate] %>%</span></div>
-                    <div class="st-srsub"><div><%= row[:total] %>戦 <%= row[:wins] %>勝<%= row[:total] - row[:wins] %>敗 ・ 最終使用 <%= compact_date.call(row[:last_used_at]) %></div><div class="st-srmetric">使用 <%= row[:total] %>回</div></div>
+                    <div class="st-srl1"><span class="st-srnm"><%= mobile_suit_link(row[:mobile_suit]) %></span><span class="st-srwr"><%= suit_default[3].call(row) %></span></div>
+                    <div class="st-srsub"><div><%= row[:total] %>戦 <%= row[:wins] %>勝<%= row[:total] - row[:wins] %>敗 ・ 勝率 <%= row[:win_rate] %>% ・ 最終使用 <%= compact_date.call(row[:last_used_at]) %></div></div>
                   </div>
                 </div>
-                <div class="st-winbar"><div class="wfill <%= "neg" if wr < 50 %>" style="width:<%= wr %>%"></div><div class="ref50"></div></div>
+                <div class="st-winbar st-winbar-metric"><div class="wfill" style="width:<%= suit_bar_w.call(suit_default[0], suit_default[2], row) %>%"></div><div class="ref50"></div></div>
               </div>
             <% end %>
           </div>
