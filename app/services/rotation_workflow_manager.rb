@@ -12,7 +12,7 @@ class RotationWorkflowManager
     return success_result(rotation: rotation) if players.size < 4
 
     ActiveRecord::Base.transaction do
-      generate_matches_for_rotation!(rotation, players)
+      create_rotation_matches!(rotation, RotationGenerator.new(players.shuffle).generate)
     end
 
     success_result(rotation: rotation)
@@ -125,6 +125,7 @@ class RotationWorkflowManager
   end
 
   def copy_for_next_round!
+    match_data_list = next_round_match_data
     new_rotation = nil
 
     ActiveRecord::Base.transaction do
@@ -133,7 +134,7 @@ class RotationWorkflowManager
         base_rotation_id: rotation.id
       )
 
-      generate_matches_for_rotation!(new_rotation, player_ids_for_next_round)
+      create_rotation_matches!(new_rotation, match_data_list)
       rotation.event.rotations.update_all(is_active: false)
       new_rotation.update!(is_active: true)
       mark_current_match_started(new_rotation)
@@ -227,15 +228,36 @@ class RotationWorkflowManager
     )
   end
 
-  def player_ids_for_next_round
-    rotation.rotation_matches.flat_map(&:player_ids).uniq
+  # 次周の試合データ。前周の休みタイミングを保ちつつ対戦パターンを変える planner を優先し、
+  # 前周が想定構造でない場合は1周目と同じシャッフル生成にフォールバックする
+  def next_round_match_data
+    matches_by_rotation = event_rotation_match_player_ids
+    previous_matches = matches_by_rotation.fetch(rotation.id, [])
+    users_by_id = User.where(id: previous_matches.flatten.uniq).index_by(&:id)
+    return [] if users_by_id.size < 4
+
+    planned = NextRoundRotationPlanner.new(
+      previous_matches: previous_matches,
+      history_matches: matches_by_rotation.values.flatten(1)
+    ).plan
+    return RotationGenerator.new(users_by_id.values.shuffle).generate unless planned
+
+    planned.map do |match_data|
+      match_data.merge(RotationGenerator::MATCH_PLAYER_KEYS.to_h { |key| [ key, users_by_id.fetch(match_data[key]) ] })
+    end
   end
 
-  def generate_matches_for_rotation!(target_rotation, player_ids)
-    players = player_ids.all? { |player| player.is_a?(User) } ? player_ids : User.where(id: player_ids).to_a
-    return if players.size < 4
+  # イベント内の全ローテーションの試合を rotation_id => [[t1p1_id, t1p2_id, t2p1_id, t2p2_id], ...]（match_index 順）で返す
+  def event_rotation_match_player_ids
+    RotationMatch.where(rotation_id: rotation.event.rotations.select(:id))
+                 .order(:rotation_id, :match_index)
+                 .pluck(:rotation_id, *RotationMatch::PLAYER_SLOTS.map { |slot| slot[:id_key] })
+                 .group_by(&:first)
+                 .transform_values { |rows| rows.map { |row| row.drop(1) } }
+  end
 
-    RotationGenerator.new(players.shuffle).generate.each do |match_data|
+  def create_rotation_matches!(target_rotation, match_data_list)
+    match_data_list.each do |match_data|
       target_rotation.rotation_matches.create!(
         match_index: match_data[:match_index],
         team1_player1: match_data[:team1_player1],
