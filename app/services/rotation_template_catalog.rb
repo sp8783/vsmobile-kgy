@@ -156,4 +156,9 @@ class RotationTemplateCatalog
   def self.supported_counts
     TEMPLATES.keys.sort
   end
+
+  # 8人の場合のみ1セット6試合、それ以外は1セット3試合
+  def self.matches_per_set(player_count)
+    player_count == 8 ? 6 : 3
+  end
 end

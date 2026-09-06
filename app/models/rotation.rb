@@ -21,9 +21,8 @@ class Rotation < ApplicationRecord
     players.count
   end
 
-  # 8人の場合のみ1セット6試合、それ以外は1セット3試合
   def matches_per_set
-    player_count == 8 ? 6 : 3
+    RotationTemplateCatalog.matches_per_set(player_count)
   end
 
   def next_unrecorded_match_index
