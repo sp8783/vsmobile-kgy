@@ -33,7 +33,7 @@
       <% unless current_user.is_guest? %>
         <button type="button" class="m-btn m-btn-primary" data-action="click->favorite-picker#open">
           <svg viewBox="0 0 24 24" aria-hidden="true" style="width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2"><path d="M12 5v14M5 12h14"/></svg>
-          <%= @favorites_by_slot.empty? ? "機体を選ぶ" : "編集する" %>
+          機体を選ぶ
         </button>
       <% end %>
     </div>
