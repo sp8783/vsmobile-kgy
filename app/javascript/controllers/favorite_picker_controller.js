@@ -1,10 +1,8 @@
 import { Controller } from "@hotwired/stimulus"
 
-const MAX_SLOTS = 12
-
 export default class extends Controller {
   static targets = ["modal", "form", "tray", "countBadge", "saveBtn", "searchInput"]
-  static values  = { initial: Array }
+  static values  = { initial: Array, max: Number }
 
   connect() {
     this.selected     = [...this.initialValue]
@@ -43,7 +41,7 @@ export default class extends Controller {
 
     if (idx >= 0) {
       this.selected.splice(idx, 1)
-    } else if (this.selected.length < MAX_SLOTS) {
+    } else if (this.selected.length < this.maxValue) {
       this.selected.push(id)
     }
     this._renderAll()
@@ -186,7 +184,7 @@ export default class extends Controller {
   }
 
   _updateCounter() {
-    this.countBadgeTarget.textContent = `${this.selected.length} / ${MAX_SLOTS}`
+    this.countBadgeTarget.textContent = `${this.selected.length} / ${this.maxValue}`
     this.saveBtnTarget.textContent =
       this.selected.length > 0 ? `保存（${this.selected.length}機体）` : "保存"
   }

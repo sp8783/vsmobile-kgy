@@ -7,7 +7,7 @@ class MyPageController < ApplicationController
     @favorites_by_slot = viewing_as_user.user_favorite_suits
                                      .includes(:mobile_suit)
                                      .index_by(&:slot)
-    @selected_suit_ids = (0..11).filter_map { |s| @favorites_by_slot[s]&.mobile_suit_id }
+    @selected_suit_ids = UserFavoriteSuit::SLOTS.filter_map { |s| @favorites_by_slot[s]&.mobile_suit_id }
 
     @all_suits      = MobileSuit.position_order
     @costs          = COSTS

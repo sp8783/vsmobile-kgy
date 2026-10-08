@@ -13,7 +13,7 @@
     <div class="pk-head">
       <div class="l">
         <h2>お気に入り機体を選択</h2>
-        <span class="pk-count" data-favorite-picker-target="countBadge">0 / 12</span>
+        <span class="pk-count" data-favorite-picker-target="countBadge">0 / <%= UserFavoriteSuit::MAX_SLOTS %></span>
       </div>
       <button type="button" class="pk-close" aria-label="閉じる" data-action="click->favorite-picker#close">
         <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>

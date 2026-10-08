@@ -2,7 +2,8 @@
 
 <div class="ui-page"
      data-controller="favorite-picker"
-     data-favorite-picker-initial-value="<%= @selected_suit_ids.to_json %>">
+     data-favorite-picker-initial-value="<%= @selected_suit_ids.to_json %>"
+     data-favorite-picker-max-value="<%= UserFavoriteSuit::MAX_SLOTS %>">
   <% if viewing_as_someone_else? %>
     <div class="ui-card bg-cost-2500-bg p-4 mb-5">
       <p class="text-sm font-bold text-cost-2500">
@@ -27,7 +28,7 @@
     <div class="fav-head">
       <div>
         <h2>お気に入り機体</h2>
-        <div class="sub"><%= @favorites_by_slot.size %> / 12</div>
+        <div class="sub"><%= @favorites_by_slot.size %> / <%= UserFavoriteSuit::MAX_SLOTS %></div>
       </div>
       <% unless current_user.is_guest? %>
         <button type="button" class="m-btn m-btn-primary" data-action="click->favorite-picker#open">
@@ -38,7 +39,7 @@
     </div>
 
     <div class="fav-grid">
-      <% (0..11).each do |slot| %>
+      <% UserFavoriteSuit::SLOTS.each do |slot| %>
         <% fav = @favorites_by_slot[slot] %>
         <% if fav %>
           <div class="fav-slot">
