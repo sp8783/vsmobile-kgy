@@ -92,8 +92,10 @@ Rails.application.routes.draw do
       post :activate
       post :deactivate
       post :next_match
+      post :skip_match
       post :go_to_match
       post :record_match
+      post :record_pending_match
       post :update_match_record
       post :copy_for_next_round
       # get :player_view  # Deprecated: Player view is now integrated into the dashboard
