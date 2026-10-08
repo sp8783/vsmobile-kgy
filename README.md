@@ -67,6 +67,13 @@ bin/dev
 
 Kamal を使用します。詳細は `config/deploy.yml` を参照してください。
 
+main への push（リリースブランチのマージ）で CI が成功すると、GitHub Actions（`.github/workflows/deploy.yml`）が自動でデプロイします。Actions の画面から手動で実行することもできます。自動デプロイには、GitHub の `production` Environment に以下の Secrets が必要です（main ブランチからのみ利用可）：
+
+- `DEPLOY_SSH_KEY`（デプロイ専用の SSH 秘密鍵）、`DEPLOY_KNOWN_HOSTS`（サーバーのホスト鍵）
+- `RAILS_MASTER_KEY`、`KAMAL_REGISTRY_PASSWORD`、`POSTGRES_PASSWORD`、`VSMOBILE_API_TOKEN`、`KAMAL_GITHUB_TOKEN`
+
+手元からデプロイする場合：
+
 ```bash
 # 初回のみ（サーバー・DB コンテナの初期化）
 kamal setup
