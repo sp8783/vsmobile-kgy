@@ -1,20 +1,16 @@
 import { Controller } from "@hotwired/stimulus"
 
+// 「選択中」タブで絞り込むときのキー（コスト別タブの data-cost と区別する）
+const SELECTED = "selected"
+
 export default class extends Controller {
-  static targets = ["modal", "form", "tray", "countBadge", "saveBtn", "searchInput"]
+  static targets = ["modal", "form", "countBadge", "saveBtn", "searchInput", "selectedCount", "selectedHint"]
   static values  = { initial: Array, max: Number }
 
   connect() {
     this.selected     = [...this.initialValue]
     this._currentCost = ""
-    this._sortable    = null
-    this._trayHandler = this._onTrayClick.bind(this)
-    this.trayTarget.addEventListener("click", this._trayHandler)
-  }
-
-  disconnect() {
-    this.trayTarget.removeEventListener("click", this._trayHandler)
-    if (this._sortable) this._sortable.destroy()
+    this._snapshot    = null
   }
 
   // ── 開閉 ──────────────────────────────────────────
@@ -47,11 +43,6 @@ export default class extends Controller {
     this._renderAll()
   }
 
-  clearAll() {
-    this.selected = []
-    this._renderAll()
-  }
-
   // ── 保存 ──────────────────────────────────────────
 
   save() {
@@ -78,12 +69,15 @@ export default class extends Controller {
   filterCost(event) {
     const cost        = event.currentTarget.dataset.cost
     this._currentCost = cost
+    // 「選択中」は開いた時点の選択を固定して表示し、外した機体も再タップで戻せるよう一覧に残す
+    this._snapshot    = cost === SELECTED ? [...this.selected] : null
 
     this.element.querySelectorAll("[data-cost-btn]").forEach(btn => {
       const isActive     = btn.dataset.cost === cost
       btn.dataset.active = isActive ? "true" : "false"
       btn.className      = this._costTabClass(btn.dataset.cost, isActive)
     })
+    if (this.hasSelectedHintTarget) this.selectedHintTarget.hidden = cost !== SELECTED
 
     const q = this.hasSearchInputTarget ? this.searchInputTarget.value.trim().toLowerCase() : ""
     this._applyFilter(q, cost)
@@ -91,14 +85,21 @@ export default class extends Controller {
 
   _applyFilter(q, cost) {
     this.element.querySelectorAll("[data-suit-wrapper]").forEach(wrapper => {
+      const id        = parseInt(wrapper.dataset.suitId)
       const nameMatch = !q || wrapper.dataset.suitName.toLowerCase().includes(q)
-      const costMatch = !cost || wrapper.dataset.suitCost === cost
+      let costMatch   = !cost || wrapper.dataset.suitCost === cost
+      if (cost === SELECTED) costMatch = this._snapshot.includes(id)
+
       wrapper.classList.toggle("hidden", !(nameMatch && costMatch))
+      // 「選択中」では選んだ順（M, S1, …）に並べる
+      wrapper.style.order = cost === SELECTED ? String(this._snapshot.indexOf(id)) : ""
     })
   }
 
   _costTabClass(cost, isActive) {
-    const base = cost ? `pk-costtab c${cost}` : "pk-costtab"
+    let base = "pk-costtab"
+    if (cost === SELECTED) base = "pk-costtab sel"
+    else if (cost) base = `pk-costtab c${cost}`
     return isActive ? `${base} on` : base
   }
 
@@ -106,97 +107,41 @@ export default class extends Controller {
 
   _resetFilters() {
     this._currentCost = ""
-    this.element.querySelectorAll("[data-suit-wrapper]").forEach(w => w.classList.remove("hidden"))
+    this._snapshot    = null
+    this.element.querySelectorAll("[data-suit-wrapper]").forEach(w => {
+      w.classList.remove("hidden")
+      w.style.order = ""
+    })
     this.element.querySelectorAll("[data-cost-btn]").forEach(btn => {
       const isActive     = btn.dataset.cost === ""
       btn.dataset.active = isActive ? "true" : "false"
       btn.className      = this._costTabClass(btn.dataset.cost, isActive)
     })
     if (this.hasSearchInputTarget) this.searchInputTarget.value = ""
+    if (this.hasSelectedHintTarget) this.selectedHintTarget.hidden = true
   }
 
   _renderAll() {
     this._updateCards()
-    this._renderTray()
     this._updateCounter()
   }
 
   _updateCards() {
-    this.element.querySelectorAll("[data-suit-id]").forEach(card => {
-      const id = parseInt(card.dataset.suitId)
-      card.classList.toggle("is-sel", this.selected.indexOf(id) >= 0)
+    this.element.querySelectorAll("[data-suit-id].pk-cell").forEach(card => {
+      const idx   = this.selected.indexOf(parseInt(card.dataset.suitId))
+      const label = card.querySelector("[data-slot-label]")
+      card.classList.toggle("is-sel", idx >= 0)
+      if (label) {
+        label.textContent = idx < 0 ? "" : (idx === 0 ? "M" : `S${idx}`)
+        label.classList.toggle("main", idx === 0)
+      }
     })
-  }
-
-  _renderTray() {
-    if (this._sortable) {
-      this._sortable.destroy()
-      this._sortable = null
-    }
-
-    if (this.selected.length === 0) {
-      this.trayTarget.innerHTML = `<div class="pk-trayempty">機体をクリックして追加…</div>`
-      return
-    }
-
-    const suitMap = this._buildSuitMap()
-    this.trayTarget.innerHTML = this.selected.map(id => {
-      const s   = suitMap[id] || {}
-      const img = s.image
-        ? `<img src="/mobile_suits/${s.image}" alt="${s.name || ""}">`
-        : `<span class="ph">?</span>`
-      return `
-        <div class="pk-trayitem" data-tray-suit-id="${id}">
-          <button type="button" class="tx" data-delete-suit-id="${id}" aria-label="削除">×</button>
-          <div class="tt">${img}</div>
-          <div class="tname">${s.name || ""}</div>
-        </div>`
-    }).join("")
-
-    // Sortable を dynamic import で初期化（読み込み失敗でも他機能は壊れない）
-    import("sortablejs").then(({ default: Sortable }) => {
-      if (this._sortable) this._sortable.destroy()
-      this._sortable = new Sortable(this.trayTarget, {
-        animation:   180,
-        easing:      "cubic-bezier(0.25, 1, 0.5, 1)",
-        ghostClass:  "tray-ghost",
-        chosenClass: "tray-chosen",
-        dragClass:   "tray-dragging",
-        filter:      ".tx",
-        onEnd: () => {
-          const items = this.trayTarget.querySelectorAll("[data-tray-suit-id]")
-          this.selected = Array.from(items).map(el => parseInt(el.dataset.traySuitId))
-          this._updateCounter()
-        },
-      })
-    }).catch(() => {
-      // Sortable が使えない場合はドラッグなしで動作継続
-    })
-  }
-
-  _onTrayClick(e) {
-    const deleteBtn = e.target.closest("[data-delete-suit-id]")
-    if (deleteBtn) {
-      const id = parseInt(deleteBtn.dataset.deleteSuitId)
-      this.selected = this.selected.filter(s => s !== id)
-      this._renderAll()
-    }
   }
 
   _updateCounter() {
-    this.countBadgeTarget.textContent = `${this.selected.length} / ${this.maxValue}`
-    this.saveBtnTarget.textContent =
-      this.selected.length > 0 ? `保存（${this.selected.length}機体）` : "保存"
-  }
-
-  _buildSuitMap() {
-    const map = {}
-    this.element.querySelectorAll("[data-suit-id]").forEach(card => {
-      map[parseInt(card.dataset.suitId)] = {
-        name:  card.dataset.suitName  || "",
-        image: card.dataset.suitImage || "",
-      }
-    })
-    return map
+    const count = this.selected.length
+    this.countBadgeTarget.textContent = `${count} / ${this.maxValue}`
+    this.saveBtnTarget.textContent    = count > 0 ? `保存する（${count}機体）` : "保存する"
+    if (this.hasSelectedCountTarget) this.selectedCountTarget.textContent = count
   }
 }
