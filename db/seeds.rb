@@ -25,29 +25,11 @@ guest = User.find_or_create_by!(username: 'guest') do |user|
 end
 puts "  Created guest user: #{guest.username}"
 
-puts "\nCreating mobile suits..."
+puts "\nSyncing mobile suits..."
 
-# 機体マスタは db/data/units.json を単一の情報源とする。unitNo の昇順を position に採用。
-units = JSON.parse(Rails.root.join('db/data/units.json').read)['units']
-
-upserted = 0
-units.each.with_index(1) do |unit, idx|
-  # name は半角/全角カッコ表記揺れがあり得るため両方向で既存レコードを探す
-  fullwidth_name = unit['name'].tr('()', '（）')
-  suit = MobileSuit.find_by(name: unit['name']) ||
-         MobileSuit.find_by(name: fullwidth_name) ||
-         MobileSuit.new
-
-  suit.assign_attributes(
-    name: unit['name'],
-    series: unit['series'],
-    cost: unit['cost'].to_i,
-    position: idx
-  )
-  suit.save!
-  upserted += 1
-end
-puts "  Upserted #{upserted} mobile suits"
+# 機体マスタは db/data/units.json を単一の情報源とし、Wiki のページ ID で突き合わせて反映する
+result = MobileSuitCatalogSync.new.call
+puts "  Created #{result.created}, updated #{result.updated}, unchanged #{result.unchanged} mobile suits"
 
 puts "\nCreating master emojis..."
 
