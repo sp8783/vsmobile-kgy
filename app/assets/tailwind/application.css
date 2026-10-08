@@ -1916,8 +1916,8 @@
   .fav-head .sub { font-size: 12px; font-weight: 700; color: var(--color-subtle); margin-top: 2px; font-variant-numeric: tabular-nums; }
   /* お気に入りは最大12スロット。12を割り切れる固定列数（スマホ3／タブレット4／デスクトップ6）にして、
      最終行が欠けて見えないようにする */
-  .fav-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 13px; }
-  @media (min-width: 1024px) { .fav-grid { grid-template-columns: repeat(6, 1fr); } }
+  /* 18 枠が割り切れるよう、PC・タブレットは 6 列、スマホは 3 列 */
+  .fav-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 13px; }
   @media (max-width: 639px) {
     .fav-card { padding: 16px 12px; }
     .fav-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
