@@ -87,6 +87,14 @@ kamal logs
 - `VSMOBILE_API_TOKEN`
 - `GITHUB_TOKEN`
 
+## 機体マスタの更新
+
+機体マスタは `db/data/units.json` と `public/mobile_suits/` の画像を情報源とし、[exvs2ib-wiki-scraper](https://github.com/sp8783/exvs2ib-wiki-scraper) の出力（`output/units.json`・`output/images/`）をそのままコピーして更新します。
+
+- 画像名は `{WikiのページID}_{機体名}.png`。機体が追加されても既存の画像名は変わりません
+- 反映は `bin/rails mobile_suits:sync` が Wiki のページ ID で突き合わせて行います（何度実行しても同じ結果）。本番ではアプリ起動時に自動実行されるため、デプロイ後の作業は不要です
+- 情報解禁済み・未実装の機体は、スクレイパーの `config.yaml` の `exclude_page_ids` で除外します
+
 ## ライセンス
 
 [MIT License](LICENSE)
