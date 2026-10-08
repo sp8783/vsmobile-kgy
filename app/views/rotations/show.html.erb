@@ -1,8 +1,16 @@
 <% completed_count = @rotation_matches.count { |rm| rm.match.present? } %>
 <% total_count = @rotation_matches.count %>
 <% progress_pct = total_count.positive? ? (completed_count.to_f / total_count * 100).round : 0 %>
-<% current_recorded_players = @current_match&.match&.match_players&.to_a || [] %>
-<% suit_for_position = ->(position) { current_recorded_players.find { |mp| mp.position == position }&.mobile_suit_id } %>
+<% form_recorded_players = @form_match&.match&.match_players&.to_a || [] %>
+<% suit_for_position = ->(position) { form_recorded_players.find { |mp| mp.position == position }&.mobile_suit_id } %>
+<% current_open = @current_match.present? && @current_match.match.nil? %>
+<% status_badges = {
+     recorded: [ "入力済み", "st-rec" ],
+     current: [ "現在", "st-cur" ],
+     pending: [ "未入力", "st-pend" ],
+     skipped: [ "スキップ", "st-skip" ],
+     upcoming: [ "予定", "st-un" ]
+   } %>
 
 <% if @show_completion_modal %>
   <div id="completion-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop" data-controller="dismiss">
@@ -14,7 +22,7 @@
       </div>
       <h2 class="ui-section-title text-center">全試合完了しました</h2>
       <p class="mt-2 text-center text-sm ui-muted">
-        <%= @rotation.display_name %>の全試合が記録されました。<br>
+        <%= @rotation.display_name %>の全試合の結果が入力されました。<br>
         同じローテーション設定で<%= @rotation.round_number + 1 %>周目を作成しますか？
       </p>
       <div class="mt-6 grid gap-3">
@@ -25,8 +33,7 @@
   </div>
 <% end %>
 
-<div data-controller="rotation-record"
-     data-rotation-record-update-url-value="<%= update_match_record_rotation_path(@rotation) %>">
+<div data-controller="rotation-record">
 
   <%# ===== header ===== %>
   <div class="r-head">
@@ -63,20 +70,17 @@
 
   <%# ===== progress ===== %>
   <div class="r-prog">
-    <div class="top"><h3>進捗状況</h3><div class="c"><b><%= completed_count %></b> / <%= total_count %> 試合</div></div>
+    <div class="top"><h3>進捗状況</h3><div class="c"><b><%= completed_count %></b> / <%= total_count %> 試合入力済み</div></div>
     <div class="r-ptrack"><div class="r-pfill" style="width:<%= progress_pct %>%"></div></div>
   </div>
 
   <%# ===== current match + record form ===== %>
   <div class="r-livecard">
     <div class="r-lv-head">
-      <h2><span class="r-livedot"></span>現在の試合<%= "（第#{@rotation.current_match_index + 1}試合）" if @current_match %></h2>
-      <% if @current_match %>
-        <span class="r-stbadge <%= @current_match.match.present? ? "rec" : "un" %>"><%= @current_match.match.present? ? "記録済み" : "未記録" %></span>
-      <% end %>
+      <h2><span class="r-livedot"></span>現在の試合<%= "（第#{@rotation.current_match_index + 1}試合）" if current_open %></h2>
     </div>
 
-    <% if @current_match %>
+    <% if current_open %>
       <div class="r-lvmatch">
         <div class="r-lvteam">
           <div class="tl">チーム1</div>
@@ -90,61 +94,102 @@
           <div class="r-lvp"><%= player_name(@current_match.team2_player2) %></div>
         </div>
       </div>
-
-      <% if current_user.is_admin? %>
-        <% form_url = @current_match.match.present? ? update_match_record_rotation_path(@rotation) : record_match_rotation_path(@rotation) %>
-        <section id="match-record-container" class="r-recform">
-          <div class="r-rf-h" data-rotation-record-target="title"><%= @current_match.match.present? ? "試合結果を編集" : "試合結果を記録" %></div>
-
-          <%# スキップ/次へボタンは formaction で next_match に飛ばすため、per-form CSRF ではなく
-              どのアクションでも有効なグローバルトークンを使う %>
-          <%= form_with url: form_url, method: :post, authenticity_token: form_authenticity_token, data: { turbo: false, rotation_record_target: "form", action: "submit->rotation-record#validate" } do %>
-            <%= hidden_field_tag :match_index, @rotation.current_match_index, data: { rotation_record_target: "matchIndex" } %>
-            <div class="r-rf-grid">
-              <div class="r-rf-col">
-                <div class="lbl">チーム1 使用機体</div>
-                <%= render "rotations/suit_field", field_name: "team1_player1_suit", player: @current_match.team1_player1, selected: suit_for_position.call(1), all_mobile_suits: @all_mobile_suits %>
-                <%= render "rotations/suit_field", field_name: "team1_player2_suit", player: @current_match.team1_player2, selected: suit_for_position.call(2), all_mobile_suits: @all_mobile_suits %>
-              </div>
-              <div class="r-rf-col">
-                <div class="lbl">チーム2 使用機体</div>
-                <%= render "rotations/suit_field", field_name: "team2_player1_suit", player: @current_match.team2_player1, selected: suit_for_position.call(3), all_mobile_suits: @all_mobile_suits %>
-                <%= render "rotations/suit_field", field_name: "team2_player2_suit", player: @current_match.team2_player2, selected: suit_for_position.call(4), all_mobile_suits: @all_mobile_suits %>
-              </div>
-            </div>
-
-            <div class="r-rf-win">
-              <div class="lbl">勝利チーム <span class="req">*</span></div>
-              <div class="r-wseg">
-                <% [[1, "チーム1"], [2, "チーム2"]].each do |team, label| %>
-                  <label>
-                    <%= radio_button_tag :winning_team, team, @current_match.match&.winning_team == team, class: "sr-only" %>
-                    <span class="seg-item"><%= label %></span>
-                  </label>
-                <% end %>
-              </div>
-            </div>
-
-            <div class="r-rf-foot">
-              <div class="note"><b>必須:</b> 各プレイヤーの機体 ＋ 勝利チーム</div>
-              <div class="acts">
-                <button type="button" class="m-btn-ghost hidden" data-rotation-record-target="cancelButton" data-action="rotation-record#cancel">キャンセル</button>
-                <% unless @current_match.match.present? %>
-                  <%= button_tag "試合をスキップ", type: "submit", formaction: next_match_rotation_path(@rotation), formmethod: "post", class: "m-btn-ghost", data: { turbo_confirm: "この試合をスキップしますか？", skip_validation: true, rotation_record_target: "skipButton" } %>
-                <% end %>
-                <% if @current_match.match.present? && @rotation.current_match_index < @rotation_matches.count - 1 %>
-                  <%= button_tag "次の試合へ", type: "submit", formaction: next_match_rotation_path(@rotation), formmethod: "post", class: "m-btn-ghost", data: { skip_validation: true, rotation_record_target: "nextButton" } %>
-                <% end %>
-                <button type="submit" class="m-btn m-btn-primary">
-                  <span data-rotation-record-target="submitText"><%= @current_match.match.present? ? "更新" : "記録して次へ" %></span>
-                </button>
-              </div>
-            </div>
-          <% end %>
-        </section>
-      <% end %>
+    <% elsif @current_match %>
+      <p class="r-lv-empty">全試合が終了しました</p>
     <% else %>
-      <p class="text-sm font-bold text-muted">現在の試合はありません。</p>
+      <p class="r-lv-empty">現在の試合はありません。</p>
+    <% end %>
+
+    <% if current_user.is_admin? && @pending_matches.any? %>
+      <div class="r-pendrow">
+        <span class="lbl">未入力の試合</span>
+        <% @pending_matches.each do |pending_match| %>
+          <%= link_to "第#{pending_match.match_index + 1}試合",
+              rotation_path(@rotation, target: pending_match.match_index, anchor: "match-record-container"),
+              class: class_names("r-pendchip", "is-active": @form_match == pending_match) %>
+        <% end %>
+      </div>
+    <% end %>
+
+    <% if current_user.is_admin? && @form_match %>
+      <% form_url = { current: record_match_rotation_path(@rotation), pending: record_pending_match_rotation_path(@rotation), edit: update_match_record_rotation_path(@rotation) }.fetch(@form_mode) %>
+      <section id="match-record-container" class="r-recform">
+        <div class="r-rf-h">
+          <% if @form_mode == :current %>
+            結果を入力
+          <% else %>
+            第<%= @form_match.match_index + 1 %>試合の結果を<%= @form_mode == :edit ? "編集" : "入力" %>
+          <% end %>
+        </div>
+        <% unless @form_mode == :current %>
+          <p class="r-rf-note">現在の試合<%= "（第#{@rotation.current_match_index + 1}試合）" if current_open %>はそのままです</p>
+        <% end %>
+
+        <%# スキップ/次へ（結果未入力）は formaction で別アクションに送るため、per-form CSRF ではなく
+            どのアクションでも有効なグローバルトークンを使う %>
+        <%= form_with url: form_url, method: :post, authenticity_token: form_authenticity_token, data: { turbo: false, rotation_record_target: "form", action: "submit->rotation-record#validate" } do %>
+          <%= hidden_field_tag :match_index, @form_match.match_index %>
+          <div class="r-rf-grid">
+            <div class="r-rf-col">
+              <div class="lbl">チーム1 使用機体</div>
+              <%= render "rotations/suit_field", field_name: "team1_player1_suit", player: @form_match.team1_player1, selected: suit_for_position.call(1), all_mobile_suits: @all_mobile_suits %>
+              <%= render "rotations/suit_field", field_name: "team1_player2_suit", player: @form_match.team1_player2, selected: suit_for_position.call(2), all_mobile_suits: @all_mobile_suits %>
+            </div>
+            <div class="r-rf-col">
+              <div class="lbl">チーム2 使用機体</div>
+              <%= render "rotations/suit_field", field_name: "team2_player1_suit", player: @form_match.team2_player1, selected: suit_for_position.call(3), all_mobile_suits: @all_mobile_suits %>
+              <%= render "rotations/suit_field", field_name: "team2_player2_suit", player: @form_match.team2_player2, selected: suit_for_position.call(4), all_mobile_suits: @all_mobile_suits %>
+            </div>
+          </div>
+
+          <div class="r-rf-win">
+            <div class="lbl">勝利チーム</div>
+            <div class="r-wseg">
+              <% [ [ 1, "チーム1" ], [ 2, "チーム2" ] ].each do |team, label| %>
+                <label>
+                  <%= radio_button_tag :winning_team, team, @form_match.match&.winning_team == team, class: "sr-only" %>
+                  <span class="seg-item"><%= label %></span>
+                </label>
+              <% end %>
+            </div>
+          </div>
+
+          <p class="r-rf-error" hidden data-rotation-record-target="error"></p>
+
+          <div class="r-rf-foot">
+            <div class="acts">
+              <% if @form_mode == :current %>
+                <% if @has_next_match %>
+                  <%= button_tag "試合をスキップする", type: "submit", formaction: skip_match_rotation_path(@rotation), formmethod: "post", class: "m-btn-ghost", data: { turbo_confirm: "この試合をスキップしますか？", skip_validation: true } %>
+                  <%= button_tag "次の試合へ（結果未入力）", type: "submit", formaction: next_match_rotation_path(@rotation), formmethod: "post", hidden: true, data: { skip_validation: true, rotation_record_target: "deferButton" } %>
+                <% end %>
+                <button type="submit" class="m-btn m-btn-primary" data-defer="<%= @has_next_match %>"><%= @has_next_match ? "次の試合へ進む" : "保存する" %></button>
+              <% else %>
+                <%= link_to current_open ? "現在の試合に戻る" : "キャンセル", rotation_path(@rotation, anchor: "match-record-container"), class: "m-btn-ghost" %>
+                <button type="submit" class="m-btn m-btn-primary">保存する</button>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      </section>
+
+      <% if @form_mode == :current && @has_next_match %>
+        <div class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop" hidden data-rotation-record-target="deferModal">
+          <div class="ui-card ui-card-pad animate-fade-in w-full max-w-md" role="dialog" aria-modal="true" aria-labelledby="defer-modal-title">
+            <h2 id="defer-modal-title" class="ui-section-title">結果を入力せずに次の試合へ進みますか？</h2>
+            <div class="r-missing mt-3">
+              <p class="r-missing-h">未入力の項目</p>
+              <ul data-rotation-record-target="missing"></ul>
+            </div>
+            <p class="mt-3 text-sm text-ink">この試合は<b>対戦済み</b>として扱われます。</p>
+            <p class="mt-1 text-xs ui-muted">※ 結果はあとから入力できます。</p>
+            <div class="mt-6 grid gap-3">
+              <button type="button" class="ui-btn ui-btn-muted w-full" data-action="rotation-record#closeDefer">入力に戻る</button>
+              <button type="button" class="ui-btn ui-btn-primary w-full" data-action="rotation-record#confirmDefer">次の試合へ進む</button>
+            </div>
+          </div>
+        </div>
+      <% end %>
     <% end %>
   </div>
 
@@ -153,9 +198,11 @@
     <div class="r-rm-h">
       <h2>全試合一覧</h2>
       <div class="r-legend">
-        <span><span class="r-lg-dot rec"></span>記録済</span>
+        <span><span class="r-lg-dot rec"></span>入力済み</span>
         <span><span class="r-lg-dot cur"></span>現在</span>
+        <span><span class="r-lg-dot pend"></span>未入力</span>
         <span><span class="r-lg-dot skip"></span>スキップ</span>
+        <span><span class="r-lg-dot un"></span>予定</span>
       </div>
     </div>
     <div class="r-mtwrap">
@@ -169,15 +216,17 @@
         <tbody>
           <% mps = @rotation.matches_per_set %>
           <% @rotation_matches.each_with_index do |rm, index| %>
-            <% is_current = index == @rotation.current_match_index %>
+            <% status = rm.progress_status(@rotation.current_match_index) %>
+            <% is_current = status == :current %>
+            <% is_editing = current_user.is_admin? && @form_match == rm %>
             <% match = rm.match %>
             <% mps_by_position = (match&.match_players || []).index_by(&:position) %>
             <% if index % mps == 0 %>
               <tr class="setrow"><td colspan="<%= current_user.is_admin? ? 6 : 5 %>">第<%= index / mps + 1 %>セット</td></tr>
             <% end %>
-            <tr class="<%= class_names(is_current && "curtr", match && "linked") %>"
+            <tr class="<%= class_names(is_current && "curtr", is_editing && "edittr", match && "linked") %>"
                 <% if match %>data-controller="card-link" data-card-link-url-value="<%= match_path(match) %>" data-action="click->card-link#navigate"<% end %>>
-              <td class="r-mt-no" data-l="試合">第<%= index + 1 %>試合<% if is_current %> <span class="r-cur-tag">現在</span><% end %></td>
+              <td class="r-mt-no" data-l="試合">第<%= index + 1 %>試合<% if is_current %> <span class="r-cur-tag">現在</span><% end %><% if is_editing %> <span class="r-edit-tag">入力中</span><% end %></td>
               <td class="r-tcell <%= match ? (match.winning_team == 1 ? "win" : "lose") : "" %>" data-l="チーム1">
                 <div class="r-tcellwrap">
                   <div class="r-tps">
@@ -198,25 +247,33 @@
                 </div>
               </td>
               <td class="c" data-l="状態">
-                <% if is_current %><span class="r-status st-cur">現在</span>
-                <% elsif match %><span class="r-status st-rec">記録済</span>
-                <% elsif index < @rotation.current_match_index %><span class="r-status st-skip">スキップ</span>
-                <% else %><span class="r-status st-un">未記録</span><% end %>
+                <% status_label, status_class = status_badges.fetch(status) %>
+                <span class="r-status <%= status_class %>"><%= status_label %></span>
               </td>
               <% if current_user.is_admin? %>
                 <td class="c" data-l="操作">
                   <div class="r-rowact">
-                    <% if match %>
+                    <% case status %>
+                    <% when :recorded %>
                       <%= link_to "詳細", match_path(match), class: "m-btn-ghost" %>
-                      <% mp1 = mps_by_position[1]; mp2 = mps_by_position[2]; mp3 = mps_by_position[3]; mp4 = mps_by_position[4] %>
-                      <a href="#match-record-container" class="m-btn-ghost"
-                         data-action="rotation-record#edit"
-                         data-match-index="<%= index %>" data-winning-team="<%= match.winning_team %>"
-                         data-suit1="<%= mp1&.mobile_suit_id %>" data-suit2="<%= mp2&.mobile_suit_id %>"
-                         data-suit3="<%= mp3&.mobile_suit_id %>" data-suit4="<%= mp4&.mobile_suit_id %>">編集</a>
-                      <%= button_to "削除", match_path(match), method: :delete, data: { turbo_confirm: "この試合記録を削除してもよろしいですか？" }, class: "m-btn-ghost", style: "color:var(--color-neg)" %>
-                    <% elsif index < @rotation.current_match_index %>
-                      <%= button_to "ここに戻る", go_to_match_rotation_path(@rotation, match_index: index), method: :post, class: "m-btn-ghost", form: { data: { turbo: false } } %>
+                      <% unless is_editing %>
+                        <%= link_to "編集", rotation_path(@rotation, target: index, anchor: "match-record-container"), class: "m-btn-ghost" %>
+                      <% end %>
+                      <%= button_to "削除", match_path(match), method: :delete, data: { turbo_confirm: "この試合の結果を削除してもよろしいですか？" }, class: "m-btn-ghost", style: "color:var(--color-neg)" %>
+                    <% when :pending %>
+                      <% if is_editing %>
+                        <span class="text-subtle">—</span>
+                      <% else %>
+                        <%= link_to "入力", rotation_path(@rotation, target: index, anchor: "match-record-container"), class: "m-btn-ghost" %>
+                      <% end %>
+                    <% when :skipped %>
+                      <%= button_to "この試合を始める", go_to_match_rotation_path(@rotation, match_index: index), method: :post, class: "m-btn-ghost", form: { data: { turbo: false } } %>
+                    <% when :current %>
+                      <% if @form_mode.present? && @form_mode != :current %>
+                        <%= link_to "現在の試合に戻る", rotation_path(@rotation, anchor: "match-record-container"), class: "m-btn-ghost" %>
+                      <% else %>
+                        <span class="text-subtle">—</span>
+                      <% end %>
                     <% else %>
                       <span class="text-subtle">—</span>
                     <% end %>
@@ -234,19 +291,19 @@
   <div class="r-fair">
     <div class="r-f-h">
       <h2>平等性チェック</h2>
-      <p>記録済 / 計画、配信台回数、ペア・対戦相手の偏りを確認します。</p>
+      <p>入力済み / 計画、配信台回数、ペア・対戦相手の偏りを確認します。</p>
     </div>
     <div class="r-fwrap">
       <table class="r-ft">
         <thead>
-          <tr><th>プレイヤー</th><th class="c">試合数<br>(済/計画)</th><th class="c">配信台<br>(済/計画)</th><th>よく組む相手</th><th>よく対戦した相手</th></tr>
+          <tr><th>プレイヤー</th><th class="c">試合数<br>(入力済み/計画)</th><th class="c">配信台<br>(入力済み/計画)</th><th>よく組む相手</th><th>よく対戦した相手</th></tr>
         </thead>
         <tbody>
           <% @player_statistics.each_value do |stats| %>
             <tr>
               <td class="name" data-l="プレイヤー"><%= player_name(stats[:user]) %><% if stats[:user].id == current_user.id %><span class="r-youtag">あなた</span><% end %></td>
-              <td class="c" data-l="試合数(済/計画)"><span class="r-frac"><b><%= stats[:registered_match_count] %></b><s> / <%= stats[:match_count] %></s></span></td>
-              <td class="c" data-l="配信台(済/計画)"><span class="r-frac"><b><%= stats[:registered_streaming_count] %></b><s> / <%= stats[:streaming_count] %></s></span></td>
+              <td class="c" data-l="試合数(入力済み/計画)"><span class="r-frac"><b><%= stats[:registered_match_count] %></b><s> / <%= stats[:match_count] %></s></span></td>
+              <td class="c" data-l="配信台(入力済み/計画)"><span class="r-frac"><b><%= stats[:registered_streaming_count] %></b><s> / <%= stats[:streaming_count] %></s></span></td>
               <td data-l="よく組む相手">
                 <% if stats[:pair_counts].any? %>
                   <div class="r-reltop">

@@ -2,7 +2,7 @@
     locals: field_name, player, selected, all_mobile_suits %>
 <% favs = player.user_favorite_suits.order(:slot).includes(:mobile_suit).map(&:mobile_suit).compact %>
 <div class="r-rf-field" data-controller="suit-quickpick">
-  <label for="<%= field_name %>"><%= player.nickname %> <span class="req">*</span></label>
+  <label for="<%= field_name %>"><%= player.nickname %></label>
 
   <% if favs.any? %>
     <div class="r-qp">
@@ -26,5 +26,5 @@
   <%= select_tag field_name,
     safe_join([content_tag(:option, "機体を選択...", value: "")]) + mobile_suit_options_with_favorites(all_mobile_suits, player, [selected].compact),
     class: "ui-form-control",
-    data: { controller: "enhanced-select", "suit-quickpick-target": "select", has_favorites: player.user_favorite_suits.any? } %>
+    data: { controller: "enhanced-select", "suit-quickpick-target": "select", has_favorites: player.user_favorite_suits.any?, player_name: player.nickname } %>
 </div>
