@@ -79,7 +79,8 @@ accessories:
   db:
     image: postgres:16
     host: 133.167.64.105
-    port: 5432
+    # サーバー内からのみ接続できるようにする（アプリは Docker の内部ネットワークで接続）
+    port: "127.0.0.1:5432:5432"
     env:
       clear:
         POSTGRES_USER: vsmobile
