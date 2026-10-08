@@ -1556,9 +1556,6 @@
   .r-livecard { background: var(--color-surface); border-radius: var(--m-r); padding: 18px 20px; margin-bottom: 22px; box-shadow: var(--shadow-card), 0 0 0 1px color-mix(in oklab, var(--color-accent) 18%, transparent); }
   .r-lv-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
   .r-lv-head h2 { margin: 0; font-family: var(--font-display); font-size: 15px; font-weight: 800; color: var(--color-ink); display: flex; align-items: center; gap: 9px; }
-  .r-stbadge { font-size: 11px; font-weight: 800; padding: 4px 11px; border-radius: var(--m-r-pill); }
-  .r-stbadge.rec { background: color-mix(in oklab, var(--color-accent) 13%, transparent); color: var(--color-accent); }
-  .r-stbadge.un { background: var(--color-surface-2); color: var(--color-muted); }
   .r-lvmatch { display: grid; grid-template-columns: 1fr 2.6rem 1fr; gap: 10px; align-items: stretch; margin-bottom: 16px; }
   .r-lvteam { background: var(--color-surface-2); border-radius: var(--m-r); padding: 13px 15px; }
   .r-lvteam .tl { font-size: 11px; font-weight: 700; letter-spacing: .04em; color: var(--color-subtle); text-transform: uppercase; margin-bottom: 9px; }
@@ -1568,16 +1565,28 @@
   /* PC では現在の試合のプレイヤー名を大きく */
   @media (min-width: 768px) { .r-lvp { font-size: 21px; padding: 6px 0; } }
   .r-lvvs { display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 800; color: var(--color-line-strong); letter-spacing: .1em; }
+  .r-lv-empty { margin: 0 0 16px; font-size: 13px; font-weight: 700; color: var(--color-muted); }
+  /* 結果が未入力の試合へのショートカット（点線＝結果がまだ埋まっていない） */
+  .r-pendrow { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 16px; }
+  .r-pendrow .lbl { font-size: 12px; font-weight: 800; color: var(--color-accent); }
+  .r-pendchip { display: inline-flex; align-items: center; min-height: 34px; padding: 0 14px; border-radius: var(--m-r-pill); border: 1px dashed var(--color-accent); background: var(--color-surface); color: var(--color-accent); font-size: 12px; font-weight: 800; text-decoration: none; }
+  .r-pendchip:hover { background: color-mix(in oklab, var(--color-accent) 7%, var(--color-surface)); }
+  .r-pendchip.is-active { background: var(--color-accent); color: var(--color-on-accent); border-style: solid; }
   @media (max-width: 760px) { .r-lvmatch { grid-template-columns: 1fr; gap: 7px; } .r-lvvs { padding: 3px 0; font-size: 12px; } }
 
   .r-recform { background: var(--color-surface-2); border-radius: var(--m-r); padding: 16px 18px; }
   .r-rf-h { font-family: var(--font-display); font-size: 16px; font-weight: 800; margin-bottom: 14px; color: var(--color-ink); }
+  .r-rf-note { margin: -8px 0 14px; font-size: 12px; color: var(--color-muted); }
+  .r-rf-error { margin: 0 0 12px; font-size: 12.5px; font-weight: 700; color: var(--color-neg); }
+  /* 結果未入力のまま進むときの確認ダイアログ */
+  .r-missing { background: var(--color-bg); border-radius: var(--m-r-sm); padding: 10px 12px; }
+  .r-missing-h { margin: 0 0 4px; font-size: 11px; font-weight: 800; color: var(--color-muted); }
+  .r-missing ul { margin: 0; padding-left: 1.1em; list-style: disc; font-size: 13px; font-weight: 700; line-height: 1.7; color: var(--color-ink); }
   .r-rf-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 16px; }
   @media (max-width: 760px) { .r-rf-grid { grid-template-columns: 1fr; gap: 14px; } }
   .r-rf-col > .lbl { font-size: 13px; font-weight: 800; letter-spacing: .02em; color: var(--color-muted); margin-bottom: 10px; }
   .r-rf-field { margin-bottom: 10px; }
   .r-rf-field > label { display: block; font-size: 15px; font-weight: 800; color: var(--color-ink); margin-bottom: 7px; }
-  .r-recform .req { color: var(--color-neg); }
   /* お気に入り機体クイック選択（縦カード：画像＋名前）。モバイル=3列・PC=6列 */
   .r-qp { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin-bottom: 8px; }
   .r-qp-btn { display: flex; flex-direction: column; align-items: center; gap: 4px; width: auto; padding: 5px; border: 0; background: var(--color-surface); box-shadow: var(--shadow-soft); border-radius: var(--m-r-sm); cursor: pointer; }
@@ -1598,8 +1607,7 @@
   .r-wseg label { cursor: pointer; }
   .r-wseg .seg-item { display: inline-flex; align-items: center; border: 0; background: transparent; padding: 10px 24px; border-radius: 6px; font-size: 14px; font-weight: 700; color: var(--color-muted); cursor: pointer; }
   .r-wseg input:checked + .seg-item { background: var(--m-grad); color: #fff; }
-  .r-rf-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-  .r-rf-foot .note { font-size: 12.5px; color: var(--color-muted); }
+  .r-rf-foot { display: flex; align-items: center; justify-content: flex-end; gap: 12px; flex-wrap: wrap; }
   .r-rf-foot .acts { display: flex; gap: 9px; flex-wrap: wrap; }
 
   /* 全試合テーブル */
@@ -1612,6 +1620,8 @@
   .r-lg-dot.rec { background: color-mix(in oklab, var(--color-accent) 45%, var(--color-surface)); }
   .r-lg-dot.cur { background: var(--color-accent); }
   .r-lg-dot.skip { background: var(--color-surface-2); }
+  .r-lg-dot.pend { border: 1.5px dashed var(--color-accent); }
+  .r-lg-dot.un { box-shadow: inset 0 0 0 1px var(--color-line-strong); }
 
   .r-mtwrap { overflow-x: auto; }
   table.r-mt { width: 100%; border-collapse: collapse; font-size: 12px; }
@@ -1624,6 +1634,13 @@
   table.r-mt tbody tr.linked:hover td { background: var(--color-hover); }
   .r-mt-no { font-weight: 800; white-space: nowrap; }
   .r-cur-tag { font-size: 9px; font-weight: 800; background: var(--color-accent); color: #fff; padding: 2px 7px; border-radius: var(--m-r-pill); }
+  /* 入力フォームが対象にしている試合 */
+  .r-edit-tag { font-size: 9px; font-weight: 800; background: color-mix(in oklab, var(--color-accent) 13%, transparent); color: var(--color-accent); padding: 2px 7px; border-radius: var(--m-r-pill); }
+  @media (min-width: 761px) {
+    table.r-mt tr.edittr td { box-shadow: inset 0 2px 0 var(--color-accent), inset 0 -2px 0 var(--color-accent); }
+    table.r-mt tr.edittr td:first-child { box-shadow: inset 2px 2px 0 var(--color-accent), inset 0 -2px 0 var(--color-accent); }
+    table.r-mt tr.edittr td:last-child { box-shadow: inset -2px 2px 0 var(--color-accent), inset 0 -2px 0 var(--color-accent); }
+  }
   .r-tcell { min-width: 158px; }
   .r-tcell.win { background: color-mix(in oklab, var(--color-accent) 9%, transparent); }
   .r-tcell.lose { background: color-mix(in oklab, var(--color-neg) 8%, transparent); }
@@ -1641,6 +1658,7 @@
   .r-status.st-cur { background: var(--color-accent); color: #fff; }
   .r-status.st-un { background: transparent; color: var(--color-subtle); box-shadow: inset 0 0 0 1px var(--color-line-strong); }
   .r-status.st-skip { background: var(--color-surface-2); color: var(--color-muted); }
+  .r-status.st-pend { background: transparent; color: var(--color-accent); border: 1px dashed var(--color-accent); padding: 3px 10px; }
   table.r-mt tr.setrow td { background: transparent; padding: 14px 14px 4px; font-size: 11px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; color: var(--color-accent); border-top: 0; }
   .r-rowact { display: flex; gap: 8px; align-items: center; justify-content: flex-end; }
 
@@ -1670,6 +1688,7 @@
     table.r-mt tr.setrow td { display: block; text-align: left; padding: 13px 14px 3px; background: transparent; color: var(--color-accent); }
     table.r-mt tr.setrow td::before { content: ""; }
     table.r-mt tr.curtr { background: color-mix(in oklab, var(--color-accent) 6%, transparent); border-radius: var(--m-r-sm); border-left: 3px solid var(--color-accent); }
+    table.r-mt tr.edittr { box-shadow: inset 0 0 0 2px var(--color-accent); border-radius: var(--m-r-sm); }
     table.r-mt td { border: 0; padding: 5px 14px; display: flex; justify-content: space-between; gap: 14px; align-items: center; }
     table.r-mt td.vshide { display: none; }
     table.r-mt td.r-mt-no { font-size: 15px; padding-top: 9px; }
