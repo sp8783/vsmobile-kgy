@@ -12,7 +12,7 @@
       "unitNo": 1,
       "pilot": "ジュドー・アーシタ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/331/446/ms.png",
-      "imageLocalPath": "./output/images/001_フルアーマーZZガンダム_331.png",
+      "imageLocalPath": "./output/images/331_フルアーマーZZガンダム.png",
       "tags": [
         "コスト3000",
         "ガンダム",
@@ -47,7 +47,7 @@
       "unitNo": 2,
       "pilot": "ハマーン・カーン",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/185/126/ms.png",
-      "imageLocalPath": "./output/images/002_キュベレイ_185.png",
+      "imageLocalPath": "./output/images/185_キュベレイ.png",
       "tags": [
         "コスト3000",
         "非ガンダム",
@@ -80,7 +80,7 @@
       "unitNo": 3,
       "pilot": "アムロ・レイ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/177/959/ms2.png",
-      "imageLocalPath": "./output/images/003_νガンダム_177.png",
+      "imageLocalPath": "./output/images/177_νガンダム.png",
       "tags": [
         "ガンダム",
         "コスト3000",
@@ -113,7 +113,7 @@
       "unitNo": 4,
       "pilot": "シャア・アズナブル",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/225/146/ms.png",
-      "imageLocalPath": "./output/images/004_サザビー_225.png",
+      "imageLocalPath": "./output/images/225_サザビー.png",
       "tags": [
         "コスト3000",
         "機動戦士ガンダム 逆襲のシャア",
@@ -145,7 +145,7 @@
       "unitNo": 5,
       "pilot": "ウッソ・エヴィン",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/181/130/ms.png",
-      "imageLocalPath": "./output/images/005_V2ガンダム_181.png",
+      "imageLocalPath": "./output/images/181_V2ガンダム.png",
       "tags": [
         "コスト3000",
         "ガンダム",
@@ -179,7 +179,7 @@
       "unitNo": 6,
       "pilot": "バナージ・リンクス",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/86/43/ms.png",
-      "imageLocalPath": "./output/images/006_フルアーマー・ユニコーンガンダム_86.png",
+      "imageLocalPath": "./output/images/86_フルアーマー・ユニコーンガンダム.png",
       "tags": [
         "コスト3000",
         "ガンダム",
@@ -212,7 +212,7 @@
       "unitNo": 7,
       "pilot": "バナージ・リンクス",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/247/157/ms.png",
-      "imageLocalPath": "./output/images/007_ユニコーンガンダム_247.png",
+      "imageLocalPath": "./output/images/247_ユニコーンガンダム.png",
       "tags": [
         "コスト3000",
         "ガンダム",
@@ -244,7 +244,7 @@
       "unitNo": 8,
       "pilot": "リディ・マーセナス",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/199/133/ms.png",
-      "imageLocalPath": "./output/images/008_バンシィ・ノルン_199.png",
+      "imageLocalPath": "./output/images/199_バンシィ・ノルン.png",
       "tags": [
         "ガンダム",
         "時限強化",
@@ -276,7 +276,7 @@
       "unitNo": 9,
       "pilot": "フル・フロンタル",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/332/453/ms.png",
-      "imageLocalPath": "./output/images/009_シナンジュ_332.png",
+      "imageLocalPath": "./output/images/332_シナンジュ.png",
       "tags": [
         "コスト3000",
         "非ガンダム",
@@ -308,7 +308,7 @@
       "unitNo": 10,
       "pilot": "なし",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/157/88/ms.png",
-      "imageLocalPath": "./output/images/010_Ex-Sガンダム_157.png",
+      "imageLocalPath": "./output/images/157_Ex-Sガンダム.png",
       "tags": [
         "コスト3000",
         "ガンダム",
@@ -343,7 +343,7 @@
       "unitNo": 11,
       "pilot": "アムロ・レイ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/281/182/ms.png",
-      "imageLocalPath": "./output/images/011_νガンダムHWS_281.png",
+      "imageLocalPath": "./output/images/281_νガンダムHWS.png",
       "tags": [
         "コスト3000",
         "ガンダム",
@@ -374,7 +374,7 @@
       "unitNo": 12,
       "pilot": "アムロ・レイ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/408/481/ms.png",
-      "imageLocalPath": "./output/images/012_Hi-νガンダム_408.png",
+      "imageLocalPath": "./output/images/408_Hi-νガンダム.png",
       "tags": [
         "ガンダム",
         "主役機",
@@ -408,7 +408,7 @@
       "unitNo": 13,
       "pilot": "シャア・アズナブル",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/42/11/ms.png",
-      "imageLocalPath": "./output/images/013_ナイチンゲール_42.png",
+      "imageLocalPath": "./output/images/42_ナイチンゲール.png",
       "tags": [
         "コスト3000",
         "非ガンダム",
@@ -440,7 +440,7 @@
       "unitNo": 14,
       "pilot": "アムロ・レイ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/91/70/ms2.png",
-      "imageLocalPath": "./output/images/014_RX-93ff νガンダム_91.png",
+      "imageLocalPath": "./output/images/91_RX-93ff νガンダム.png",
       "tags": [
         "コスト3000",
         "ガンダム",
@@ -474,7 +474,7 @@
       "unitNo": 15,
       "pilot": "マフティー・ナビーユ・エリン",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/105/58/ms.png",
-      "imageLocalPath": "./output/images/015_Ξガンダム_105.png",
+      "imageLocalPath": "./output/images/105_Ξガンダム.png",
       "tags": [
         "コスト3000",
         "ガンダム",
@@ -508,7 +508,7 @@
       "unitNo": 16,
       "pilot": "レーン・エイム",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/104/57/ms.png",
-      "imageLocalPath": "./output/images/016_ペーネロペー_104.png",
+      "imageLocalPath": "./output/images/104_ペーネロペー.png",
       "tags": [
         "機動戦士ガンダム 閃光のハサウェイ",
         "ガンダム",
@@ -540,7 +540,7 @@
       "unitNo": 17,
       "pilot": "トビア・アロナクス",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/136/76/ms.png",
-      "imageLocalPath": "./output/images/017_クロスボーン・ガンダムX1フルクロス_136.png",
+      "imageLocalPath": "./output/images/136_クロスボーン・ガンダムX1フルクロス.png",
       "tags": [
         "ガンダム",
         "主役機",
@@ -576,7 +576,7 @@
       "unitNo": 18,
       "pilot": "ドモン・カッシュ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/52/17/ms.png",
-      "imageLocalPath": "./output/images/018_ゴッドガンダム_52.png",
+      "imageLocalPath": "./output/images/52_ゴッドガンダム.png",
       "tags": [
         "ガンダム",
         "MF式地走",
@@ -612,7 +612,7 @@
       "unitNo": 19,
       "pilot": "東方不敗マスター・アジア",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/237/149/ms.png",
-      "imageLocalPath": "./output/images/019_マスターガンダム_237.png",
+      "imageLocalPath": "./output/images/237_マスターガンダム.png",
       "tags": [
         "コスト3000",
         "ガンダム",
@@ -649,7 +649,7 @@
       "unitNo": 20,
       "pilot": "ヒイロ・ユイ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/232/148/ms.png",
-      "imageLocalPath": "./output/images/020_ウイングガンダムゼロ_232.png",
+      "imageLocalPath": "./output/images/232_ウイングガンダムゼロ.png",
       "tags": [
         "ガンダム",
         "コスト3000",
@@ -683,7 +683,7 @@
       "unitNo": 21,
       "pilot": "ミリアルド・ピースクラフト",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/280/184/ms.png",
-      "imageLocalPath": "./output/images/021_ガンダムエピオン_280.png",
+      "imageLocalPath": "./output/images/280_ガンダムエピオン.png",
       "tags": [
         "コスト3000",
         "ガンダム",
@@ -720,7 +720,7 @@
       "unitNo": 22,
       "pilot": "ヒイロ・ユイ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/333/803/ms2.png",
-      "imageLocalPath": "./output/images/022_ウイングガンダムゼロ(EW版)_333.png",
+      "imageLocalPath": "./output/images/333_ウイングガンダムゼロ(EW版).png",
       "tags": [
         "ガンダム",
         "主役機",
@@ -752,7 +752,7 @@
       "unitNo": 23,
       "pilot": "ゼクス・マーキス",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/85/42/ms.png",
-      "imageLocalPath": "./output/images/023_トールギスIII_85.png",
+      "imageLocalPath": "./output/images/85_トールギスIII.png",
       "tags": [
         "コスト3000",
         "非ガンダム",
@@ -784,7 +784,7 @@
       "unitNo": 24,
       "pilot": "ガロード・ランティファ・アディール",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/154/86/ms.png",
-      "imageLocalPath": "./output/images/024_ガンダムDX_154.png",
+      "imageLocalPath": "./output/images/154_ガンダムDX.png",
       "tags": [
         "ガンダム",
         "変形",
@@ -818,7 +818,7 @@
       "unitNo": 25,
       "pilot": "シャギア・フロスト",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/291/193/ms.png",
-      "imageLocalPath": "./output/images/025_ガンダムヴァサーゴ・チェストブレイク_291.png",
+      "imageLocalPath": "./output/images/291_ガンダムヴァサーゴ・チェストブレイク.png",
       "tags": [
         "コスト3000",
         "ガンダム",
@@ -852,7 +852,7 @@
       "unitNo": 26,
       "pilot": "ロラン・セアック",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/238/150/ms.png",
-      "imageLocalPath": "./output/images/026_∀ガンダム_238.png",
+      "imageLocalPath": "./output/images/238_∀ガンダム.png",
       "tags": [
         "ガンダム",
         "コスト3000",
@@ -883,7 +883,7 @@
       "unitNo": 27,
       "pilot": "ギム・ギンガナム",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/120/67/ms.png",
-      "imageLocalPath": "./output/images/027_ターンX_120.png",
+      "imageLocalPath": "./output/images/120_ターンX.png",
       "tags": [
         "コスト3000",
         "非ガンダム",
@@ -917,7 +917,7 @@
       "unitNo": 28,
       "pilot": "シン・アスカ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/133/74/ms.png",
-      "imageLocalPath": "./output/images/028_デスティニーガンダム_133.png",
+      "imageLocalPath": "./output/images/133_デスティニーガンダム.png",
       "tags": [
         "機動戦士ガンダムSEED DESTINY",
         "ブーメラン",
@@ -952,7 +952,7 @@
       "unitNo": 29,
       "pilot": "キラ・ヤマト",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/138/78/ms.png",
-      "imageLocalPath": "./output/images/029_ストライクフリーダムガンダム_138.png",
+      "imageLocalPath": "./output/images/138_ストライクフリーダムガンダム.png",
       "tags": [
         "ガンダム",
         "コスト3000",
@@ -985,7 +985,7 @@
       "unitNo": 30,
       "pilot": "アスラン・ザラ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/297/196/ms.png",
-      "imageLocalPath": "./output/images/030_インフィニットジャスティスガンダム_297.png",
+      "imageLocalPath": "./output/images/297_インフィニットジャスティスガンダム.png",
       "tags": [
         "ガンダム",
         "特殊移動派生",
@@ -1019,7 +1019,7 @@
       "unitNo": 31,
       "pilot": "アスラン・ザラ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/68/31/ms.png",
-      "imageLocalPath": "./output/images/031_インフィニットジャスティスガンダム弐式_68.png",
+      "imageLocalPath": "./output/images/68_インフィニットジャスティスガンダム弐式.png",
       "tags": [
         "コスト3000",
         "一方通行換装",
@@ -1053,7 +1053,7 @@
       "unitNo": 32,
       "pilot": "キラ・ヤマト＆ラクス・クライン",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/40/9/ms.png",
-      "imageLocalPath": "./output/images/032_マイティーストライクフリーダムガンダム_40.png",
+      "imageLocalPath": "./output/images/40_マイティーストライクフリーダムガンダム.png",
       "tags": [
         "コスト3000",
         "主役機",
@@ -1085,7 +1085,7 @@
       "unitNo": 34,
       "pilot": "刹那・F・セイエイ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/308/209/ms.png",
-      "imageLocalPath": "./output/images/034_ダブルオーガンダム_308.png",
+      "imageLocalPath": "./output/images/308_ダブルオーガンダム.png",
       "tags": [
         "ガンダム",
         "主役機",
@@ -1121,7 +1121,7 @@
       "unitNo": 35,
       "pilot": "リボンズ・アルマーク",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/257/174/ms.png",
-      "imageLocalPath": "./output/images/035_リボーンズガンダム_257.png",
+      "imageLocalPath": "./output/images/257_リボーンズガンダム.png",
       "tags": [
         "コスト3000",
         "ガンダム",
@@ -1158,7 +1158,7 @@
       "unitNo": 36,
       "pilot": "刹那・F・セイエイ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/328/440/ms.png",
-      "imageLocalPath": "./output/images/036_ダブルオークアンタ_328.png",
+      "imageLocalPath": "./output/images/328_ダブルオークアンタ.png",
       "tags": [
         "コスト3000",
         "ガンダム",
@@ -1197,7 +1197,7 @@
       "unitNo": 37,
       "pilot": "ロックオン・ストラトス",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/80/37/ms.png",
-      "imageLocalPath": "./output/images/037_ガンダムサバーニャ_80.png",
+      "imageLocalPath": "./output/images/80_ガンダムサバーニャ.png",
       "tags": [
         "コスト3000",
         "ガンダム",
@@ -1231,7 +1231,7 @@
       "unitNo": 38,
       "pilot": "アレルヤ・ハプティズム＆マリー・パーファシー",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/334/448/ms.png",
-      "imageLocalPath": "./output/images/038_ガンダムハルート_334.png",
+      "imageLocalPath": "./output/images/334_ガンダムハルート.png",
       "tags": [
         "コスト3000",
         "ガンダム",
@@ -1266,7 +1266,7 @@
       "unitNo": 39,
       "pilot": "刹那・F・セイエイ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/407/501/ms.png",
-      "imageLocalPath": "./output/images/039_ダブルオークアンタ フルセイバー_407.png",
+      "imageLocalPath": "./output/images/407_ダブルオークアンタ フルセイバー.png",
       "tags": [
         "ガンダム",
         "MSV",
@@ -1300,7 +1300,7 @@
       "unitNo": 40,
       "pilot": "刹那・F・セイエイ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/178/121/ms.png",
-      "imageLocalPath": "./output/images/040_ダブルオーガンダム セブンソード／G_178.png",
+      "imageLocalPath": "./output/images/178_ダブルオーガンダム セブンソード／G.png",
       "tags": [
         "主役機",
         "コスト3000",
@@ -1335,7 +1335,7 @@
       "unitNo": 41,
       "pilot": "アリー・アル・サーシェス",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/200/135/ms.png",
-      "imageLocalPath": "./output/images/041_ヤークトアルケーガンダム_200.png",
+      "imageLocalPath": "./output/images/200_ヤークトアルケーガンダム.png",
       "tags": [
         "コスト3000",
         "ガンダム",
@@ -1368,7 +1368,7 @@
       "unitNo": 42,
       "pilot": "キオ・アスノ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/363/472/ms.png",
-      "imageLocalPath": "./output/images/042_ガンダムAGE-FX_363.png",
+      "imageLocalPath": "./output/images/363_ガンダムAGE-FX.png",
       "tags": [
         "ガンダム",
         "主役機",
@@ -1404,7 +1404,7 @@
       "unitNo": 43,
       "pilot": "キャプテン・アッシュ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/405/504/ms.png",
-      "imageLocalPath": "./output/images/043_ガンダムAGE-2 ダークハウンド_405.png",
+      "imageLocalPath": "./output/images/405_ガンダムAGE-2 ダークハウンド.png",
       "tags": [
         "コスト3000",
         "ガンダム",
@@ -1439,7 +1439,7 @@
       "unitNo": 44,
       "pilot": "ゼハート・ガレット",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/406/503/ms.png",
-      "imageLocalPath": "./output/images/044_ガンダムレギルス_406.png",
+      "imageLocalPath": "./output/images/406_ガンダムレギルス.png",
       "tags": [
         "コスト3000",
         "ガンダム",
@@ -1472,7 +1472,7 @@
       "unitNo": 45,
       "pilot": "ベルリ・ゼナム",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/305/206/ms.png",
-      "imageLocalPath": "./output/images/045_G-セルフ(パーフェクトパック)_305.png",
+      "imageLocalPath": "./output/images/305_G-セルフ(パーフェクトパック).png",
       "tags": [
         "コスト3000",
         "主役機",
@@ -1506,7 +1506,7 @@
       "unitNo": 46,
       "pilot": "マスク",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/277/189/ms.png",
-      "imageLocalPath": "./output/images/046_カバカーリー_277.png",
+      "imageLocalPath": "./output/images/277_カバカーリー.png",
       "tags": [
         "コスト3000",
         "ガンダム",
@@ -1536,7 +1536,7 @@
       "unitNo": 47,
       "pilot": "三日月・オーガス",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/416/488/ms.png",
-      "imageLocalPath": "./output/images/047_ガンダム・バルバトスルプスレクス_416.png",
+      "imageLocalPath": "./output/images/416_ガンダム・バルバトスルプスレクス.png",
       "tags": [
         "ガンダム",
         "主役機",
@@ -1570,7 +1570,7 @@
       "unitNo": 48,
       "pilot": "マクギリス・ファリド",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/74/33/ms.png",
-      "imageLocalPath": "./output/images/048_ガンダム・バエル_74.png",
+      "imageLocalPath": "./output/images/74_ガンダム・バエル.png",
       "tags": [
         "コスト3000",
         "ガンダム",
@@ -1602,7 +1602,7 @@
       "unitNo": 49,
       "pilot": "ガエリオ・ボードウィン",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/301/199/ms.png",
-      "imageLocalPath": "./output/images/049_ガンダム・キマリスヴィダール_301.png",
+      "imageLocalPath": "./output/images/301_ガンダム・キマリスヴィダール.png",
       "tags": [
         "コスト3000",
         "ガンダム",
@@ -1635,7 +1635,7 @@
       "unitNo": 50,
       "pilot": "イオリ・セイ＆レイジ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/37/7/ms.png",
-      "imageLocalPath": "./output/images/050_スタービルドストライクガンダム_37.png",
+      "imageLocalPath": "./output/images/37_スタービルドストライクガンダム.png",
       "tags": [
         "ガンダム",
         "コスト3000",
@@ -1668,7 +1668,7 @@
       "unitNo": 51,
       "pilot": "三代目メイジン・カワグチ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/51/16/ms.png",
-      "imageLocalPath": "./output/images/051_ホットスクランブルガンダム_51.png",
+      "imageLocalPath": "./output/images/51_ホットスクランブルガンダム.png",
       "tags": [
         "コスト3000",
         "ガンダム",
@@ -1703,7 +1703,7 @@
       "unitNo": 52,
       "pilot": "リク",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/250/158/ms.png",
-      "imageLocalPath": "./output/images/052_ガンダムダブルオースカイ_250.png",
+      "imageLocalPath": "./output/images/250_ガンダムダブルオースカイ.png",
       "tags": [
         "コスト3000",
         "ガンダム",
@@ -1738,7 +1738,7 @@
       "unitNo": 53,
       "pilot": "レオス・アロイ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/63/29/ms.png",
-      "imageLocalPath": "./output/images/053_エクストリームガンダム type-レオスII Vs._63.png",
+      "imageLocalPath": "./output/images/63_エクストリームガンダム type-レオスII Vs..png",
       "tags": [
         "コスト3000",
         "ガンダム",
@@ -1771,7 +1771,7 @@
       "unitNo": 54,
       "pilot": "アマギ・サイ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/278/187/ms.png",
-      "imageLocalPath": "./output/images/054_N-EXTREMEガンダム エクスプロージョン_278.png",
+      "imageLocalPath": "./output/images/278_N-EXTREMEガンダム エクスプロージョン.png",
       "tags": [
         "コスト3000",
         "主役機",
@@ -1805,7 +1805,7 @@
       "unitNo": 55,
       "pilot": "",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/241/155/ms.png",
-      "imageLocalPath": "./output/images/055_ジオング_241.png",
+      "imageLocalPath": "./output/images/241_ジオング.png",
       "tags": [
         "コスト2500",
         "機動戦士ガンダム",
@@ -1836,7 +1836,7 @@
       "unitNo": 56,
       "pilot": "カミーユ・ビダン",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/264/177/ms.png",
-      "imageLocalPath": "./output/images/056_Zガンダム_264.png",
+      "imageLocalPath": "./output/images/264_Zガンダム.png",
       "tags": [
         "コスト2500",
         "主役機",
@@ -1870,7 +1870,7 @@
       "unitNo": 57,
       "pilot": "クワトロ・バジーナ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/168/119/ms.png",
-      "imageLocalPath": "./output/images/057_百式_168.png",
+      "imageLocalPath": "./output/images/168_百式.png",
       "tags": [
         "コスト2500",
         "変形",
@@ -1902,7 +1902,7 @@
       "unitNo": 58,
       "pilot": "パプテマス・シロッコ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/387/518/ms.png",
-      "imageLocalPath": "./output/images/058_ジ・O_387.png",
+      "imageLocalPath": "./output/images/387_ジ・O.png",
       "tags": [
         "非ガンダム",
         "コスト2500",
@@ -1934,7 +1934,7 @@
       "unitNo": 59,
       "pilot": "ジェリド・メサ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/55/18/ms.png",
-      "imageLocalPath": "./output/images/059_バウンド・ドック_55.png",
+      "imageLocalPath": "./output/images/55_バウンド・ドック.png",
       "tags": [
         "コスト2500",
         "非ガンダム",
@@ -1966,7 +1966,7 @@
       "unitNo": 60,
       "pilot": "ヤザン・ゲーブル",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/59/24/ms.png",
-      "imageLocalPath": "./output/images/060_ハンブラビ_59.png",
+      "imageLocalPath": "./output/images/59_ハンブラビ.png",
       "tags": [
         "コスト2500",
         "非ガンダム",
@@ -2000,7 +2000,7 @@
       "unitNo": 61,
       "pilot": "ジュドー・アーシタ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/101/59/ms.png",
-      "imageLocalPath": "./output/images/061_ZZガンダム_101.png",
+      "imageLocalPath": "./output/images/101_ZZガンダム.png",
       "tags": [
         "コスト2500",
         "ガンダム",
@@ -2036,7 +2036,7 @@
       "unitNo": 62,
       "pilot": "シーブック・アノー",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/296/1203/ms2.png",
-      "imageLocalPath": "./output/images/062_ガンダムF91_296.png",
+      "imageLocalPath": "./output/images/296_ガンダムF91.png",
       "tags": [
         "ガンダム",
         "コスト2500",
@@ -2069,7 +2069,7 @@
       "unitNo": 63,
       "pilot": "カテジナ・ルース",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/388/491/ms.png",
-      "imageLocalPath": "./output/images/063_ゴトラタン_388.png",
+      "imageLocalPath": "./output/images/388_ゴトラタン.png",
       "tags": [
         "コスト2500",
         "非ガンダム",
@@ -2100,7 +2100,7 @@
       "unitNo": 64,
       "pilot": "クロノクル・アシャー",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/389/490/ms.png",
-      "imageLocalPath": "./output/images/064_リグ・コンティオ_389.png",
+      "imageLocalPath": "./output/images/389_リグ・コンティオ.png",
       "tags": [
         "コスト2500",
         "非ガンダム",
@@ -2130,7 +2130,7 @@
       "unitNo": 65,
       "pilot": "マリーダ・クルス",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/424/533/ms.png",
-      "imageLocalPath": "./output/images/065_バンシィ_424.png",
+      "imageLocalPath": "./output/images/424_バンシィ.png",
       "tags": [
         "コスト2500",
         "ガンダム",
@@ -2165,7 +2165,7 @@
       "unitNo": 66,
       "pilot": "なし",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/79/39/ms.png",
-      "imageLocalPath": "./output/images/066_ユニコーンガンダム3号機フェネクス_79.png",
+      "imageLocalPath": "./output/images/79_ユニコーンガンダム3号機フェネクス.png",
       "tags": [
         "ガンダム",
         "コスト2500",
@@ -2201,7 +2201,7 @@
       "unitNo": 67,
       "pilot": "レーン・エイム",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/684/916/ms.png",
-      "imageLocalPath": "./output/images/067_TX-ff104 アリュゼウス_684.png",
+      "imageLocalPath": "./output/images/684_TX-ff104 アリュゼウス.png",
       "tags": [
         "コスト2500",
         "ガンダム",
@@ -2232,7 +2232,7 @@
       "unitNo": 68,
       "pilot": "クロエ・クローチェ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/226/147/ms.png",
-      "imageLocalPath": "./output/images/068_トーリスリッター_226.png",
+      "imageLocalPath": "./output/images/226_トーリスリッター.png",
       "tags": [
         "非ガンダム",
         "コスト2500",
@@ -2265,7 +2265,7 @@
       "unitNo": 69,
       "pilot": "コウ・ウラキ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/83/41/ms.png",
-      "imageLocalPath": "./output/images/069_ガンダム試作3号機_83.png",
+      "imageLocalPath": "./output/images/83_ガンダム試作3号機.png",
       "tags": [
         "コスト2500",
         "ガンダム",
@@ -2297,7 +2297,7 @@
       "unitNo": 70,
       "pilot": "アナベル・ガトー",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/214/141/ms.png",
-      "imageLocalPath": "./output/images/070_ガンダム試作2号機_214.png",
+      "imageLocalPath": "./output/images/214_ガンダム試作2号機.png",
       "tags": [
         "コスト2500",
         "ガンダム",
@@ -2330,7 +2330,7 @@
       "unitNo": 71,
       "pilot": "マシロ・オークス",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/97/51/ms.png",
-      "imageLocalPath": "./output/images/071_オーヴェロン_97.png",
+      "imageLocalPath": "./output/images/97_オーヴェロン.png",
       "tags": [
         "コスト2500",
         "ガンダム",
@@ -2365,7 +2365,7 @@
       "unitNo": 72,
       "pilot": "トビア・アロナクス",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/425/528/ms.png",
-      "imageLocalPath": "./output/images/072_クロスボーン・ガンダムX3_425.png",
+      "imageLocalPath": "./output/images/425_クロスボーン・ガンダムX3.png",
       "tags": [
         "コスト2500",
         "ガンダム",
@@ -2399,7 +2399,7 @@
       "unitNo": 73,
       "pilot": "キンケドゥ・ナウ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/253/159/ms.png",
-      "imageLocalPath": "./output/images/073_クロスボーン・ガンダムX1改_253.png",
+      "imageLocalPath": "./output/images/253_クロスボーン・ガンダムX1改.png",
       "tags": [
         "コスト2500",
         "ガンダム",
@@ -2433,7 +2433,7 @@
       "unitNo": 74,
       "pilot": "ザビーネ・シャル",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/77/35/ms.png",
-      "imageLocalPath": "./output/images/074_クロスボーン・ガンダムX2改_77.png",
+      "imageLocalPath": "./output/images/77_クロスボーン・ガンダムX2改.png",
       "tags": [
         "コスト2500",
         "ガンダム",
@@ -2465,7 +2465,7 @@
       "unitNo": 75,
       "pilot": "フォント・ボー",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/167/120/ms.png",
-      "imageLocalPath": "./output/images/075_ファントムガンダム_167.png",
+      "imageLocalPath": "./output/images/167_ファントムガンダム.png",
       "tags": [
         "機動戦士クロスボーン・ガンダム",
         "コスト2500",
@@ -2497,7 +2497,7 @@
       "unitNo": 76,
       "pilot": "ギリ・ガデューカ・アスピス",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/275/190/ms.png",
-      "imageLocalPath": "./output/images/076_ビギナ・ギナII(木星決戦仕様)_275.png",
+      "imageLocalPath": "./output/images/275_ビギナ・ギナII(木星決戦仕様).png",
       "tags": [
         "非ガンダム",
         "コスト2500",
@@ -2530,7 +2530,7 @@
       "unitNo": 77,
       "pilot": "シュバルツ・ブルーダー",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/316/213/ms.png",
-      "imageLocalPath": "./output/images/077_ガンダムシュピーゲル_316.png",
+      "imageLocalPath": "./output/images/316_ガンダムシュピーゲル.png",
       "tags": [
         "ガンダム",
         "コスト2500",
@@ -2563,7 +2563,7 @@
       "unitNo": 78,
       "pilot": "張五飛",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/390/480/ms.png",
-      "imageLocalPath": "./output/images/078_アルトロンガンダム_390.png",
+      "imageLocalPath": "./output/images/390_アルトロンガンダム.png",
       "tags": [
         "ガンダム",
         "コスト2500",
@@ -2593,7 +2593,7 @@
       "unitNo": 79,
       "pilot": "トレーズ・クシュリナーダ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/293/195/ms.png",
-      "imageLocalPath": "./output/images/079_トールギスII_293.png",
+      "imageLocalPath": "./output/images/293_トールギスII.png",
       "tags": [
         "非ガンダム",
         "コスト2500",
@@ -2627,7 +2627,7 @@
       "unitNo": 80,
       "pilot": "ゼクス・マーキス",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/391/496/ms.png",
-      "imageLocalPath": "./output/images/080_トールギス_391.png",
+      "imageLocalPath": "./output/images/391_トールギス.png",
       "tags": [
         "非ガンダム",
         "コスト2500",
@@ -2657,7 +2657,7 @@
       "unitNo": 81,
       "pilot": "デュオ・マックスウェル",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/307/208/ms.png",
-      "imageLocalPath": "./output/images/081_ガンダムデスサイズヘル(EW版)_307.png",
+      "imageLocalPath": "./output/images/307_ガンダムデスサイズヘル(EW版).png",
       "tags": [
         "コスト2500",
         "ガンダム",
@@ -2691,7 +2691,7 @@
       "unitNo": 82,
       "pilot": "トロワ・バートン",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/392/510/ms.png",
-      "imageLocalPath": "./output/images/082_ガンダムヘビーアームズ改(EW版)_392.png",
+      "imageLocalPath": "./output/images/392_ガンダムヘビーアームズ改(EW版).png",
       "tags": [
         "ガンダム",
         "新機動戦記ガンダムW Endless Waltz"
@@ -2720,7 +2720,7 @@
       "unitNo": 83,
       "pilot": "ジャミル・ニート",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/427/532/ms.png",
-      "imageLocalPath": "./output/images/083_ガンダムXディバイダー_427.png",
+      "imageLocalPath": "./output/images/427_ガンダムXディバイダー.png",
       "tags": [
         "コスト2500",
         "ガンダム",
@@ -2752,7 +2752,7 @@
       "unitNo": 84,
       "pilot": "オルバ・フロスト",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/771/1191/ms.png",
-      "imageLocalPath": "./output/images/084_ガンダムアシュタロン・ハーミットクラブ_771.png",
+      "imageLocalPath": "./output/images/771_ガンダムアシュタロン・ハーミットクラブ.png",
       "tags": [
         "ガンダム",
         "コスト2500",
@@ -2783,7 +2783,7 @@
       "unitNo": 85,
       "pilot": "ハリー・オード",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/393/494/ms.png",
-      "imageLocalPath": "./output/images/085_ゴールドスモー_393.png",
+      "imageLocalPath": "./output/images/393_ゴールドスモー.png",
       "tags": [
         "コスト2500",
         "非ガンダム",
@@ -2814,7 +2814,7 @@
       "unitNo": 86,
       "pilot": "キラ・ヤマト",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/219/145/ms.png",
-      "imageLocalPath": "./output/images/086_フリーダムガンダム_219.png",
+      "imageLocalPath": "./output/images/219_フリーダムガンダム.png",
       "tags": [
         "ガンダム",
         "コスト2500",
@@ -2847,7 +2847,7 @@
       "unitNo": 87,
       "pilot": "アスラン・ザラ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/298/200/ms.png",
-      "imageLocalPath": "./output/images/087_ジャスティスガンダム_298.png",
+      "imageLocalPath": "./output/images/298_ジャスティスガンダム.png",
       "tags": [
         "コスト2500",
         "ガンダム",
@@ -2879,7 +2879,7 @@
       "unitNo": 88,
       "pilot": "ムウ・ラ・フラガ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/153/85/ms.png",
-      "imageLocalPath": "./output/images/088_パーフェクトストライクガンダム_153.png",
+      "imageLocalPath": "./output/images/153_パーフェクトストライクガンダム.png",
       "tags": [
         "ガンダム",
         "コスト2500",
@@ -2912,7 +2912,7 @@
       "unitNo": 89,
       "pilot": "ラウ・ル・クルーゼ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/394/507/ms.png",
-      "imageLocalPath": "./output/images/089_プロヴィデンスガンダム_394.png",
+      "imageLocalPath": "./output/images/394_プロヴィデンスガンダム.png",
       "tags": [
         "コスト2500",
         "ガンダム",
@@ -2944,7 +2944,7 @@
       "unitNo": 90,
       "pilot": "レイ・ザ・バレル",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/395/508/ms.png",
-      "imageLocalPath": "./output/images/090_レジェンドガンダム_395.png",
+      "imageLocalPath": "./output/images/395_レジェンドガンダム.png",
       "tags": [
         "ガンダム",
         "コスト2500",
@@ -2975,7 +2975,7 @@
       "unitNo": 91,
       "pilot": "ムウ・ラ・フラガ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/57/19/AKATSUKIEXVS2IB.png",
-      "imageLocalPath": "./output/images/091_アカツキ_57.png",
+      "imageLocalPath": "./output/images/57_アカツキ.png",
       "tags": [
         "ガンダム",
         "換装機",
@@ -3008,7 +3008,7 @@
       "unitNo": 92,
       "pilot": "シン・アスカ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/160/116/ms.png",
-      "imageLocalPath": "./output/images/092_インパルスガンダム_160.png",
+      "imageLocalPath": "./output/images/160_インパルスガンダム.png",
       "tags": [
         "主役機",
         "ガンダム",
@@ -3042,7 +3042,7 @@
       "unitNo": 93,
       "pilot": "ハイネ・ヴェステンフルス",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/366/473/ms.png",
-      "imageLocalPath": "./output/images/093_デスティニーガンダム(ハイネ機)_366.png",
+      "imageLocalPath": "./output/images/366_デスティニーガンダム(ハイネ機).png",
       "tags": [
         "ガンダム",
         "コスト2500",
@@ -3075,7 +3075,7 @@
       "unitNo": 94,
       "pilot": "スウェン・カル・バヤン",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/73/30/ms.png",
-      "imageLocalPath": "./output/images/094_ストライクノワール_73.png",
+      "imageLocalPath": "./output/images/73_ストライクノワール.png",
       "tags": [
         "コスト2500",
         "ガンダム",
@@ -3106,7 +3106,7 @@
       "unitNo": 95,
       "pilot": "キラ・ヤマト",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/75/34/ms.png",
-      "imageLocalPath": "./output/images/095_ライジングフリーダムガンダム_75.png",
+      "imageLocalPath": "./output/images/75_ライジングフリーダムガンダム.png",
       "tags": [
         "ガンダム",
         "機動戦士ガンダムSEED FREEDOM",
@@ -3140,7 +3140,7 @@
       "unitNo": 96,
       "pilot": "ロウ・ギュール",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/192/132/ms.png",
-      "imageLocalPath": "./output/images/096_アストレイレッドフレーム改_192.png",
+      "imageLocalPath": "./output/images/192_アストレイレッドフレーム改.png",
       "tags": [
         "ガンダム",
         "コスト2500",
@@ -3174,7 +3174,7 @@
       "unitNo": 97,
       "pilot": "ロウ・ギュール",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/396/492/ms.png",
-      "imageLocalPath": "./output/images/097_アストレイレッドフレーム(レッドドラゴン)_396.png",
+      "imageLocalPath": "./output/images/396_アストレイレッドフレーム(レッドドラゴン).png",
       "tags": [
         "コスト2500",
         "ガンダム",
@@ -3209,7 +3209,7 @@
       "unitNo": 98,
       "pilot": "叢雲劾",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/426/531/ms.png",
-      "imageLocalPath": "./output/images/098_アストレイブルーフレームD_426.png",
+      "imageLocalPath": "./output/images/426_アストレイブルーフレームD.png",
       "tags": [
         "コスト2500",
         "ガンダム",
@@ -3242,7 +3242,7 @@
       "unitNo": 99,
       "pilot": "ロンド・ミナ・サハク",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/269/179/ms.png",
-      "imageLocalPath": "./output/images/099_アストレイゴールドフレーム天ミナ_269.png",
+      "imageLocalPath": "./output/images/269_アストレイゴールドフレーム天ミナ.png",
       "tags": [
         "コスト2500",
         "ガンダム",
@@ -3276,7 +3276,7 @@
       "unitNo": 100,
       "pilot": "カナード・パルス",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/397/495/ms.png",
-      "imageLocalPath": "./output/images/100_ドレッドノートイータ_397.png",
+      "imageLocalPath": "./output/images/397_ドレッドノートイータ.png",
       "tags": [
         "ガンダム",
         "コスト2500",
@@ -3308,7 +3308,7 @@
       "unitNo": 101,
       "pilot": "ロックオン・ストラトス",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/255/160/ms.png",
-      "imageLocalPath": "./output/images/101_ケルディムガンダム_255.png",
+      "imageLocalPath": "./output/images/255_ケルディムガンダム.png",
       "tags": [
         "コスト2500",
         "ガンダム",
@@ -3343,7 +3343,7 @@
       "unitNo": 102,
       "pilot": "アレルヤ・ハプティズム",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/283/192/ms.png",
-      "imageLocalPath": "./output/images/102_アリオスガンダム_283.png",
+      "imageLocalPath": "./output/images/283_アリオスガンダム.png",
       "tags": [
         "ガンダム",
         "コスト2500",
@@ -3376,7 +3376,7 @@
       "unitNo": 103,
       "pilot": "アリー・アル・サーシェス",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/398/506/ms.png",
-      "imageLocalPath": "./output/images/103_アルケーガンダム_398.png",
+      "imageLocalPath": "./output/images/398_アルケーガンダム.png",
       "tags": [
         "コスト2500",
         "ガンダム",
@@ -3408,7 +3408,7 @@
       "unitNo": 104,
       "pilot": "ミスター・ブシドー",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/135/75/ms.png",
-      "imageLocalPath": "./output/images/104_スサノオ_135.png",
+      "imageLocalPath": "./output/images/135_スサノオ.png",
       "tags": [
         "コスト2500",
         "時限強化",
@@ -3440,7 +3440,7 @@
       "unitNo": 105,
       "pilot": "ティエリア・アーデ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/657/850/ms.png",
-      "imageLocalPath": "./output/images/105_セラヴィーガンダム_657.png",
+      "imageLocalPath": "./output/images/657_セラヴィーガンダム.png",
       "tags": [
         "ガンダム",
         "機動戦士ガンダム00",
@@ -3475,7 +3475,7 @@
       "unitNo": 106,
       "pilot": "ティエリア・アーデ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/428/530/ms.png",
-      "imageLocalPath": "./output/images/106_ラファエルガンダム_428.png",
+      "imageLocalPath": "./output/images/428_ラファエルガンダム.png",
       "tags": [
         "ガンダム",
         "コスト2500",
@@ -3510,7 +3510,7 @@
       "unitNo": 107,
       "pilot": "グラハム・エーカー",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/399/493/ms.png",
-      "imageLocalPath": "./output/images/107_ブレイヴ指揮官用試験機_399.png",
+      "imageLocalPath": "./output/images/399_ブレイヴ指揮官用試験機.png",
       "tags": [
         "コスト2500",
         "非ガンダム",
@@ -3543,7 +3543,7 @@
       "unitNo": 108,
       "pilot": "刹那・F・セイエイ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/400/497/ms.png",
-      "imageLocalPath": "./output/images/108_アヴァランチエクシア_400.png",
+      "imageLocalPath": "./output/images/400_アヴァランチエクシア.png",
       "tags": [
         "コスト2500",
         "ガンダム",
@@ -3577,7 +3577,7 @@
       "unitNo": 109,
       "pilot": "アセム・アスノ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/429/529/ms.png",
-      "imageLocalPath": "./output/images/109_ガンダムAGE-2_429.png",
+      "imageLocalPath": "./output/images/429_ガンダムAGE-2.png",
       "tags": [
         "ガンダム",
         "コスト2500",
@@ -3612,7 +3612,7 @@
       "unitNo": 110,
       "pilot": "キオ・アスノ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/401/500/ms.png",
-      "imageLocalPath": "./output/images/110_ガンダムAGE-3_401.png",
+      "imageLocalPath": "./output/images/401_ガンダムAGE-3.png",
       "tags": [
         "コスト2500",
         "ガンダム",
@@ -3646,7 +3646,7 @@
       "unitNo": 111,
       "pilot": "フリット・アスノ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/93/50/ms.png",
-      "imageLocalPath": "./output/images/111_ガンダムAGE-1 フルグランサ_93.png",
+      "imageLocalPath": "./output/images/93_ガンダムAGE-1 フルグランサ.png",
       "tags": [
         "ガンダム",
         "コスト2500",
@@ -3679,7 +3679,7 @@
       "unitNo": 112,
       "pilot": "ゼハート・ガレット",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/166/118/ms.png",
-      "imageLocalPath": "./output/images/112_ゼイドラ_166.png",
+      "imageLocalPath": "./output/images/166_ゼイドラ.png",
       "tags": [
         "コスト2500",
         "非ガンダム",
@@ -3711,7 +3711,7 @@
       "unitNo": 113,
       "pilot": "フラム・ナラ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/245/156/ms.png",
-      "imageLocalPath": "./output/images/113_フォーンファルシア_245.png",
+      "imageLocalPath": "./output/images/245_フォーンファルシア.png",
       "tags": [
         "コスト2500",
         "非ガンダム",
@@ -3744,7 +3744,7 @@
       "unitNo": 114,
       "pilot": "ベルリ・ゼナム",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/410/479/ms.png",
-      "imageLocalPath": "./output/images/114_G-セルフ_410.png",
+      "imageLocalPath": "./output/images/410_G-セルフ.png",
       "tags": [
         "コスト2500",
         "ガンダム",
@@ -3779,7 +3779,7 @@
       "unitNo": 115,
       "pilot": "クリム・ニック",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/402/505/ms.png",
-      "imageLocalPath": "./output/images/115_ダハック_402.png",
+      "imageLocalPath": "./output/images/402_ダハック.png",
       "tags": [
         "コスト2500",
         "背面射撃",
@@ -3810,7 +3810,7 @@
       "unitNo": 116,
       "pilot": "三日月・オーガス",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/127/71/ms.png",
-      "imageLocalPath": "./output/images/116_ガンダム・バルバトスルプス_127.png",
+      "imageLocalPath": "./output/images/127_ガンダム・バルバトスルプス.png",
       "tags": [
         "ガンダム",
         "機動戦士ガンダム 鉄血のオルフェンズ",
@@ -3842,7 +3842,7 @@
       "unitNo": 117,
       "pilot": "昭弘・アルトランド",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/417/498/ms.png",
-      "imageLocalPath": "./output/images/117_ガンダム・グシオンリベイクフルシティ_417.png",
+      "imageLocalPath": "./output/images/417_ガンダム・グシオンリベイクフルシティ.png",
       "tags": [
         "コスト2500",
         "ガンダム",
@@ -3873,7 +3873,7 @@
       "unitNo": 118,
       "pilot": "イオ・フレミング",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/56/22/ms.png",
-      "imageLocalPath": "./output/images/118_アトラスガンダム_56.png",
+      "imageLocalPath": "./output/images/56_アトラスガンダム.png",
       "tags": [
         "ガンダム",
         "コスト2500",
@@ -3905,7 +3905,7 @@
       "unitNo": 119,
       "pilot": "イオ・フレミング",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/183/128/ms.png",
-      "imageLocalPath": "./output/images/119_フルアーマー・ガンダム_183.png",
+      "imageLocalPath": "./output/images/183_フルアーマー・ガンダム.png",
       "tags": [
         "ガンダム",
         "主役機",
@@ -3937,7 +3937,7 @@
       "unitNo": 120,
       "pilot": "ダリル・ローレンツ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/61/25/ms.png",
-      "imageLocalPath": "./output/images/120_サイコ・ザク_61.png",
+      "imageLocalPath": "./output/images/61_サイコ・ザク.png",
       "tags": [
         "非ガンダム",
         "コスト2500",
@@ -3970,7 +3970,7 @@
       "unitNo": 121,
       "pilot": "グエル・ジェターク",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/311/207/ms.png",
-      "imageLocalPath": "./output/images/121_ダリルバルデ_311.png",
+      "imageLocalPath": "./output/images/311_ダリルバルデ.png",
       "tags": [
         "コスト2500",
         "非ガンダム",
@@ -4002,7 +4002,7 @@
       "unitNo": 122,
       "pilot": "スレッタ・マーキュリー",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/152/180/ms.png",
-      "imageLocalPath": "./output/images/122_ガンダム・エアリアル(改修型)_152.png",
+      "imageLocalPath": "./output/images/152_ガンダム・エアリアル(改修型).png",
       "tags": [
         "コスト2500",
         "主役機",
@@ -4035,7 +4035,7 @@
       "unitNo": 123,
       "pilot": "なし(エリクト・サマヤ)",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/227/431/ms.png",
-      "imageLocalPath": "./output/images/123_ガンダム・エアリアル(改修型)パーメットスコア・エイト_227.png",
+      "imageLocalPath": "./output/images/227_ガンダム・エアリアル(改修型)パーメットスコア・エイト.png",
       "tags": [
         "コスト2500",
         "ガンダム",
@@ -4068,7 +4068,7 @@
       "unitNo": 124,
       "pilot": "アマテ・ユズリハ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/610/793/ms.png",
-      "imageLocalPath": "./output/images/124_GQuuuuuuX_610.png",
+      "imageLocalPath": "./output/images/610_GQuuuuuuX.png",
       "tags": [
         "ガンダム",
         "コスト2500",
@@ -4100,7 +4100,7 @@
       "unitNo": 125,
       "pilot": "リカルド・フェリーニ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/46/32/ms.png",
-      "imageLocalPath": "./output/images/125_ウイングガンダムフェニーチェ_46.png",
+      "imageLocalPath": "./output/images/46_ウイングガンダムフェニーチェ.png",
       "tags": [
         "コスト2500",
         "ガンダム",
@@ -4135,7 +4135,7 @@
       "unitNo": 126,
       "pilot": "ニルス・ニールセン",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/47/14/ms.png",
-      "imageLocalPath": "./output/images/126_戦国アストレイ頑駄無_47.png",
+      "imageLocalPath": "./output/images/47_戦国アストレイ頑駄無.png",
       "tags": [
         "コスト2500",
         "ガンダム",
@@ -4167,7 +4167,7 @@
       "unitNo": 127,
       "pilot": "アイラ・ユルキアイネン",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/597/747/ms.png",
-      "imageLocalPath": "./output/images/127_キュベレイパピヨン_597.png",
+      "imageLocalPath": "./output/images/597_キュベレイパピヨン.png",
       "tags": [
         "コスト2500",
         "ファンネル",
@@ -4200,7 +4200,7 @@
       "unitNo": 128,
       "pilot": "カミキ・セカイ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/324/436/ms.png",
-      "imageLocalPath": "./output/images/128_トライバーニングガンダム_324.png",
+      "imageLocalPath": "./output/images/324_トライバーニングガンダム.png",
       "tags": [
         "コスト2500",
         "ガンダム",
@@ -4234,7 +4234,7 @@
       "unitNo": 129,
       "pilot": "コウサカ・ユウマ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/403/502/ms.png",
-      "imageLocalPath": "./output/images/129_ライトニングガンダムフルバーニアン_403.png",
+      "imageLocalPath": "./output/images/403_ライトニングガンダムフルバーニアン.png",
       "tags": [
         "コスト2500",
         "ガンダム",
@@ -4267,7 +4267,7 @@
       "unitNo": 130,
       "pilot": "ホシノ・フミナ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/116/64/ms.png",
-      "imageLocalPath": "./output/images/130_スターウイニングガンダム_116.png",
+      "imageLocalPath": "./output/images/116_スターウイニングガンダム.png",
       "tags": [
         "ガンダム",
         "コスト2500",
@@ -4302,7 +4302,7 @@
       "unitNo": 131,
       "pilot": "キジマ・ウィルフリッド",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/90/47/ms.png",
-      "imageLocalPath": "./output/images/131_トランジェントガンダム_90.png",
+      "imageLocalPath": "./output/images/90_トランジェントガンダム.png",
       "tags": [
         "ガンダム",
         "ガンプラ",
@@ -4336,7 +4336,7 @@
       "unitNo": 132,
       "pilot": "アヤメ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/317/214/ms.png",
-      "imageLocalPath": "./output/images/132_RX-零丸_317.png",
+      "imageLocalPath": "./output/images/317_RX-零丸.png",
       "tags": [
         "コスト2500",
         "ガンダム",
@@ -4373,7 +4373,7 @@
       "unitNo": 133,
       "pilot": "ヒロト",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/107/61/ms.png",
-      "imageLocalPath": "./output/images/133_アースリィガンダム_107.png",
+      "imageLocalPath": "./output/images/107_アースリィガンダム.png",
       "tags": [
         "ガンダム",
         "コスト2500",
@@ -4409,7 +4409,7 @@
       "unitNo": 134,
       "pilot": "メイ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/707/1014/ms.png",
-      "imageLocalPath": "./output/images/134_ウォドムポッド+_707.png",
+      "imageLocalPath": "./output/images/707_ウォドムポッド+.png",
       "tags": [
         "コスト2500",
         "非ガンダム",
@@ -4444,7 +4444,7 @@
       "unitNo": 135,
       "pilot": "なし",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/188/131/ms.png",
-      "imageLocalPath": "./output/images/135_騎士ガンダム_188.png",
+      "imageLocalPath": "./output/images/188_騎士ガンダム.png",
       "tags": [
         "コスト2500",
         "ガンダム",
@@ -4479,7 +4479,7 @@
       "unitNo": 136,
       "pilot": "レオス・アロイ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/71/26/ms.png",
-      "imageLocalPath": "./output/images/136_エクストリームガンダム エクリプス-F_71.png",
+      "imageLocalPath": "./output/images/71_エクストリームガンダム エクリプス-F.png",
       "tags": [
         "コスト2500",
         "ガンダム",
@@ -4513,7 +4513,7 @@
       "unitNo": 137,
       "pilot": "レオス・アロイ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/66/28/ms.png",
-      "imageLocalPath": "./output/images/137_エクストリームガンダム ゼノン-F_66.png",
+      "imageLocalPath": "./output/images/66_エクストリームガンダム ゼノン-F.png",
       "tags": [
         "ガンダム",
         "ガンダムEXA",
@@ -4548,7 +4548,7 @@
       "unitNo": 138,
       "pilot": "レオス・アロイ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/72/27/ms.png",
-      "imageLocalPath": "./output/images/138_エクストリームガンダム アイオス-F_72.png",
+      "imageLocalPath": "./output/images/72_エクストリームガンダム アイオス-F.png",
       "tags": [
         "コスト2500",
         "ガンダム",
@@ -4583,7 +4583,7 @@
       "unitNo": 139,
       "pilot": "セシア・アウェア",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/422/525/ms.png",
-      "imageLocalPath": "./output/images/139_エクストリームガンダム エクセリア_422.png",
+      "imageLocalPath": "./output/images/422_エクストリームガンダム エクセリア.png",
       "tags": [
         "コスト2500",
         "ガンダム",
@@ -4616,7 +4616,7 @@
       "unitNo": 140,
       "pilot": "なし(ex-)",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/754/1138/ms.png",
-      "imageLocalPath": "./output/images/140_∫エクストリームガンダム_754.png",
+      "imageLocalPath": "./output/images/754_∫エクストリームガンダム.png",
       "tags": [
         "ガンダム",
         "コスト2500",
@@ -4650,7 +4650,7 @@
       "unitNo": 141,
       "pilot": "バルカ・ニル",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/404/499/ms.png",
-      "imageLocalPath": "./output/images/141_N-EXTREMEガンダム ヴィシャス_404.png",
+      "imageLocalPath": "./output/images/404_N-EXTREMEガンダム ヴィシャス.png",
       "tags": [
         "コスト2500",
         "ガンダム",
@@ -4684,7 +4684,7 @@
       "unitNo": 142,
       "pilot": "アムロ・レイ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/78/739/ms2.png",
-      "imageLocalPath": "./output/images/142_ガンダム_78.png",
+      "imageLocalPath": "./output/images/78_ガンダム.png",
       "tags": [
         "ガンダム",
         "2000",
@@ -4718,7 +4718,7 @@
       "unitNo": 143,
       "pilot": "アムロ・レイ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/313/211/ms.png",
-      "imageLocalPath": "./output/images/143_ガンダム(Gメカ)_313.png",
+      "imageLocalPath": "./output/images/313_ガンダム(Gメカ).png",
       "tags": [
         "コスト2000",
         "ガンダム",
@@ -4751,7 +4751,7 @@
       "unitNo": 144,
       "pilot": "シャア・アズナブル",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/124/69/ms.png",
-      "imageLocalPath": "./output/images/144_シャア専用ゲルググ_124.png",
+      "imageLocalPath": "./output/images/124_シャア専用ゲルググ.png",
       "tags": [
         "コスト2000",
         "非ガンダム",
@@ -4783,7 +4783,7 @@
       "unitNo": 145,
       "pilot": "マ・クベ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/176/125/ms.png",
-      "imageLocalPath": "./output/images/145_ギャン_176.png",
+      "imageLocalPath": "./output/images/176_ギャン.png",
       "tags": [
         "コスト2000",
         "非ガンダム",
@@ -4815,7 +4815,7 @@
       "unitNo": 146,
       "pilot": "アムロ・レイ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/379/517/ms.png",
-      "imageLocalPath": "./output/images/146_ディジェ_379.png",
+      "imageLocalPath": "./output/images/379_ディジェ.png",
       "tags": [
         "コスト2000",
         "非ガンダム",
@@ -4847,7 +4847,7 @@
       "unitNo": 147,
       "pilot": "エマ・シーン",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/413/482/ms.png",
-      "imageLocalPath": "./output/images/147_ガンダムMk-II_413.png",
+      "imageLocalPath": "./output/images/413_ガンダムMk-II.png",
       "tags": [
         "ガンダム",
         "コスト2000",
@@ -4879,7 +4879,7 @@
       "unitNo": 148,
       "pilot": "パプテマス・シロッコ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/378/516/ms.png",
-      "imageLocalPath": "./output/images/148_メッサーラ_378.png",
+      "imageLocalPath": "./output/images/378_メッサーラ.png",
       "tags": [
         "コスト2000",
         "非ガンダム",
@@ -4911,7 +4911,7 @@
       "unitNo": 149,
       "pilot": "ジェリド・メサ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/88/44/ms.png",
-      "imageLocalPath": "./output/images/149_ガブスレイ_88.png",
+      "imageLocalPath": "./output/images/88_ガブスレイ.png",
       "tags": [
         "非ガンダム",
         "量産機",
@@ -4943,7 +4943,7 @@
       "unitNo": 150,
       "pilot": "ジェリド・メサ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/109/62/ms.png",
-      "imageLocalPath": "./output/images/150_マラサイ_109.png",
+      "imageLocalPath": "./output/images/109_マラサイ.png",
       "tags": [
         "コスト2000",
         "非ガンダム",
@@ -4975,7 +4975,7 @@
       "unitNo": 151,
       "pilot": "ロザミア・バダム",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/571/676/ms.png",
-      "imageLocalPath": "./output/images/151_ギャプラン_571.png",
+      "imageLocalPath": "./output/images/571_ギャプラン.png",
       "tags": [
         "コスト2000",
         "非ガンダム",
@@ -5006,7 +5006,7 @@
       "unitNo": 152,
       "pilot": "エルピー・プル",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/380/509/ms.png",
-      "imageLocalPath": "./output/images/152_キュベレイMk-II(プル)_380.png",
+      "imageLocalPath": "./output/images/380_キュベレイMk-II(プル).png",
       "tags": [
         "コスト2000",
         "非ガンダム",
@@ -5040,7 +5040,7 @@
       "unitNo": 153,
       "pilot": "マシュマー・セロ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/377/520/ms.png",
-      "imageLocalPath": "./output/images/153_ザクIII改_377.png",
+      "imageLocalPath": "./output/images/377_ザクIII改.png",
       "tags": [
         "コスト2000",
         "非ガンダム",
@@ -5075,7 +5075,7 @@
       "unitNo": 154,
       "pilot": "ラカン・ダカラン",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/273/188/ms.png",
-      "imageLocalPath": "./output/images/154_ドーベン・ウルフ_273.png",
+      "imageLocalPath": "./output/images/273_ドーベン・ウルフ.png",
       "tags": [
         "コスト2000",
         "非ガンダム",
@@ -5108,7 +5108,7 @@
       "unitNo": 155,
       "pilot": "ハマーン・カーン",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/381/512/ms.png",
-      "imageLocalPath": "./output/images/155_アッガイ(ハマーン搭乗)_381.png",
+      "imageLocalPath": "./output/images/381_アッガイ(ハマーン搭乗).png",
       "tags": [
         "コスト2000",
         "非ガンダム",
@@ -5141,7 +5141,7 @@
       "unitNo": 156,
       "pilot": "ルー・ルカ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/369/475/ms.png",
-      "imageLocalPath": "./output/images/156_Zガンダム(ルー搭乗)_369.png",
+      "imageLocalPath": "./output/images/369_Zガンダム(ルー搭乗).png",
       "tags": [
         "コスト2000",
         "ガンダム",
@@ -5174,7 +5174,7 @@
       "unitNo": 157,
       "pilot": "ギュネイ・ガス",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/242/154/ms.png",
-      "imageLocalPath": "./output/images/157_ヤクト・ドーガ_242.png",
+      "imageLocalPath": "./output/images/242_ヤクト・ドーガ.png",
       "tags": [
         "コスト2000",
         "非ガンダム",
@@ -5208,7 +5208,7 @@
       "unitNo": 158,
       "pilot": "ウッソ・エヴィン",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/415/487/ms.png",
-      "imageLocalPath": "./output/images/158_ヴィクトリーガンダム_415.png",
+      "imageLocalPath": "./output/images/415_ヴィクトリーガンダム.png",
       "tags": [
         "コスト2000",
         "ガンダム",
@@ -5245,7 +5245,7 @@
       "unitNo": 159,
       "pilot": "カテジナ・ルース",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/140/80/ms.png",
-      "imageLocalPath": "./output/images/159_ゲドラフ_140.png",
+      "imageLocalPath": "./output/images/140_ゲドラフ.png",
       "tags": [
         "コスト2000",
         "非ガンダム",
@@ -5277,7 +5277,7 @@
       "unitNo": 160,
       "pilot": "リディ・マーセナス",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/382/489/ms.png",
-      "imageLocalPath": "./output/images/160_デルタプラス_382.png",
+      "imageLocalPath": "./output/images/382_デルタプラス.png",
       "tags": [
         "コスト2000",
         "変形",
@@ -5308,7 +5308,7 @@
       "unitNo": 161,
       "pilot": "マリーダ・クルス",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/259/175/ms.png",
-      "imageLocalPath": "./output/images/161_クシャトリヤ_259.png",
+      "imageLocalPath": "./output/images/259_クシャトリヤ.png",
       "tags": [
         "コスト2000",
         "機動戦士ガンダムUC",
@@ -5341,7 +5341,7 @@
       "unitNo": 162,
       "pilot": "アンジェロ・ザウパー",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/132/73/ms.png",
-      "imageLocalPath": "./output/images/162_ローゼン・ズール_132.png",
+      "imageLocalPath": "./output/images/132_ローゼン・ズール.png",
       "tags": [
         "コスト2000",
         "非ガンダム",
@@ -5373,7 +5373,7 @@
       "unitNo": 163,
       "pilot": "ヨナ・バシュタ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/98/52/ms.png",
-      "imageLocalPath": "./output/images/163_ナラティブガンダム_98.png",
+      "imageLocalPath": "./output/images/98_ナラティブガンダム.png",
       "tags": [
         "ガンダム",
         "主役機",
@@ -5407,7 +5407,7 @@
       "unitNo": 164,
       "pilot": "ゾルタン・アッカネン",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/100/56/ms.png",
-      "imageLocalPath": "./output/images/164_シナンジュ・スタイン_100.png",
+      "imageLocalPath": "./output/images/100_シナンジュ・スタイン.png",
       "tags": [
         "コスト2000",
         "非ガンダム",
@@ -5437,7 +5437,7 @@
       "unitNo": 165,
       "pilot": "ジョニー・ライデン",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/282/191/ms.png",
-      "imageLocalPath": "./output/images/165_高機動型ザクII後期型(ジョニー・ライデン機)_282.png",
+      "imageLocalPath": "./output/images/282_高機動型ザクII後期型(ジョニー・ライデン機).png",
       "tags": [
         "コスト2000",
         "非ガンダム",
@@ -5469,7 +5469,7 @@
       "unitNo": 166,
       "pilot": "シン・マツナガ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/134/77/ms.png",
-      "imageLocalPath": "./output/images/166_高機動型ザクII改(シン・マツナガ機)_134.png",
+      "imageLocalPath": "./output/images/134_高機動型ザクII改(シン・マツナガ機).png",
       "tags": [
         "コスト2000",
         "非ガンダム",
@@ -5500,7 +5500,7 @@
       "unitNo": 167,
       "pilot": "ユウ・カジマ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/203/138/ms.png",
-      "imageLocalPath": "./output/images/167_ブルーディスティニー1号機_203.png",
+      "imageLocalPath": "./output/images/203_ブルーディスティニー1号機.png",
       "tags": [
         "コスト2000",
         "主役機",
@@ -5533,7 +5533,7 @@
       "unitNo": 168,
       "pilot": "クロエ・クローチェ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/359/469/ms.png",
-      "imageLocalPath": "./output/images/168_ペイルライダー(陸戦重装仕様)_359.png",
+      "imageLocalPath": "./output/images/359_ペイルライダー(陸戦重装仕様).png",
       "tags": [
         "コスト2000",
         "非ガンダム",
@@ -5565,7 +5565,7 @@
       "unitNo": 169,
       "pilot": "ヴィンセント・グライスナー",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/360/470/ms.png",
-      "imageLocalPath": "./output/images/169_高機動型ゲルググ(ヴィンセント機)_360.png",
+      "imageLocalPath": "./output/images/360_高機動型ゲルググ(ヴィンセント機).png",
       "tags": [
         "コスト2000",
         "主役機",
@@ -5598,7 +5598,7 @@
       "unitNo": 170,
       "pilot": "ダグ・シュナイド",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/361/471/ms.png",
-      "imageLocalPath": "./output/images/170_イフリート(シュナイド機)_361.png",
+      "imageLocalPath": "./output/images/361_イフリート(シュナイド機).png",
       "tags": [
         "非ガンダム",
         "コスト2000",
@@ -5628,7 +5628,7 @@
       "unitNo": 171,
       "pilot": "コウ・ウラキ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/58/23/ms.png",
-      "imageLocalPath": "./output/images/171_ガンダム試作1号機フルバーニアン_58.png",
+      "imageLocalPath": "./output/images/58_ガンダム試作1号機フルバーニアン.png",
       "tags": [
         "コスト2000",
         "主役機",
@@ -5660,7 +5660,7 @@
       "unitNo": 172,
       "pilot": "シーマ・ガラハウ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/383/478/ms.png",
-      "imageLocalPath": "./output/images/172_ガーベラ・テトラ_383.png",
+      "imageLocalPath": "./output/images/383_ガーベラ・テトラ.png",
       "tags": [
         "コスト2000",
         "非ガンダム",
@@ -5693,7 +5693,7 @@
       "unitNo": 173,
       "pilot": "ドモン・カッシュ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/92/48/ms.png",
-      "imageLocalPath": "./output/images/173_シャイニングガンダム_92.png",
+      "imageLocalPath": "./output/images/92_シャイニングガンダム.png",
       "tags": [
         "コスト2000",
         "ガンダム",
@@ -5726,7 +5726,7 @@
       "unitNo": 174,
       "pilot": "サイ・サイシー",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/267/178/ms.png",
-      "imageLocalPath": "./output/images/174_ドラゴンガンダム_267.png",
+      "imageLocalPath": "./output/images/267_ドラゴンガンダム.png",
       "tags": [
         "コスト2000",
         "ガンダム",
@@ -5758,7 +5758,7 @@
       "unitNo": 175,
       "pilot": "チボデー・クロケット",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/384/515/ms.png",
-      "imageLocalPath": "./output/images/175_ガンダムマックスター_384.png",
+      "imageLocalPath": "./output/images/384_ガンダムマックスター.png",
       "tags": [
         "コスト2000",
         "ガンダム",
@@ -5789,7 +5789,7 @@
       "unitNo": 176,
       "pilot": "アレンビー・ビアズリー",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/414/486/ms.png",
-      "imageLocalPath": "./output/images/176_ノーベルガンダム_414.png",
+      "imageLocalPath": "./output/images/414_ノーベルガンダム.png",
       "tags": [
         "コスト2000",
         "ガンダム",
@@ -5825,7 +5825,7 @@
       "unitNo": 177,
       "pilot": "ジョルジュ・ド・サンド",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/735/1079/ms.png",
-      "imageLocalPath": "./output/images/177_ガンダムローズ_735.png",
+      "imageLocalPath": "./output/images/735_ガンダムローズ.png",
       "tags": [
         "コスト2000",
         "ガンダム",
@@ -5858,7 +5858,7 @@
       "unitNo": 178,
       "pilot": "デュオ・マックスウェル",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/385/514/ms.png",
-      "imageLocalPath": "./output/images/178_ガンダムデスサイズヘル_385.png",
+      "imageLocalPath": "./output/images/385_ガンダムデスサイズヘル.png",
       "tags": [
         "コスト2000",
         "ガンダム",
@@ -5890,7 +5890,7 @@
       "unitNo": 179,
       "pilot": "カトル・ラバーバ・ウィナー",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/156/87/ms.png",
-      "imageLocalPath": "./output/images/179_ガンダムサンドロック改_156.png",
+      "imageLocalPath": "./output/images/156_ガンダムサンドロック改.png",
       "tags": [
         "コスト2000",
         "ガンダム",
@@ -5922,7 +5922,7 @@
       "unitNo": 180,
       "pilot": "トロワ・バートン",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/386/513/ms.png",
-      "imageLocalPath": "./output/images/180_ガンダムヘビーアームズ改_386.png",
+      "imageLocalPath": "./output/images/386_ガンダムヘビーアームズ改.png",
       "tags": [
         "ガンダム",
         "コスト2000",
@@ -5952,7 +5952,7 @@
       "unitNo": 181,
       "pilot": "ヒイロ・ユイ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/151/604/ms.png",
-      "imageLocalPath": "./output/images/181_ウイングガンダム_151.png",
+      "imageLocalPath": "./output/images/151_ウイングガンダム.png",
       "tags": [
         "コスト2000",
         "ガンダム",
@@ -5985,7 +5985,7 @@
       "unitNo": 182,
       "pilot": "ガロード・ランティファ・アディール",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/173/123/ms.png",
-      "imageLocalPath": "./output/images/182_ガンダムX_173.png",
+      "imageLocalPath": "./output/images/173_ガンダムX.png",
       "tags": [
         "ガンダム",
         "主役機",
@@ -6018,7 +6018,7 @@
       "unitNo": 183,
       "pilot": "カリス・ノーティラス",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/373/522/ms.png",
-      "imageLocalPath": "./output/images/183_ベルティゴ_373.png",
+      "imageLocalPath": "./output/images/373_ベルティゴ.png",
       "tags": [
         "非ガンダム",
         "コスト2000",
@@ -6049,7 +6049,7 @@
       "unitNo": 184,
       "pilot": "コレン・ナンダー",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/372/524/ms.png",
-      "imageLocalPath": "./output/images/184_コレンカプル_372.png",
+      "imageLocalPath": "./output/images/372_コレンカプル.png",
       "tags": [
         "コスト2000",
         "地走",
@@ -6079,7 +6079,7 @@
       "unitNo": 185,
       "pilot": "キラ・ヤマト",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/353/468/ms.png",
-      "imageLocalPath": "./output/images/185_ストライクガンダム_353.png",
+      "imageLocalPath": "./output/images/353_ストライクガンダム.png",
       "tags": [
         "コスト2000",
         "主役機",
@@ -6115,7 +6115,7 @@
       "unitNo": 186,
       "pilot": "アスラン・ザラ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/303/202/ms.png",
-      "imageLocalPath": "./output/images/186_イージスガンダム_303.png",
+      "imageLocalPath": "./output/images/303_イージスガンダム.png",
       "tags": [
         "コスト2000",
         "ガンダム",
@@ -6149,7 +6149,7 @@
       "unitNo": 187,
       "pilot": "ニコル・アマルフィ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/207/139/ms.png",
-      "imageLocalPath": "./output/images/187_ブリッツガンダム_207.png",
+      "imageLocalPath": "./output/images/207_ブリッツガンダム.png",
       "tags": [
         "コスト2000",
         "ガンダム",
@@ -6182,7 +6182,7 @@
       "unitNo": 188,
       "pilot": "オルガ・サブナック",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/131/72/ms.png",
-      "imageLocalPath": "./output/images/188_カラミティガンダム_131.png",
+      "imageLocalPath": "./output/images/131_カラミティガンダム.png",
       "tags": [
         "コスト2000",
         "ガンダム",
@@ -6213,7 +6213,7 @@
       "unitNo": 189,
       "pilot": "シャニ・アンドラス",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/106/60/ms.png",
-      "imageLocalPath": "./output/images/189_フォビドゥンガンダム_106.png",
+      "imageLocalPath": "./output/images/106_フォビドゥンガンダム.png",
       "tags": [
         "コスト2000",
         "ガンダム",
@@ -6243,7 +6243,7 @@
       "unitNo": 190,
       "pilot": "クロト・ブエル",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/370/477/ms.png",
-      "imageLocalPath": "./output/images/190_レイダーガンダム_370.png",
+      "imageLocalPath": "./output/images/370_レイダーガンダム.png",
       "tags": [
         "ガンダム",
         "コスト2000",
@@ -6275,7 +6275,7 @@
       "unitNo": 191,
       "pilot": "ルナマリア・ホーク",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/374/511/ms.png",
-      "imageLocalPath": "./output/images/191_インパルスガンダム(ルナマリア搭乗)_374.png",
+      "imageLocalPath": "./output/images/374_インパルスガンダム(ルナマリア搭乗).png",
       "tags": [
         "コスト2000",
         "ガンダム",
@@ -6306,7 +6306,7 @@
       "unitNo": 192,
       "pilot": "ハイネ・ヴェステンフルス",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/375/519/ms.png",
-      "imageLocalPath": "./output/images/192_グフイグナイテッド_375.png",
+      "imageLocalPath": "./output/images/375_グフイグナイテッド.png",
       "tags": [
         "コスト2000",
         "非ガンダム",
@@ -6339,7 +6339,7 @@
       "unitNo": 193,
       "pilot": "カガリ・ユラ・アスハ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/117/65/ms.png",
-      "imageLocalPath": "./output/images/193_ストライクルージュ(オオトリ装備)_117.png",
+      "imageLocalPath": "./output/images/117_ストライクルージュ(オオトリ装備).png",
       "tags": [
         "コスト2000",
         "ガンダム",
@@ -6372,7 +6372,7 @@
       "unitNo": 194,
       "pilot": "ルナマリア・ホーク",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/376/521/ms.png",
-      "imageLocalPath": "./output/images/194_ガナーザクウォーリア_376.png",
+      "imageLocalPath": "./output/images/376_ガナーザクウォーリア.png",
       "tags": [
         "ザク",
         "コスト2000",
@@ -6403,7 +6403,7 @@
       "unitNo": 195,
       "pilot": "ステラ・ルーシェ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/412/485/ms.png",
-      "imageLocalPath": "./output/images/195_ガイアガンダム_412.png",
+      "imageLocalPath": "./output/images/412_ガイアガンダム.png",
       "tags": [
         "コスト2000",
         "ガンダム",
@@ -6436,7 +6436,7 @@
       "unitNo": 196,
       "pilot": "ラクス・クライン",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/279/185/ms.png",
-      "imageLocalPath": "./output/images/196_インフィニットジャスティスガンダム(ラクス搭乗)_279.png",
+      "imageLocalPath": "./output/images/279_インフィニットジャスティスガンダム(ラクス搭乗).png",
       "tags": [
         "ガンダム",
         "コスト2000",
@@ -6469,7 +6469,7 @@
       "unitNo": 197,
       "pilot": "ソル・リューネ・ランジュ＆セレーネ・マクグリフ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/371/523/ms.png",
-      "imageLocalPath": "./output/images/197_スターゲイザー_371.png",
+      "imageLocalPath": "./output/images/371_スターゲイザー.png",
       "tags": [
         "コスト2000",
         "ガンダム",
@@ -6501,7 +6501,7 @@
       "unitNo": 198,
       "pilot": "ロウ・ギュール",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/352/464/ms.png",
-      "imageLocalPath": "./output/images/198_アストレイレッドフレーム_352.png",
+      "imageLocalPath": "./output/images/352_アストレイレッドフレーム.png",
       "tags": [
         "コスト2000",
         "主役機",
@@ -6533,7 +6533,7 @@
       "unitNo": 199,
       "pilot": "プレア・レヴェリー",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/351/465/ms.png",
-      "imageLocalPath": "./output/images/199_ドレッドノートガンダム(Xアストレイ)_351.png",
+      "imageLocalPath": "./output/images/351_ドレッドノートガンダム(Xアストレイ).png",
       "tags": [
         "コスト2000",
         "ガンダム",
@@ -6566,7 +6566,7 @@
       "unitNo": 200,
       "pilot": "叢雲劾",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/115/63/ms.png",
-      "imageLocalPath": "./output/images/200_アストレイブルーフレームセカンドL_115.png",
+      "imageLocalPath": "./output/images/115_アストレイブルーフレームセカンドL.png",
       "tags": [
         "コスト2000",
         "ガンダム",
@@ -6599,7 +6599,7 @@
       "unitNo": 201,
       "pilot": "ロンド・ギナ・サハク",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/350/466/ms.png",
-      "imageLocalPath": "./output/images/201_アストレイゴールドフレーム天_350.png",
+      "imageLocalPath": "./output/images/350_アストレイゴールドフレーム天.png",
       "tags": [
         "コスト2000",
         "ガンダム",
@@ -6631,7 +6631,7 @@
       "unitNo": 202,
       "pilot": "カナード・パルス",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/217/143/ms.png",
-      "imageLocalPath": "./output/images/202_ハイペリオンガンダム_217.png",
+      "imageLocalPath": "./output/images/217_ハイペリオンガンダム.png",
       "tags": [
         "コスト2000",
         "ガンダム",
@@ -6663,7 +6663,7 @@
       "unitNo": 203,
       "pilot": "刹那・F・セイエイ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/430/527/ms.png",
-      "imageLocalPath": "./output/images/203_ガンダムエクシア_430.png",
+      "imageLocalPath": "./output/images/430_ガンダムエクシア.png",
       "tags": [
         "ガンダム",
         "コスト2000",
@@ -6696,7 +6696,7 @@
       "unitNo": 204,
       "pilot": "ロックオン・ストラトス",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/244/151/ms.png",
-      "imageLocalPath": "./output/images/204_ガンダムデュナメス_244.png",
+      "imageLocalPath": "./output/images/244_ガンダムデュナメス.png",
       "tags": [
         "コスト2000",
         "ガンダム",
@@ -6730,7 +6730,7 @@
       "unitNo": 205,
       "pilot": "アレルヤ・ハプティズム",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/193/134/ms.png",
-      "imageLocalPath": "./output/images/205_ガンダムキュリオス_193.png",
+      "imageLocalPath": "./output/images/193_ガンダムキュリオス.png",
       "tags": [
         "コスト2000",
         "変形",
@@ -6763,7 +6763,7 @@
       "unitNo": 206,
       "pilot": "ティエリア・アーデ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/258/176/ms.png",
-      "imageLocalPath": "./output/images/206_ガンダムヴァーチェ_258.png",
+      "imageLocalPath": "./output/images/258_ガンダムヴァーチェ.png",
       "tags": [
         "コスト2000",
         "ガンダム",
@@ -6797,7 +6797,7 @@
       "unitNo": 207,
       "pilot": "ネーナ・トリニティ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/87/45/ms.png",
-      "imageLocalPath": "./output/images/207_ガンダムスローネドライ_87.png",
+      "imageLocalPath": "./output/images/87_ガンダムスローネドライ.png",
       "tags": [
         "コスト2000",
         "ガンダム",
@@ -6829,7 +6829,7 @@
       "unitNo": 208,
       "pilot": "ミハエル・トリニティ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/349/467/ms.png",
-      "imageLocalPath": "./output/images/208_ガンダムスローネツヴァイ_349.png",
+      "imageLocalPath": "./output/images/349_ガンダムスローネツヴァイ.png",
       "tags": [
         "ガンダム",
         "コスト2000",
@@ -6862,7 +6862,7 @@
       "unitNo": 209,
       "pilot": "ヒリング・ケア",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/348/463/ms.png",
-      "imageLocalPath": "./output/images/209_ガラッゾ(ヒリング・ケア機)_348.png",
+      "imageLocalPath": "./output/images/348_ガラッゾ(ヒリング・ケア機).png",
       "tags": [
         "コスト2000",
         "非ガンダム",
@@ -6894,7 +6894,7 @@
       "unitNo": 210,
       "pilot": "グラハム・エーカー",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/347/462/ms.png",
-      "imageLocalPath": "./output/images/210_グラハム専用ユニオンフラッグカスタム_347.png",
+      "imageLocalPath": "./output/images/347_グラハム専用ユニオンフラッグカスタム.png",
       "tags": [
         "コスト2000",
         "変形",
@@ -6925,7 +6925,7 @@
       "unitNo": 211,
       "pilot": "フリット・アスノ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/139/79/ms.png",
-      "imageLocalPath": "./output/images/211_ガンダムAGE-1_139.png",
+      "imageLocalPath": "./output/images/139_ガンダムAGE-1.png",
       "tags": [
         "ガンダム",
         "主役機",
@@ -6958,7 +6958,7 @@
       "unitNo": 212,
       "pilot": "ユリン・ルシェル(＆デシル・ガレット)",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/346/459/ms.png",
-      "imageLocalPath": "./output/images/212_ファルシア_346.png",
+      "imageLocalPath": "./output/images/346_ファルシア.png",
       "tags": [
         "コスト2000",
         "非ガンダム",
@@ -6990,7 +6990,7 @@
       "unitNo": 213,
       "pilot": "アイーダ・スルガン",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/175/124/ms.png",
-      "imageLocalPath": "./output/images/213_G-アルケイン(フルドレス)_175.png",
+      "imageLocalPath": "./output/images/175_G-アルケイン(フルドレス).png",
       "tags": [
         "ガンダム",
         "アンカー",
@@ -7021,7 +7021,7 @@
       "unitNo": 214,
       "pilot": "マスク",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/182/129/ms.png",
-      "imageLocalPath": "./output/images/214_マックナイフ(マスク機)_182.png",
+      "imageLocalPath": "./output/images/182_マックナイフ(マスク機).png",
       "tags": [
         "コスト2000",
         "変形",
@@ -7054,7 +7054,7 @@
       "unitNo": 215,
       "pilot": "クリム・ニック",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/122/68/ms.png",
-      "imageLocalPath": "./output/images/215_モンテーロ_122.png",
+      "imageLocalPath": "./output/images/122_モンテーロ.png",
       "tags": [
         "コスト2000",
         "非ガンダム",
@@ -7085,7 +7085,7 @@
       "unitNo": 216,
       "pilot": "ミック・ジャック",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/81/38/ms.png",
-      "imageLocalPath": "./output/images/216_ヘカテー_81.png",
+      "imageLocalPath": "./output/images/81_ヘカテー.png",
       "tags": [
         "コスト2000",
         "非ガンダム",
@@ -7115,7 +7115,7 @@
       "unitNo": 217,
       "pilot": "ノルバ・シノ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/345/458/ms.png",
-      "imageLocalPath": "./output/images/217_ガンダム・フラウロス_345.png",
+      "imageLocalPath": "./output/images/345_ガンダム・フラウロス.png",
       "tags": [
         "コスト2000",
         "ガンダム",
@@ -7147,7 +7147,7 @@
       "unitNo": 218,
       "pilot": "三日月・オーガス",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/312/212/ms.png",
-      "imageLocalPath": "./output/images/218_ガンダム・バルバトス_312.png",
+      "imageLocalPath": "./output/images/312_ガンダム・バルバトス.png",
       "tags": [
         "ガンダム",
         "コスト2000",
@@ -7180,7 +7180,7 @@
       "unitNo": 219,
       "pilot": "ガエリオ・ボードウィン",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/344/460/ms.png",
-      "imageLocalPath": "./output/images/219_ガンダム・キマリストルーパー_344.png",
+      "imageLocalPath": "./output/images/344_ガンダム・キマリストルーパー.png",
       "tags": [
         "コスト2000",
         "ガンダム",
@@ -7211,7 +7211,7 @@
       "unitNo": 220,
       "pilot": "ダリル・ローレンツ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/343/461/ms.png",
-      "imageLocalPath": "./output/images/220_アッガイ(ダリル搭乗)_343.png",
+      "imageLocalPath": "./output/images/343_アッガイ(ダリル搭乗).png",
       "tags": [
         "コスト2000",
         "主役機",
@@ -7244,7 +7244,7 @@
       "unitNo": 221,
       "pilot": "スレッタ・マーキュリー",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/41/10/ms.png",
-      "imageLocalPath": "./output/images/221_ガンダム・エアリアル_41.png",
+      "imageLocalPath": "./output/images/41_ガンダム・エアリアル.png",
       "tags": [
         "コスト2000",
         "機動戦士ガンダム 水星の魔女",
@@ -7277,7 +7277,7 @@
       "unitNo": 222,
       "pilot": "エラン・ケレス",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/99/53/ms.png",
-      "imageLocalPath": "./output/images/222_ガンダム・ファラクト_99.png",
+      "imageLocalPath": "./output/images/99_ガンダム・ファラクト.png",
       "tags": [
         "コスト2000",
         "ガンダム",
@@ -7310,7 +7310,7 @@
       "unitNo": 223,
       "pilot": "シュウジ・イトウ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/522/614/ms.png",
-      "imageLocalPath": "./output/images/223_赤いガンダム_522.png",
+      "imageLocalPath": "./output/images/522_赤いガンダム.png",
       "tags": [
         "コスト2000",
         "ガンダム",
@@ -7342,7 +7342,7 @@
       "unitNo": 224,
       "pilot": "イオリ・セイ&レイジ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/35/8/ms.png",
-      "imageLocalPath": "./output/images/224_ビルドストライクガンダム(フルパッケージ)_35.png",
+      "imageLocalPath": "./output/images/35_ビルドストライクガンダム(フルパッケージ).png",
       "tags": [
         "ガンダム",
         "ガンプラ",
@@ -7377,7 +7377,7 @@
       "unitNo": 225,
       "pilot": "ヤサカ・マオ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/45/13/ms.png",
-      "imageLocalPath": "./output/images/225_ガンダムX魔王_45.png",
+      "imageLocalPath": "./output/images/45_ガンダムX魔王.png",
       "tags": [
         "ガンダム",
         "ガンプラ",
@@ -7408,7 +7408,7 @@
       "unitNo": 226,
       "pilot": "ユウキ・タツヤ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/43/12/ms.png",
-      "imageLocalPath": "./output/images/226_ザクアメイジング_43.png",
+      "imageLocalPath": "./output/images/43_ザクアメイジング.png",
       "tags": [
         "ガンダムビルドファイターズ",
         "コスト2000",
@@ -7445,7 +7445,7 @@
       "unitNo": 227,
       "pilot": "リク",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/186/127/ms.png",
-      "imageLocalPath": "./output/images/227_ガンダムダブルオーダイバーエース_186.png",
+      "imageLocalPath": "./output/images/186_ガンダムダブルオーダイバーエース.png",
       "tags": [
         "コスト2000",
         "ガンダム",
@@ -7479,7 +7479,7 @@
       "unitNo": 228,
       "pilot": "エビハラ・チカゲ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/274/183/ms.png",
-      "imageLocalPath": "./output/images/228_N-EXTREMEガンダム ザナドゥ_274.png",
+      "imageLocalPath": "./output/images/274_N-EXTREMEガンダム ザナドゥ.png",
       "tags": [
         "ガンダム",
         "コスト2000",
@@ -7512,7 +7512,7 @@
       "unitNo": 229,
       "pilot": "カイ・シデン",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/82/40/ms.png",
-      "imageLocalPath": "./output/images/229_ガンキャノン_82.png",
+      "imageLocalPath": "./output/images/82_ガンキャノン.png",
       "tags": [
         "コスト1500",
         "非ガンダム",
@@ -7544,7 +7544,7 @@
       "unitNo": 230,
       "pilot": "ククルス・ドアン",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/342/457/ms.png",
-      "imageLocalPath": "./output/images/230_ザクII(ドアン機)_342.png",
+      "imageLocalPath": "./output/images/342_ザクII(ドアン機).png",
       "tags": [
         "コスト1500",
         "ザク",
@@ -7577,7 +7577,7 @@
       "unitNo": 231,
       "pilot": "アカハナ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/341/456/ms.png",
-      "imageLocalPath": "./output/images/231_アッガイ_341.png",
+      "imageLocalPath": "./output/images/341_アッガイ.png",
       "tags": [
         "コスト1500",
         "非ガンダム",
@@ -7609,7 +7609,7 @@
       "unitNo": 232,
       "pilot": "シャア・アズナブル",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/218/144/ms.png",
-      "imageLocalPath": "./output/images/232_シャア専用ザクII_218.png",
+      "imageLocalPath": "./output/images/218_シャア専用ザクII.png",
       "tags": [
         "非ガンダム",
         "コスト1500",
@@ -7641,7 +7641,7 @@
       "unitNo": 233,
       "pilot": "プルツー",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/340/455/ms.png",
-      "imageLocalPath": "./output/images/233_キュベレイMk-II(プルツー)_340.png",
+      "imageLocalPath": "./output/images/340_キュベレイMk-II(プルツー).png",
       "tags": [
         "コスト1500",
         "非ガンダム",
@@ -7675,7 +7675,7 @@
       "unitNo": 234,
       "pilot": "チェーン・アギ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/409/484/ms.png",
-      "imageLocalPath": "./output/images/234_リ・ガズィ_409.png",
+      "imageLocalPath": "./output/images/409_リ・ガズィ.png",
       "tags": [
         "コスト1500",
         "ガンダム",
@@ -7708,7 +7708,7 @@
       "unitNo": 235,
       "pilot": "ザビーネ・シャル",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/339/454/ms.png",
-      "imageLocalPath": "./output/images/235_ベルガ・ギロス_339.png",
+      "imageLocalPath": "./output/images/339_ベルガ・ギロス.png",
       "tags": [
         "コスト1500",
         "非ガンダム",
@@ -7739,7 +7739,7 @@
       "unitNo": 236,
       "pilot": "ジュンコ・ジェンコ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/338/451/ms.png",
-      "imageLocalPath": "./output/images/236_ガンイージ_338.png",
+      "imageLocalPath": "./output/images/338_ガンイージ.png",
       "tags": [
         "コスト1500",
         "非ガンダム",
@@ -7772,7 +7772,7 @@
       "unitNo": 237,
       "pilot": "クリスチーナ・マッケンジー",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/145/84/ms.png",
-      "imageLocalPath": "./output/images/237_アレックス_145.png",
+      "imageLocalPath": "./output/images/145_アレックス.png",
       "tags": [
         "ガンダム",
         "コスト1500",
@@ -7806,7 +7806,7 @@
       "unitNo": 238,
       "pilot": "バーナード・ワイズマン",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/201/136/ms.png",
-      "imageLocalPath": "./output/images/238_ザクII改_201.png",
+      "imageLocalPath": "./output/images/201_ザクII改.png",
       "tags": [
         "コスト1500",
         "非ガンダム",
@@ -7839,7 +7839,7 @@
       "unitNo": 239,
       "pilot": "ミハイル・カミンスキー",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/215/142/ms.png",
-      "imageLocalPath": "./output/images/239_ケンプファー_215.png",
+      "imageLocalPath": "./output/images/215_ケンプファー.png",
       "tags": [
         "コスト1500",
         "非ガンダム",
@@ -7870,7 +7870,7 @@
       "unitNo": 240,
       "pilot": "シロー・アマダ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/208/140/ms.png",
-      "imageLocalPath": "./output/images/240_ガンダムEz8_208.png",
+      "imageLocalPath": "./output/images/208_ガンダムEz8.png",
       "tags": [
         "コスト1500",
         "ガンダム",
@@ -7904,7 +7904,7 @@
       "unitNo": 241,
       "pilot": "ノリス・パッカード",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/272/186/ms.png",
-      "imageLocalPath": "./output/images/241_グフ・カスタム_272.png",
+      "imageLocalPath": "./output/images/272_グフ・カスタム.png",
       "tags": [
         "コスト1500",
         "非ガンダム",
@@ -7938,7 +7938,7 @@
       "unitNo": 242,
       "pilot": "ジャン・リュック・デュバル",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/240/152/ms.png",
-      "imageLocalPath": "./output/images/242_ヅダ_240.png",
+      "imageLocalPath": "./output/images/240_ヅダ.png",
       "tags": [
         "非ガンダム",
         "コスト1500",
@@ -7971,7 +7971,7 @@
       "unitNo": 243,
       "pilot": "デメジエール・ソンネン",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/48/15/ms.png",
-      "imageLocalPath": "./output/images/243_ヒルドルブ_48.png",
+      "imageLocalPath": "./output/images/48_ヒルドルブ.png",
       "tags": [
         "コスト1500",
         "非ガンダム",
@@ -8005,7 +8005,7 @@
       "unitNo": 244,
       "pilot": "ニムバス・シュターゼン",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/119/66/ms.png",
-      "imageLocalPath": "./output/images/244_イフリート改_119.png",
+      "imageLocalPath": "./output/images/119_イフリート改.png",
       "tags": [
         "コスト1500",
         "非ガンダム",
@@ -8036,7 +8036,7 @@
       "unitNo": 245,
       "pilot": "レイン・ミカムラ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/411/483/ms.png",
-      "imageLocalPath": "./output/images/245_ライジングガンダム_411.png",
+      "imageLocalPath": "./output/images/411_ライジングガンダム.png",
       "tags": [
         "コスト1500",
         "ガンダム",
@@ -8070,7 +8070,7 @@
       "unitNo": 246,
       "pilot": "ソシエ・ハイム",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/202/137/ms.png",
-      "imageLocalPath": "./output/images/246_カプル_202.png",
+      "imageLocalPath": "./output/images/202_カプル.png",
       "tags": [
         "コスト1500",
         "非ガンダム",
@@ -8103,7 +8103,7 @@
       "unitNo": 247,
       "pilot": "ディアッカ・エルスマン",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/103/55/ms.png",
-      "imageLocalPath": "./output/images/247_バスターガンダム_103.png",
+      "imageLocalPath": "./output/images/103_バスターガンダム.png",
       "tags": [
         "コスト1500",
         "ガンダム",
@@ -8135,7 +8135,7 @@
       "unitNo": 248,
       "pilot": "イザーク・ジュール",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/102/54/ms.png",
-      "imageLocalPath": "./output/images/248_デュエルガンダムアサルトシュラウド_102.png",
+      "imageLocalPath": "./output/images/102_デュエルガンダムアサルトシュラウド.png",
       "tags": [
         "コスト1500",
         "ガンダム",
@@ -8170,7 +8170,7 @@
       "unitNo": 249,
       "pilot": "アンドリュー・バルトフェルド",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/337/449/ms.png",
-      "imageLocalPath": "./output/images/249_ラゴゥ_337.png",
+      "imageLocalPath": "./output/images/337_ラゴゥ.png",
       "tags": [
         "コスト1500",
         "非ガンダム",
@@ -8201,7 +8201,7 @@
       "unitNo": 250,
       "pilot": "ソーマ・ピーリス",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/292/194/ms.png",
-      "imageLocalPath": "./output/images/250_ティエレンタオツー_292.png",
+      "imageLocalPath": "./output/images/292_ティエレンタオツー.png",
       "tags": [
         "機動戦士ガンダム00",
         "コスト1500",
@@ -8234,7 +8234,7 @@
       "unitNo": 251,
       "pilot": "ルイス・ハレヴィ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/336/447/ms.png",
-      "imageLocalPath": "./output/images/251_アヘッド脳量子波対応型(スマルトロン)_336.png",
+      "imageLocalPath": "./output/images/336_アヘッド脳量子波対応型(スマルトロン).png",
       "tags": [
         "コスト1500",
         "非ガンダム",
@@ -8264,7 +8264,7 @@
       "unitNo": 252,
       "pilot": "ラライヤ・アクパールノレド・ナグ",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/335/450/ms.png",
-      "imageLocalPath": "./output/images/252_G-ルシファー_335.png",
+      "imageLocalPath": "./output/images/335_G-ルシファー.png",
       "tags": [
         "コスト1500",
         "ガンダム",
@@ -8295,7 +8295,7 @@
       "unitNo": 253,
       "pilot": "ダンテ・D・ワーズロード",
       "imageUrl": "https://img.atwiki.jp/exvs2infiniteboost/attach/125/441/ms.png",
-      "imageLocalPath": "./output/images/253_N-EXTREMEガンダム スプレマシー_125.png",
+      "imageLocalPath": "./output/images/125_N-EXTREMEガンダム スプレマシー.png",
       "tags": [
         "ガンダム",
         "コスト1500",

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_08_040421) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_08_114016) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -132,9 +132,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_08_040421) do
     t.string "red_lock_range"
     t.string "series", null: false
     t.datetime "updated_at", null: false
+    t.integer "wiki_page_id"
     t.string "wiki_url"
     t.index ["cost"], name: "index_mobile_suits_on_cost"
     t.index ["name"], name: "index_mobile_suits_on_name"
+    t.index ["wiki_page_id"], name: "index_mobile_suits_on_wiki_page_id", unique: true
   end
 
   create_table "push_subscriptions", force: :cascade do |t|

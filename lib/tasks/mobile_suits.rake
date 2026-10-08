@@ -1,41 +1,7 @@
 namespace :mobile_suits do
-  desc "db/data/units.json から wiki_url・image_filename・スペック情報を MobileSuit レコードに書き込む"
-  task import_data: :environment do
-    json_path = Rails.root.join("db/data/units.json")
-    unless File.exist?(json_path)
-      abort "units.json が見つかりません: #{json_path}"
-    end
-
-    units = JSON.parse(File.read(json_path))["units"]
-    puts "#{units.size} 件のデータを読み込みました"
-
-    updated = 0
-    skipped = 0
-
-    units.each do |unit|
-      # 全角/半角カッコ両方向でマッチング
-      fullwidth_name = unit["name"].tr("()", "（）")
-      suit = MobileSuit.find_by(name: unit["name"]) ||
-             MobileSuit.find_by(name: fullwidth_name)
-
-      unless suit
-        puts "  スキップ（DBに存在しない）: #{unit['name']}"
-        skipped += 1
-        next
-      end
-
-      image_filename = File.basename(unit["imageLocalPath"])
-      metadata = unit["metadata"] || {}
-      suit.update!(
-        wiki_url:       unit["wikiUrl"],
-        image_filename: image_filename,
-        durability:     metadata["durability"]&.to_i.presence,
-        bd_count:       metadata["bdCount"].presence,
-        red_lock_range: metadata["redLockRange"].presence
-      )
-      updated += 1
-    end
-
-    puts "完了: #{updated} 件更新, #{skipped} 件スキップ"
+  desc "db/data/units.json の機体マスタを Wiki のページ ID で突き合わせて反映する（何度実行しても同じ結果。起動時にも自動実行）"
+  task sync: :environment do
+    result = MobileSuitCatalogSync.new.call
+    puts "機体マスタを同期しました: 新規 #{result.created} 件 / 更新 #{result.updated} 件 / 変更なし #{result.unchanged} 件"
   end
 end
