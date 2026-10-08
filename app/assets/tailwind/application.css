@@ -1950,21 +1950,6 @@
   .pk-close { width: 32px; height: 32px; border-radius: var(--m-r-pill); background: var(--color-surface-2); color: var(--color-muted); display: grid; place-items: center; cursor: pointer; border: 0; }
   .pk-close svg { width: 17px; height: 17px; stroke: currentColor; fill: none; stroke-width: 2; }
 
-  .pk-tray { flex-shrink: 0; background: var(--color-surface-2); border-bottom: 1px solid var(--color-line); padding: 12px 16px; }
-  .pk-tray-row { display: flex; align-items: center; gap: 10px; }
-  .pk-traygrid { flex: 1; display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; min-width: 0; }
-  .pk-trayitem { position: relative; background: var(--color-surface); box-shadow: var(--shadow-soft); border-radius: 7px; padding: 6px; text-align: center; min-width: 0; cursor: grab; }
-  .pk-trayitem:active { cursor: grabbing; }
-  .pk-trayitem .tt { width: 100%; height: 38px; border-radius: 5px; background: var(--color-surface-2); display: grid; place-items: center; overflow: hidden; }
-  .pk-trayitem .tt img { width: 100%; height: 100%; object-fit: contain; }
-  .pk-trayitem .tt .ph { font-size: 12px; color: var(--color-subtle); }
-  .pk-trayitem .tname { font-size: 10px; font-weight: 700; margin-top: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--color-muted); }
-  .pk-trayitem .tx { position: absolute; top: -6px; right: -6px; width: 18px; height: 18px; border-radius: 50%; background: var(--color-neg); color: #fff; font-size: 11px; line-height: 1; display: grid; place-items: center; cursor: pointer; box-shadow: var(--shadow-soft); border: 0; z-index: 10; }
-  .pk-trayempty { grid-column: 1 / -1; text-align: center; padding: 16px 0; font-size: 12px; font-weight: 600; color: var(--color-subtle); }
-  .pk-trayhint { font-size: 11px; color: var(--color-subtle); margin-top: 8px; display: flex; align-items: center; gap: 6px; }
-  .pk-trayhint svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 1.8; }
-  .pk-clear { flex-shrink: 0; border: 0; background: transparent; color: var(--color-subtle); font-size: 11px; font-weight: 700; cursor: pointer; padding: 5px 9px; border-radius: var(--m-r-sm); }
-  .pk-clear:hover { color: var(--color-neg); background: color-mix(in oklab, var(--color-neg) 9%, transparent); }
 
   .pk-filter { flex-shrink: 0; padding: 11px 16px; border-bottom: 1px solid var(--color-line); display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
   .pk-costtabs { display: inline-flex; gap: 3px; background: var(--color-surface-2); padding: 4px; border-radius: var(--m-r-sm); flex-wrap: nowrap; overflow-x: auto; }
@@ -1993,21 +1978,18 @@
   .pk-cell .sc-chk { position: absolute; top: -7px; right: -7px; width: 20px; height: 20px; border-radius: 50%; background: var(--color-accent); color: #fff; display: none; place-items: center; box-shadow: var(--shadow-soft); }
   .pk-cell.is-sel .sc-chk { display: grid; }
   .pk-cell .sc-chk svg { width: 12px; height: 12px; stroke: #fff; fill: none; stroke-width: 3; }
+  /* 選択中の機体の並び順（M=メイン、S1…=サブ） */
+  .pk-cell .sc-slot { position: absolute; top: 6px; left: 6px; z-index: 1; display: none; font-size: 10px; font-weight: 800; line-height: 1.4; padding: 1px 6px; border-radius: var(--m-r-pill); background: var(--color-surface); color: var(--color-muted); box-shadow: 0 0 0 1px var(--color-line-strong); pointer-events: none; }
+  .pk-cell.is-sel .sc-slot { display: inline-block; }
+  .pk-cell .sc-slot.main { background: var(--color-accent); color: var(--color-on-accent); box-shadow: none; }
+  .pk-costtab.sel { color: var(--color-accent); }
+  .pk-costtab.sel.on { background: var(--color-accent); color: var(--color-on-accent); }
+  .pk-selhint { flex-basis: 100%; margin: 0; font-size: 11px; color: var(--color-subtle); }
   .pk-foot { flex-shrink: 0; display: flex; justify-content: flex-end; gap: 10px; padding: 13px 16px; border-top: 1px solid var(--color-line); }
 
   @media (max-width: 760px) {
     /* 下部の選択グリッドを最大化するため、シートを高くして上部の固定領域を圧縮する */
     .pk-panel { left: 0; right: 0; bottom: 0; top: auto; transform: none; width: 100%; height: 92vh; height: 92dvh; max-height: 92dvh; border-radius: 18px 18px 0 0; }
-    /* 選択済みトレイ＝横スクロール1行。アイテムを大きめにし、削除(×)ボタンが上に見切れないよう
-       コンテナ上下に余白を確保する（overflow-x:auto は縦方向もクリップするため） */
-    .pk-tray { padding: 12px 14px; }
-    .pk-traygrid { display: flex; flex-wrap: nowrap; grid-template-columns: none; overflow-x: auto; gap: 10px; padding: 9px 10px 4px; -webkit-overflow-scrolling: touch; }
-    .pk-trayitem { flex: 0 0 78px; width: 78px; padding: 7px; }
-    .pk-trayitem .tt { height: 48px; }
-    .pk-trayitem .tname { font-size: 9px; }
-    .pk-trayitem .tx { top: -6px; right: -6px; width: 24px; height: 24px; font-size: 14px; }
-    .pk-trayempty { flex: 1 0 100%; }
-    .pk-trayhint { display: none; }
     /* フィルタを詰める */
     .pk-filter { padding: 9px 14px; gap: 8px; }
     .pk-search { min-width: 140px; }
