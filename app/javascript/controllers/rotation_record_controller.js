@@ -1,75 +1,52 @@
 import { Controller } from "@hotwired/stimulus"
 
+const SUIT_FIELDS = ["team1_player1_suit", "team1_player2_suit", "team2_player1_suit", "team2_player2_suit"]
+
 export default class extends Controller {
-  static targets = [
-    "form",
-    "title",
-    "matchIndex",
-    "submitText",
-    "cancelButton",
-    "skipButton",
-    "nextButton"
-  ]
+  static targets = ["form", "error", "deferButton", "deferModal", "missing"]
 
-  static values = {
-    updateUrl: String
-  }
-
-  edit(event) {
-    event.preventDefault()
-    event.stopPropagation()
-
-    const data = event.currentTarget.dataset
-    this.titleTarget.textContent = `試合結果を編集（第${Number(data.matchIndex) + 1}試合）`
-    this.formTarget.action = this.updateUrlValue
-    this.matchIndexTarget.value = data.matchIndex
-    this.submitTextTarget.textContent = "更新"
-
-    this.setSelectValue("team1_player1_suit", data.suit1)
-    this.setSelectValue("team1_player2_suit", data.suit2)
-    this.setSelectValue("team2_player1_suit", data.suit3)
-    this.setSelectValue("team2_player2_suit", data.suit4)
-
-    const winner = this.element.querySelector(`input[name="winning_team"][value="${data.winningTeam}"]`)
-    if (winner) winner.checked = true
-
-    if (this.hasSkipButtonTarget) this.skipButtonTarget.classList.add("hidden")
-    if (this.hasNextButtonTarget) this.nextButtonTarget.classList.add("hidden")
-    this.cancelButtonTarget.classList.remove("hidden")
-    this.element.scrollIntoView({ behavior: "smooth", block: "start" })
-  }
-
-  cancel() {
-    window.location.reload()
-  }
-
+  // 入力が足りないとき、「次の試合へ進む」なら結果未入力のまま進むかを確認し、それ以外はエラーを表示する
   validate(event) {
     if (event.submitter?.dataset.skipValidation === "true") return
 
-    const names = ["team1_player1_suit", "team1_player2_suit", "team2_player1_suit", "team2_player2_suit"]
-    const missingSuit = names.some((name) => !this.element.querySelector(`[name="${name}"]`)?.value)
-    const missingWinner = !this.element.querySelector('input[name="winning_team"]:checked')
+    const { blankPlayers, missingWinner } = this.missingFields()
+    if (blankPlayers.length === 0 && !missingWinner) return
 
-    if (missingSuit) {
-      event.preventDefault()
-      window.alert("すべてのプレイヤーの機体を選択してください")
+    event.preventDefault()
+
+    if (event.submitter?.dataset.defer === "true" && this.hasDeferModalTarget) {
+      const items = []
+      if (blankPlayers.length > 0) items.push(`機体：${blankPlayers.join("、")}`)
+      if (missingWinner) items.push("勝利チーム")
+      this.missingTarget.replaceChildren(...items.map((text) => Object.assign(document.createElement("li"), { textContent: text })))
+      this.deferModalTarget.hidden = false
       return
     }
 
-    if (missingWinner) {
-      event.preventDefault()
-      window.alert("勝利チームを選択してください")
-    }
+    const items = []
+    if (blankPlayers.length > 0) items.push(`機体（${blankPlayers.join("、")}）`)
+    if (missingWinner) items.push("勝利チーム")
+    this.errorTarget.textContent = `未入力：${items.join("、")}`
+    this.errorTarget.hidden = false
   }
 
-  setSelectValue(name, value) {
-    const select = this.element.querySelector(`[name="${name}"]`)
-    if (!select || !value) return
+  confirmDefer() {
+    this.deferModalTarget.hidden = true
+    this.formTarget.requestSubmit(this.deferButtonTarget)
+  }
 
-    if (select.tomselect) {
-      select.tomselect.setValue(String(value))
-    } else {
-      select.value = String(value)
-    }
+  closeDefer() {
+    this.deferModalTarget.hidden = true
+  }
+
+  // 機体が未選択のプレイヤー名と、勝利チームが未選択かどうか
+  missingFields() {
+    const blankPlayers = SUIT_FIELDS
+      .map((name) => this.element.querySelector(`select[name="${name}"]`))
+      .filter((select) => select && !select.value)
+      .map((select) => select.dataset.playerName)
+    const missingWinner = !this.element.querySelector('input[name="winning_team"]:checked')
+
+    return { blankPlayers, missingWinner }
   }
 }

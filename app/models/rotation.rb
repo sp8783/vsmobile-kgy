@@ -21,30 +21,24 @@ class Rotation < ApplicationRecord
     players.count
   end
 
-  # 8人の場合のみ1セット6試合、それ以外は1セット3試合
   def matches_per_set
-    player_count == 8 ? 6 : 3
+    RotationTemplateCatalog.matches_per_set(player_count)
   end
 
+  # 現在の試合より後で、まだ始まっていない（予定の）最初の試合
+  def next_upcoming_match_index
+    rotation_matches.order(:match_index).to_a.find do |rotation_match|
+      rotation_match.match_index > current_match_index &&
+        rotation_match.progress_status(current_match_index) == :upcoming
+    end&.match_index
+  end
+
+  # 現在の試合の結果を保存した後に進む先。予定の試合を優先し、なければスキップした試合に戻る。
+  # 結果が未入力の試合（対戦済み）には戻らない。進む先がなければ現在の試合に留まる
   def next_unrecorded_match_index
-    ordered_matches = rotation_matches.includes(:match).order(:match_index).to_a
-    return 0 if ordered_matches.empty?
-
-    ordered_matches.each do |rotation_match|
-      if rotation_match.match_index > current_match_index && rotation_match.match.nil?
-        return rotation_match.match_index
-      end
-    end
-
-    ordered_matches.each do |rotation_match|
-      return rotation_match.match_index if rotation_match.match.nil?
-    end
-
-    ordered_matches.last.match_index
-  end
-
-  def sync_current_match_index!
-    update!(current_match_index: next_unrecorded_match_index)
+    next_upcoming_match_index ||
+      rotation_matches.where(match_id: nil, skipped: true).order(:match_index).pick(:match_index) ||
+      current_match_index
   end
 
   # Calculate statistics for each player

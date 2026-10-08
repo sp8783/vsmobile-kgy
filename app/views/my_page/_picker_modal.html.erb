@@ -12,29 +12,25 @@
   <div class="pk-panel">
     <div class="pk-head">
       <div class="l">
-        <h2>お気に入り機体を選択</h2>
-        <span class="pk-count" data-favorite-picker-target="countBadge">0 / 12</span>
+        <h2>お気に入り機体を選ぶ</h2>
+        <span class="pk-count" data-favorite-picker-target="countBadge">0 / <%= UserFavoriteSuit::MAX_SLOTS %></span>
       </div>
       <button type="button" class="pk-close" aria-label="閉じる" data-action="click->favorite-picker#close">
         <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
       </button>
     </div>
 
-    <div class="pk-tray">
-      <div class="pk-tray-row">
-        <div class="pk-traygrid" data-favorite-picker-target="tray">
-          <div class="pk-trayempty">機体をクリックして追加…</div>
-        </div>
-        <button type="button" class="pk-clear" data-action="click->favorite-picker#clearAll">クリア</button>
-      </div>
-      <div class="pk-trayhint">
-        <svg viewBox="0 0 24 24"><path d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4"/></svg>
-        ドラッグで順番変更　・　× で削除
-      </div>
-    </div>
-
     <div class="pk-filter">
       <div class="pk-costtabs">
+        <%# 選んだ機体だけを表示し、その場で外せるようにする %>
+        <button type="button"
+                class="pk-costtab sel"
+                data-cost-btn
+                data-cost="selected"
+                data-active="false"
+                data-action="click->favorite-picker#filterCost">
+          選択中<span class="ct-n" data-favorite-picker-target="selectedCount">0</span>
+        </button>
         <% cost_tabs.each do |val, label, count| %>
           <% is_all = val.empty? %>
           <button type="button"
@@ -53,18 +49,20 @@
                data-favorite-picker-target="searchInput"
                data-action="input->favorite-picker#search">
       </div>
+      <p class="pk-selhint" hidden data-favorite-picker-target="selectedHint">選択中の機体です。タップで外し、もう一度タップで戻せます</p>
     </div>
 
     <div class="pk-body">
       <div class="pk-grid">
         <% suits.each do |suit| %>
-          <div data-suit-wrapper data-suit-name="<%= suit.name %>" data-suit-cost="<%= suit.cost %>">
+          <div data-suit-wrapper data-suit-id="<%= suit.id %>" data-suit-name="<%= suit.name %>" data-suit-cost="<%= suit.cost %>">
             <div class="pk-cell"
                  data-suit-id="<%= suit.id %>"
                  data-suit-name="<%= suit.name %>"
                  data-suit-image="<%= suit.image_filename.to_s %>"
                  data-action="click->favorite-picker#toggleSuit">
               <span class="sc-chk"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></span>
+              <span class="sc-slot" data-slot-label></span>
               <div class="sc-th">
                 <% if suit.image_filename.present? %>
                   <%= image_tag "/mobile_suits/#{suit.image_filename}", alt: suit.name, loading: "lazy" %>
@@ -82,7 +80,7 @@
 
     <div class="pk-foot">
       <button type="button" class="m-btn m-btn-ghost" data-action="click->favorite-picker#close">キャンセル</button>
-      <button type="button" class="m-btn m-btn-primary" data-favorite-picker-target="saveBtn" data-action="click->favorite-picker#save">保存</button>
+      <button type="button" class="m-btn m-btn-primary" data-favorite-picker-target="saveBtn" data-action="click->favorite-picker#save">保存する</button>
     </div>
 
     <%= form_with url: bulk_update_user_favorite_suits_path, method: :post,

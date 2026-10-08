@@ -1,7 +1,7 @@
 class RotationsController < ApplicationController
   before_action :authenticate_user!
   before_action :require_admin, except: [ :index, :show ]
-  before_action :set_rotation, only: [ :show, :edit, :update, :destroy, :activate, :deactivate, :next_match, :record_match, :go_to_match, :update_match_record, :copy_for_next_round ]
+  before_action :set_rotation, only: [ :show, :edit, :update, :destroy, :activate, :deactivate, :next_match, :skip_match, :record_match, :record_pending_match, :go_to_match, :update_match_record, :copy_for_next_round ]
   before_action :set_event, only: [ :new, :create ]
 
   def index
@@ -12,7 +12,8 @@ class RotationsController < ApplicationController
     assign_view_state(
       RotationShowSnapshot.new(
         rotation: @rotation,
-        show_completion_modal: consume_completion_modal_flag
+        show_completion_modal: consume_completion_modal_flag,
+        target_index: params[:target].presence&.to_i
       ).to_h
     )
   end
@@ -82,10 +83,16 @@ class RotationsController < ApplicationController
     redirect_with_result(@rotation, result, success_notice: "ローテーションを非アクティブにしました。")
   end
 
-  # Move to next match
+  # Move to next match without entering results (the current match becomes pending)
   def next_match
-    result = RotationWorkflowManager.new(rotation: @rotation).next_match!
-    redirect_with_result(@rotation, result, success_notice: "次の試合に進みました。")
+    result = RotationWorkflowManager.new(rotation: @rotation).next_match!(expected_index: expected_index)
+    redirect_with_result(@rotation, result, success_notice: "第#{expected_index + 1}試合を結果未入力のまま、次の試合へ進みました")
+  end
+
+  # Skip the current match (not played) and move to next match
+  def skip_match
+    result = RotationWorkflowManager.new(rotation: @rotation).skip_match!(expected_index: expected_index)
+    redirect_with_result(@rotation, result, success_notice: "第#{expected_index + 1}試合をスキップして、次の試合へ進みました")
   end
 
   # Go to specific match (for skipped matches)
@@ -95,15 +102,31 @@ class RotationsController < ApplicationController
     redirect_with_result(@rotation, result, success_notice: "第#{match_index + 1}試合に戻りました。")
   end
 
-  # Record match result
+  # Record current match result and move to next match
   def record_match
     result = RotationWorkflowManager.new(rotation: @rotation).record_current_match!(
+      winning_team: params[:winning_team].to_i,
+      suit_ids: rotation_match_suit_ids,
+      expected_index: expected_index
+    )
+
+    session[:show_completion_modal] = @rotation.id if result.success? && result.completed
+    moved = result.success? && @rotation.current_match_index != expected_index
+    notice = moved ? "第#{expected_index + 1}試合の結果を保存して、次の試合へ進みました" : "第#{expected_index + 1}試合の結果を保存しました"
+    redirect_with_result(@rotation, result, success_notice: notice)
+  end
+
+  # Record a pending match result without moving rotation
+  def record_pending_match
+    match_index = params[:match_index].to_i
+    result = RotationWorkflowManager.new(rotation: @rotation).record_pending_match!(
+      match_index: match_index,
       winning_team: params[:winning_team].to_i,
       suit_ids: rotation_match_suit_ids
     )
 
     session[:show_completion_modal] = @rotation.id if result.success? && result.completed
-    redirect_with_result(@rotation, result, success_notice: "試合を記録しました。")
+    redirect_with_result(@rotation, result, success_notice: "第#{match_index + 1}試合の結果を保存しました")
   end
 
   # Update existing match record without moving rotation
@@ -114,7 +137,7 @@ class RotationsController < ApplicationController
       suit_ids: rotation_match_suit_ids
     )
 
-    redirect_with_result(@rotation, result, success_notice: "試合記録を更新しました。")
+    redirect_with_result(@rotation, result, success_notice: "第#{params[:match_index].to_i + 1}試合の結果を保存しました")
   end
 
   # Copy rotation for next round
@@ -139,6 +162,11 @@ class RotationsController < ApplicationController
 
   def rotation_params
     params.require(:rotation).permit(:round_number)
+  end
+
+  # 画面表示時点の現在の試合番号（二重操作の検知に使う）
+  def expected_index
+    params[:match_index].to_i
   end
 
   def rotation_match_suit_ids

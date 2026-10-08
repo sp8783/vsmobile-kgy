@@ -55,6 +55,18 @@ class RotationMatch < ApplicationRecord
     PLAYER_SLOTS.filter_map { |slot| public_send(slot[:player_key]) }
   end
 
+  # ローテーション上の進行状態。current_index はローテーションの現在の試合番号
+  #   recorded: 入力済み / current: 現在 / skipped: スキップ（対戦なし）
+  #   pending: 未入力（対戦済み・結果なし） / upcoming: 予定（未開始）
+  def progress_status(current_index)
+    return :recorded if match_id.present?
+    return :current if match_index == current_index
+    return :skipped if skipped?
+    return :pending if started_at.present?
+
+    :upcoming
+  end
+
   def team1_players
     [ team1_player1, team1_player2 ].compact
   end

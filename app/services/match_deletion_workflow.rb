@@ -11,7 +11,6 @@ class MatchDeletionWorkflow
     ActiveRecord::Base.transaction do
       unlink_rotation_matches!
       deleted_count = destroy_matches!
-      affected_rotations.each(&:sync_current_match_index!)
     end
 
     Result.new(
@@ -40,10 +39,6 @@ class MatchDeletionWorkflow
 
   def primary_rotation
     @primary_rotation ||= primary_match && rotation_by_match_id[primary_match.id]
-  end
-
-  def affected_rotations
-    @affected_rotations ||= rotation_by_match_id.values.compact.uniq
   end
 
   def rotation_by_match_id

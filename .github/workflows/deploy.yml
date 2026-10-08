@@ -1,0 +1,70 @@
+name: Deploy
+
+# main への push で CI が成功したら、Kamal で本番へデプロイする（手動実行も可能）
+on:
+  workflow_run:
+    workflows: [ CI ]
+    types: [ completed ]
+    branches: [ main ]
+  workflow_dispatch:
+
+# デプロイは常に 1 つずつ実行し、実行中のものは中断しない
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      (github.event_name == 'workflow_dispatch' ||
+       (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push'))
+    runs-on: ubuntu-latest
+    # Secrets は production Environment（main ブランチからのみ利用可）に置く
+    environment: production
+    timeout-minutes: 30
+
+    env:
+      KAMAL_REGISTRY_PASSWORD: ${{ secrets.KAMAL_REGISTRY_PASSWORD }}
+      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+      VSMOBILE_API_TOKEN: ${{ secrets.VSMOBILE_API_TOKEN }}
+      KAMAL_GITHUB_TOKEN: ${{ secrets.KAMAL_GITHUB_TOKEN }}
+
+    steps:
+      # 外部の Actions はコミット SHA で固定する
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@14594264cd68ce8a2345dd349bc3d138a4ef85c8 # v1.327.0
+        with:
+          bundler-cache: true
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+
+      - name: Set up SSH agent
+        uses: webfactory/ssh-agent@e83874834305fe9a4a2997156cb26c5de65a8555 # v0.10.0
+        with:
+          ssh-private-key: ${{ secrets.DEPLOY_SSH_KEY }}
+
+      - name: Trust the server host key
+        env:
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" >> ~/.ssh/known_hosts
+
+      # .kamal/secrets は RAILS_MASTER_KEY を config/master.key から読む
+      - name: Write Rails master key
+        env:
+          RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
+        run: printf '%s' "$RAILS_MASTER_KEY" > config/master.key
+
+      - name: Deploy with Kamal
+        run: bin/kamal deploy

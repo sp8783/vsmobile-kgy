@@ -7,7 +7,11 @@ class MyPageController < ApplicationController
     @favorites_by_slot = viewing_as_user.user_favorite_suits
                                      .includes(:mobile_suit)
                                      .index_by(&:slot)
-    @selected_suit_ids = (0..11).filter_map { |s| @favorites_by_slot[s]&.mobile_suit_id }
+    @selected_suit_ids = UserFavoriteSuit::SLOTS.filter_map { |s| @favorites_by_slot[s]&.mobile_suit_id }
+    # 並び替えモードの「使用回数順」用。本人がその機体で戦った全期間の試合数
+    @favorite_usage_counts = MatchPlayer.where(user: viewing_as_user, mobile_suit_id: @selected_suit_ids)
+                                        .group(:mobile_suit_id)
+                                        .count
 
     @all_suits      = MobileSuit.position_order
     @costs          = COSTS
