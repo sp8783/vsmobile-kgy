@@ -1916,8 +1916,24 @@
   .fav-head .sub { font-size: 12px; font-weight: 700; color: var(--color-subtle); margin-top: 2px; font-variant-numeric: tabular-nums; }
   /* お気に入りは最大12スロット。12を割り切れる固定列数（スマホ3／タブレット4／デスクトップ6）にして、
      最終行が欠けて見えないようにする */
-  .fav-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 13px; }
-  @media (min-width: 1024px) { .fav-grid { grid-template-columns: repeat(6, 1fr); } }
+  /* 18 枠が割り切れるよう、PC・タブレットは 6 列、スマホは 3 列 */
+  .fav-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 13px; }
+  .fav-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+
+  /* 並び替えモード */
+  .fav-sortbar { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+  .fav-sortbtns { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+  .fav-sortbtns .lbl { font-size: 12px; font-weight: 700; color: var(--color-muted); }
+  .fav-sortbtn { min-height: 34px; padding: 0 12px; border-radius: var(--m-r-pill); border: 1px solid var(--color-line-strong); background: var(--color-surface); color: var(--color-muted); font-size: 12px; font-weight: 700; cursor: pointer; }
+  .fav-sortbtn.is-on { border-color: var(--color-accent); background: color-mix(in oklab, var(--color-accent) 13%, var(--color-surface)); color: var(--color-accent); }
+  .fav-sorthint { margin: 0; font-size: 11px; color: var(--color-subtle); }
+  .fav-rtile { position: relative; min-width: 0; background: var(--color-surface); box-shadow: var(--shadow-card); border-radius: var(--m-r-sm); padding: 7px; cursor: grab; user-select: none; -webkit-user-select: none; }
+  .fav-rtile .slot-badge { position: absolute; top: 6px; left: 6px; z-index: 1; }
+  .fav-rthumb { width: 100%; height: 56px; border-radius: 5px; background: var(--color-surface-2); display: grid; place-items: center; overflow: hidden; }
+  .fav-rthumb img { width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
+  .fav-rname { font-size: 11px; font-weight: 800; color: var(--color-ink); margin-top: 5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .fav-rmeta { display: flex; align-items: center; justify-content: space-between; gap: 4px; margin-top: 5px; }
+  .fav-rusage { font-size: 10px; font-weight: 700; color: var(--color-subtle); white-space: nowrap; }
   @media (max-width: 639px) {
     .fav-card { padding: 16px 12px; }
     .fav-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; }

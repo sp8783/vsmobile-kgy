@@ -24,21 +24,66 @@
     </div>
   </div>
 
-  <section class="fav-card mb-5">
+  <% favorites_in_order = @favorites_by_slot.sort_by { |slot, _| slot }.map(&:last) %>
+  <section class="fav-card mb-5" data-controller="favorite-reorder">
     <div class="fav-head">
       <div>
         <h2>お気に入り機体</h2>
         <div class="sub"><%= @favorites_by_slot.size %> / <%= UserFavoriteSuit::MAX_SLOTS %></div>
       </div>
       <% unless current_user.is_guest? %>
-        <button type="button" class="m-btn m-btn-primary" data-action="click->favorite-picker#open">
-          <svg viewBox="0 0 24 24" aria-hidden="true" style="width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2"><path d="M12 5v14M5 12h14"/></svg>
-          機体を選ぶ
-        </button>
+        <div class="fav-actions" data-favorite-reorder-target="viewActions">
+          <% if favorites_in_order.size >= 2 %>
+            <button type="button" class="m-btn-ghost" data-action="click->favorite-reorder#start">並び替え</button>
+          <% end %>
+          <button type="button" class="m-btn m-btn-primary" data-action="click->favorite-picker#open">
+            <svg viewBox="0 0 24 24" aria-hidden="true" style="width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2"><path d="M12 5v14M5 12h14"/></svg>
+            機体を選ぶ
+          </button>
+        </div>
+        <div class="fav-actions" hidden data-favorite-reorder-target="editActions">
+          <button type="button" class="m-btn-ghost" data-action="click->favorite-reorder#cancel">キャンセル</button>
+          <button type="button" class="m-btn m-btn-primary" data-action="click->favorite-reorder#save">保存する</button>
+        </div>
       <% end %>
     </div>
 
-    <div class="fav-grid">
+    <% unless current_user.is_guest? %>
+      <div class="fav-sortbar" hidden data-favorite-reorder-target="sortBar">
+        <div class="fav-sortbtns">
+          <span class="lbl">まとめて並べる:</span>
+          <button type="button" class="fav-sortbtn" data-sort-key="cost" data-favorite-reorder-target="sortButton" data-action="click->favorite-reorder#sort">コスト順</button>
+          <button type="button" class="fav-sortbtn" data-sort-key="usage" data-favorite-reorder-target="sortButton" data-action="click->favorite-reorder#sort">使用回数順</button>
+        </div>
+        <p class="fav-sorthint">ドラッグで個別に移動できます。左上が M（メイン）です</p>
+      </div>
+
+      <%# 並び替えモード用の小さい枠。並び順は保存時にまとめて送る %>
+      <div class="fav-grid fav-reorder" hidden data-favorite-reorder-target="list">
+        <% favorites_in_order.each_with_index do |fav, index| %>
+          <div class="fav-rtile" data-suit-id="<%= fav.mobile_suit_id %>" data-cost="<%= fav.mobile_suit.cost %>" data-usage="<%= @favorite_usage_counts.fetch(fav.mobile_suit_id, 0) %>">
+            <span class="slot-badge <%= index.zero? ? 'slot-badge-main' : 'slot-badge-sub' %>" data-slot-label><%= index.zero? ? "M" : "S#{index}" %></span>
+            <div class="fav-rthumb">
+              <% if fav.mobile_suit.image_filename.present? %>
+                <%= image_tag "/mobile_suits/#{fav.mobile_suit.image_filename}", alt: fav.mobile_suit.name, loading: "lazy", draggable: false %>
+              <% else %>
+                <span class="text-xs font-bold text-subtle">No Image</span>
+              <% end %>
+            </div>
+            <div class="fav-rname"><%= fav.mobile_suit.name %></div>
+            <div class="fav-rmeta">
+              <%= cost_badge(fav.mobile_suit.cost) %>
+              <span class="fav-rusage"><%= @favorite_usage_counts.fetch(fav.mobile_suit_id, 0) %>戦</span>
+            </div>
+          </div>
+        <% end %>
+      </div>
+
+      <%= form_with url: bulk_update_user_favorite_suits_path, method: :post, data: { favorite_reorder_target: "form" } do %>
+      <% end %>
+    <% end %>
+
+    <div class="fav-grid" data-favorite-reorder-target="grid">
       <% UserFavoriteSuit::SLOTS.each do |slot| %>
         <% fav = @favorites_by_slot[slot] %>
         <% if fav %>
