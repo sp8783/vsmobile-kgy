@@ -1,0 +1,19 @@
+# テスト用の Discord の設定。config/discord.local.yml にコピーして使う（Git の管理対象外）。
+# サンプルデータの作成時（bin/setup・bin/rails dev:sample_data）に読み込まれる。
+# 本番の Webhook は書かないこと（ローカルでの確認で本番の Discord に投稿されてしまう）
+
+# Discord の投稿先。default はすべての投稿先に使う Webhook（テスト用のテキストチャンネル）。
+# 投稿先ごとに書くと、そちらが優先される
+#   reminder         イベントリマインド
+#   event_forum      イベントフォーラム（フォーラムのチャンネルで作った Webhook が必要）
+#   timestamp_result タイムスタンプ解析結果
+#   stats_result     統計スクレイピング結果
+#   broadcast_url    配信URL投稿
+#   release          リリース告知
+webhooks:
+  default: https://discord.com/api/webhooks/...
+  event_forum: https://discord.com/api/webhooks/...
+
+# これから開催するサンプルのイベント（明日・1週間後）の「Discord フォーラムスレッド URL」。
+# テスト用のフォーラムの記事の URL（記事の「リンクをコピー」）を 1 つ書く
+event_thread_url: https://discord.com/channels/...
