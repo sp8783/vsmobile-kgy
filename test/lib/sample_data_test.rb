@@ -13,7 +13,7 @@ class SampleDataTest < ActiveSupport::TestCase
     summary = build
 
     assert_equal SampleData::USERS.size, summary.users
-    assert_equal PAST_EVENTS.size + 1, summary.events
+    assert_equal PAST_EVENTS.size + 1 + SampleData::UPCOMING_EVENT_DAYS.size, summary.events
     assert_equal SampleData::USERS.map(&:third), User.order(:id).map { |user| user.user_favorite_suits.count }
     assert Rotation.where.not(id: active_rotation.id).none?(&:is_active?)
     assert Rotation.where.not(id: active_rotation.id).all? { |rotation| rotation.rotation_matches.where(match_id: nil).none? }
@@ -40,6 +40,34 @@ class SampleDataTest < ActiveSupport::TestCase
     end
   end
 
+  test "Discord の設定ファイルがあれば、default を全部の投稿先に使い、投稿先ごとの指定を優先する" do
+    with_discord_config("webhooks" => { "default" => "https://discord.com/api/webhooks/1/default", "reminder" => "https://discord.com/api/webhooks/2/reminder" }) do |path|
+      build(discord_config_path: path)
+    end
+
+    urls = DiscordChannel.pluck(:purpose, :webhook_url).to_h
+    assert_equal DiscordChannel::PURPOSES.sort, urls.keys.sort
+    assert_equal "https://discord.com/api/webhooks/2/reminder", urls["reminder"]
+    assert_equal "https://discord.com/api/webhooks/1/default", urls["release"]
+  end
+
+  test "これから開催するイベントには、設定ファイルのフォーラム記事の URL を入れる" do
+    thread_url = "https://discord.com/channels/1/2"
+    with_discord_config("event_thread_url" => thread_url) do |path|
+      build(discord_config_path: path)
+    end
+
+    upcoming = Event.where(held_on: SampleData::UPCOMING_EVENT_DAYS.keys.map { |days| Date.current + days })
+    assert_equal [ thread_url ] * SampleData::UPCOMING_EVENT_DAYS.size, upcoming.pluck(:discord_thread_url)
+  end
+
+  test "Discord の設定ファイルがなければ、投稿先もフォーラム記事も設定しない" do
+    build
+
+    assert DiscordChannel.none?
+    assert Event.where.not(discord_thread_url: nil).none?
+  end
+
   test "同じ機体マスタなら毎回同じデータになる" do
     build
     first = snapshot
@@ -53,8 +81,17 @@ class SampleDataTest < ActiveSupport::TestCase
 
   private
 
-  def build
-    SampleData.new(past_events: PAST_EVENTS).call
+  # 手元の config/discord.local.yml は読まない
+  def build(discord_config_path: Rails.root.join("tmp/missing.local.yml"))
+    SampleData.new(past_events: PAST_EVENTS, discord_config_path: discord_config_path).call
+  end
+
+  def with_discord_config(config)
+    Dir.mktmpdir do |dir|
+      path = Pathname(dir).join("discord.local.yml")
+      path.write(config.to_yaml)
+      yield path
+    end
   end
 
   def active_rotation
