@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_08_114016) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_10_052220) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -165,6 +165,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_08_114016) do
     t.index ["user_id"], name: "index_reactions_on_user_id"
   end
 
+  create_table "release_announcements", force: :cascade do |t|
+    t.bigint "announcement_id"
+    t.datetime "created_at", null: false
+    t.datetime "discord_posted_at"
+    t.datetime "updated_at", null: false
+    t.string "version", null: false
+    t.index ["announcement_id"], name: "index_release_announcements_on_announcement_id"
+    t.index ["version"], name: "index_release_announcements_on_version", unique: true
+  end
+
   create_table "rotation_matches", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.bigint "match_id"
@@ -241,6 +251,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_08_114016) do
   add_foreign_key "reactions", "master_emojis"
   add_foreign_key "reactions", "matches"
   add_foreign_key "reactions", "users"
+  add_foreign_key "release_announcements", "announcements", on_delete: :nullify
   add_foreign_key "rotation_matches", "matches"
   add_foreign_key "rotation_matches", "rotations"
   add_foreign_key "rotation_matches", "users", column: "team1_player1_id"
