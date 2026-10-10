@@ -106,6 +106,22 @@ kamal logs
 - 反映は `bin/rails mobile_suits:sync` が Wiki のページ ID で突き合わせて行います（何度実行しても同じ結果）。本番ではアプリ起動時に自動実行されるため、デプロイ後の作業は不要です
 - 情報解禁済み・未実装の機体は、スクレイパーの `config.yaml` の `exclude_page_ids` で除外します
 
+## リリース告知
+
+`config/release_notes/v{x.y.z}.yml` に告知文を置くと、そのバージョンのデプロイ後の起動時に、アプリ内お知らせの公開と Discord への投稿が自動で行われます（告知済みのバージョンは `release_announcements` に記録され、二重に告知しません）。
+
+```yaml
+title: "✨ v2.4.0 リリース！ ..."   # アプリ内お知らせのタイトル
+body: |                           # アプリ内お知らせの本文（Markdown。絵文字は Unicode）
+  今回は…
+discord: |                        # Discord の本文（:shortcode: 可、2,000 文字以内）。省略すると Discord には投稿しない
+  @everyone
+  …
+```
+
+- Discord の投稿先は管理画面「Discord チャンネル設定」の「リリース告知」で設定します
+- Discord への投稿に失敗した場合は、告知の作成から 3 日以内であれば次回の起動時に再送します
+
 ## ライセンス
 
 [MIT License](LICENSE)
