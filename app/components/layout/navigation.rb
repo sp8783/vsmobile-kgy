@@ -16,7 +16,7 @@ module Layout
 
       [
         [ "お知らせ管理", helpers.admin_announcements_path, request_path.start_with?("/admin/announcements"), :announce ],
-        [ "Discord設定", helpers.admin_discord_channels_path, request_path.start_with?("/admin/discord_channels"), :discord ],
+        [ "Discord設定", helpers.admin_discord_channels_path, request_path.start_with?("/admin/discord_"), :discord ],
         [ "機体マスタ", helpers.admin_mobile_suits_path, request_path.start_with?("/admin/mobile_suits"), :suits ],
         [ "スタンプマスタ", helpers.admin_master_emojis_path, request_path.start_with?("/admin/master_emojis"), :emoji ],
         [ "ユーザー管理", helpers.admin_users_path, request_path.start_with?("/admin/users"), :users ]

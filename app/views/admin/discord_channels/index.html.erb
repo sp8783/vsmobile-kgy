@@ -1,11 +1,5 @@
 <div class="ui-page">
-  <div class="ui-page-header">
-    <div>
-      <p class="text-xs font-black uppercase tracking-wide text-subtle">Integrations</p>
-      <h1 class="font-display text-3xl font-black text-ink">Discord チャンネル設定</h1>
-      <p class="mt-2 text-sm font-semibold text-muted">用途ごとに投稿先の Webhook URL を設定します。未設定のチャンネルへは投稿されません。</p>
-    </div>
-  </div>
+  <%= render "admin/shared/discord_header", current: :channels, description: "用途ごとに投稿先の Webhook URL を設定します。未設定のチャンネルへは投稿されません。" %>
 
   <div class="grid gap-4">
     <% @channels.each do |channel| %>

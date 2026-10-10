@@ -2408,3 +2408,71 @@
     .m-wrcard-form { width: 100%; padding-left: 0; }
   }
 }
+
+/* ===== Discord 投稿文（管理画面）: dn- ===== */
+@layer components {
+  .dn-card { display: flex; flex-direction: column; }
+  .dn-card-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 18px 22px; border-bottom: 1px solid var(--color-line); }
+  .dn-card-body { display: flex; flex-wrap: wrap; gap: 24px; padding: 22px; }
+  .dn-card-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 22px; border-top: 1px solid var(--color-line); background: var(--color-bg); border-radius: 0 0 0.5rem 0.5rem; }
+  .dn-fields { flex: 999 1 440px; min-width: 0; display: flex; flex-direction: column; gap: 16px; transition: opacity 160ms ease; }
+  .dn-fields.dn-off { opacity: 0.45; pointer-events: none; }
+  .dn-preview-col { flex: 1 1 360px; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+  .dn-caption { margin: 0; font-size: 0.75rem; font-weight: 800; color: var(--color-muted); }
+  .dn-note { margin: 0; font-size: 0.75rem; font-weight: 700; color: var(--color-muted); }
+  .dn-warn { margin: 0; font-size: 0.75rem; font-weight: 800; color: var(--color-neg); }
+
+  .dn-switch { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; border-radius: 999px; padding: 6px 16px 6px 6px; font-size: 0.875rem; font-weight: 800; cursor: pointer; background: var(--color-surface-2); color: var(--color-muted); }
+  .dn-switch-knob { width: 30px; height: 30px; border-radius: 50%; background: var(--color-line-strong); }
+  .dn-switch:has(input:checked) { flex-direction: row-reverse; padding: 6px 6px 6px 16px; background: var(--color-accent); color: var(--color-on-accent); }
+  .dn-switch:has(input:checked) .dn-switch-knob { background: var(--color-surface); }
+  .dn-switch:has(input:focus-visible) { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+
+  .dn-timing { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+  .dn-select { width: 8rem; min-height: 44px; font-weight: 700; }
+  .dn-select-hour { width: 7rem; }
+  .dn-when { flex: 1 1 120px; min-width: 0; font-size: 0.75rem; font-weight: 700; color: var(--color-muted); }
+  .dn-icon-btn { width: 44px; height: 44px; flex: none; display: inline-flex; align-items: center; justify-content: center; border-radius: 10px; background: var(--color-surface-2); color: var(--color-muted); cursor: pointer; }
+  .dn-icon-btn:hover { color: var(--color-ink); }
+  .dn-add { align-self: flex-start; min-height: 40px; border-radius: 8px; padding: 0 14px; background: var(--color-surface-2); color: var(--color-accent); font-size: 0.8rem; font-weight: 800; cursor: pointer; }
+  .dn-chip { min-height: 32px; border-radius: 999px; padding: 0 12px; background: var(--color-surface-2); color: var(--color-accent); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.75rem; font-weight: 700; cursor: pointer; }
+  .dn-token { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.8rem; font-weight: 700; color: var(--color-accent); }
+  .dn-ptab { min-height: 36px; border-radius: 999px; padding: 0 14px; font-size: 0.75rem; font-weight: 800; cursor: pointer; background: var(--color-surface-2); color: var(--color-muted); }
+  .dn-ptab.on { background: var(--color-ink); color: var(--color-surface); }
+
+  /* Discord の見た目のプレビュー（Discord のダークテーマの色に合わせる） */
+  .dn-discord { border-radius: 8px; padding: 14px 16px 16px; background: #313338; color: #dbdee1; }
+  .dn-discord-channel { font-size: 0.75rem; font-weight: 700; color: #949ba4; padding-bottom: 10px; margin-bottom: 12px; border-bottom: 1px solid #3f4147; }
+  .dn-discord-avatar { width: 40px; height: 40px; flex: none; border-radius: 50%; background: var(--m-grad); display: flex; align-items: center; justify-content: center; color: #fff; font-family: var(--font-display); font-size: 14px; font-weight: 800; }
+  .dn-discord-name { font-size: 15px; font-weight: 700; color: #f2f3f5; }
+  .dn-discord-badge { background: #5865f2; color: #fff; font-size: 10px; font-weight: 700; padding: 1px 5px; border-radius: 3px; }
+  .dn-discord-time { font-size: 12px; color: #949ba4; }
+  .dn-discord-empty { margin: 0; font-size: 14px; color: #949ba4; }
+  .dn-lines { margin-top: 2px; font-size: 14px; line-height: 1.375; }
+  .dn-line { min-height: 1.375em; overflow-wrap: anywhere; }
+  .dn-h1, .dn-h2, .dn-h3 { font-weight: 700; color: #f2f3f5; margin: 4px 0; line-height: 1.3; }
+  .dn-h1 { font-size: 24px; }
+  .dn-h2 { font-size: 20px; }
+  .dn-h3 { font-size: 16px; }
+  .dn-sub { font-size: 12px; color: #949ba4; }
+  .dn-quote { border-left: 4px solid #4e5058; padding-left: 12px; }
+  .dn-li { padding-left: 18px; text-indent: -12px; }
+  .dn-li-1 { padding-left: 38px; }
+  .dn-li-2 { padding-left: 58px; }
+  .dn-codeblock { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px; background: #2b2d31; padding: 0 8px; white-space: pre-wrap; }
+  .dn-b { font-weight: 700; }
+  .dn-i { font-style: italic; }
+  .dn-u { text-decoration: underline; }
+  .dn-s { text-decoration: line-through; }
+  .dn-u.dn-s { text-decoration: underline line-through; }
+  .dn-spoiler { background: #1e1f22; border-radius: 3px; padding: 0 2px; }
+  .dn-code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.85em; background: #2b2d31; border: 1px solid #1e1f22; border-radius: 4px; padding: 0 3px; }
+  .dn-link { color: #00a8fc; }
+  .dn-mention { background: rgba(88, 101, 242, 0.3); color: #c9cdfb; border-radius: 3px; padding: 0 2px; font-weight: 500; }
+
+  @media (max-width: 639px) {
+    .dn-card-head, .dn-card-body { padding: 16px; }
+    .dn-card-foot { padding: 14px 16px 16px; flex-direction: column; align-items: stretch; }
+    .dn-card-foot .ui-btn { width: 100%; min-height: 48px; }
+  }
+}
