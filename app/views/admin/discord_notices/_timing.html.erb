@@ -1,0 +1,20 @@
+<div class="dn-timing" data-discord-notice-target="timing">
+  <label>
+    <span class="sr-only">何日前</span>
+    <%= select_tag "discord_notice[timings][][days_before]",
+          options_for_select(DiscordNotice::DAYS_BEFORE.map { |days| [ "#{days}日前", days ] }, timing.days_before),
+          id: nil, class: "ui-form-control dn-select", data: { role: "days", action: "discord-notice#refresh" } %>
+  </label>
+  <label>
+    <span class="sr-only">時刻</span>
+    <%= select_tag "discord_notice[timings][][hour]",
+          options_for_select(DiscordNotice::HOURS.map { |hour| [ "#{hour}:00", hour ] }, timing.hour),
+          id: nil, class: "ui-form-control dn-select dn-select-hour", data: { role: "hour", action: "discord-notice#refresh" } %>
+  </label>
+  <span class="dn-when" data-role="when"></span>
+  <% if removable %>
+    <button type="button" class="dn-icon-btn" aria-label="このタイミングを消す" data-action="discord-notice#removeTiming">
+      <svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 4l8 8M12 4l-8 8"/></svg>
+    </button>
+  <% end %>
+</div>
