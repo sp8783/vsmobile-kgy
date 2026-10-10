@@ -63,9 +63,26 @@ git clone https://github.com/sp8783/vsmobile-kgy.git
 cd vsmobile-kgy
 bundle install
 docker compose up -d        # PostgreSQL を起動（ポート 5433）
-bin/rails db:setup
-bin/dev
+bin/setup                   # DB の準備とサンプルデータの作成をして、開発サーバーを起動
 ```
+
+2 回目以降は `bin/dev` で起動します。起動時に機体マスタ（`db/data/units.json`）が自動で反映されます。
+
+### サンプルデータ
+
+初回の `bin/setup` で、ローカル確認用のサンプルデータが作られます。
+
+- ログイン: `sample_a` 〜 `sample_f`（パスワード `password`）、管理者は `admin`（パスワード `password`）
+- 過去のイベント 3 件（最後まで記録済みのローテーションと、詳細統計つきの試合）と、開催中のイベント 1 件（入力済み・未入力・スキップ・現在・予定の試合が揃ったローテーション）
+- お気に入り機体の数がユーザーごとに異なる（18 機・10 機・6 機・3 機・1 機・0 機）
+
+データを最初の状態に戻すときは、次を実行します。開発用 DB のデータはすべて消えます（`bin/db-pull` で取り込んだデータも消えます）。
+
+```bash
+bin/rails dev:sample_data
+```
+
+機体は、その時点の機体マスタから選ばれます。機体が増えても、作り直しは必須ではありません。
 
 ## デプロイ
 
@@ -103,7 +120,7 @@ kamal logs
 機体マスタは `db/data/units.json` と `public/mobile_suits/` の画像を情報源とし、[exvs2ib-wiki-scraper](https://github.com/sp8783/exvs2ib-wiki-scraper) の出力（`output/units.json`・`output/images/`）をそのままコピーして更新します。
 
 - 画像名は `{WikiのページID}_{機体名}.png`。機体が追加されても既存の画像名は変わりません
-- 反映は `bin/rails mobile_suits:sync` が Wiki のページ ID で突き合わせて行います（何度実行しても同じ結果）。本番ではアプリ起動時に自動実行されるため、デプロイ後の作業は不要です
+- 反映は `bin/rails mobile_suits:sync` が Wiki のページ ID で突き合わせて行います（何度実行しても同じ結果）。本番ではアプリ起動時に、開発環境では `bin/dev` の起動時に自動実行されるため、手で実行する必要はありません
 - 情報解禁済み・未実装の機体は、スクレイパーの `config.yaml` の `exclude_page_ids` で除外します
 
 ## リリース告知
