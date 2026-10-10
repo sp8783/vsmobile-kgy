@@ -3,7 +3,8 @@ class EventReminderJob < ApplicationJob
 
   PREPARATION_MESSAGE_URL = "https://discord.com/channels/731348521269329971/1483812692023181554/1483813049029623910"
 
-  def perform
+  # poster: テストで差し替えられるようにする
+  def perform(poster: DiscordWebhookService.method(:post))
     today = Date.current
 
     { 1 => "明日", 7 => "1週間後" }.each do |days, label|
@@ -12,12 +13,13 @@ class EventReminderJob < ApplicationJob
       next if events.none?
 
       events.each do |event|
-        message = build_message(event, label)
-        DiscordWebhookService.post(purpose: :reminder, message: message)
-
-        if days == 1
-          DiscordWebhookService.post(purpose: :reminder, message: build_preparation_message)
+        # 前日は、フォーラムの記事に事前準備のお願いを先に投稿する。アーカイブされた記事が復活し、
+        # リマインドに貼る記事のリンクが「#不明」ではなく「#記事名」で表示される
+        if days == 1 && event.discord_thread_id
+          poster.call(purpose: :event_forum, message: build_preparation_message, thread_id: event.discord_thread_id)
         end
+
+        poster.call(purpose: :reminder, message: build_message(event, label))
       end
     end
   end
