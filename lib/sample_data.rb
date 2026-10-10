@@ -5,7 +5,7 @@ require "active_support/testing/time_helpers"
 # 乱数の種を固定しているので、同じ機体マスタなら毎回同じデータになる。機体は名前で決め打ちせず、
 # その時点の機体マスタから選ぶ（機体が増えても修正は不要）。
 # ローテーションの生成・結果の記録・次の試合へ進む・スキップ・次周の作成は本番と同じ処理を使う。
-# config/discord.local.yml があれば、テスト用の Discord の投稿先も設定する
+# config/discord.local.yml があれば、テスト用の Discord の投稿先と、これから開催するイベントのフォーラム記事も設定する
 class SampleData
   include ActiveSupport::Testing::TimeHelpers
 
@@ -32,6 +32,9 @@ class SampleData
     [ 14, 6, 1 ]
   ].freeze
 
+  # これから開催するイベント: 何日後（イベントリマインドの対象になる日）
+  UPCOMING_EVENT_DAYS = { 1 => "明日", 7 => "1週間後" }.freeze
+
   # テスト用の Discord の設定（Git の管理対象外）。書き方は config/discord.local.yml.example
   DISCORD_CONFIG_PATH = Rails.root.join("config/discord.local.yml")
   DISCORD_DEFAULT_KEY = "default"
@@ -53,6 +56,7 @@ class SampleData
     users = create_users
     past_events.each.with_index(1) { |(days_ago, player_count, rounds), number| create_past_event(number, days_ago, users.first(player_count), rounds) }
     create_today_event(users)
+    create_upcoming_events
     create_reactions_and_favorites(users)
     create_announcement
     create_discord_channels
@@ -107,6 +111,18 @@ class SampleData
     record_until(rotation, 8)
     advance { manager(rotation).next_match!(expected_index: rotation.current_match_index) }
     record_until(rotation, 10)
+  end
+
+  # イベントリマインドの対象になるイベント。フォーラム記事の URL はすべて同じ記事にする
+  def create_upcoming_events
+    UPCOMING_EVENT_DAYS.each do |days, label|
+      Event.create!(
+        name: "サンプル対戦会（#{label}）",
+        held_on: now.to_date + days,
+        description: "イベントリマインドを確認するためのサンプルイベントです。",
+        discord_thread_url: discord_config["event_thread_url"].presence
+      )
+    end
   end
 
   def start_rotation(event, players)
