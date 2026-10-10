@@ -2,13 +2,16 @@ require "net/http"
 
 class DiscordWebhookService
   class << self
+    # 投稿できたら true（投稿先が未設定・失敗なら false）
     def post(purpose:, message:)
       channel = DiscordChannel.find_by(purpose: purpose)
-      return if channel&.webhook_url.blank?
+      return false if channel&.webhook_url.blank?
 
-      post_to_webhook_url(url: channel.webhook_url, message: message)
+      response = post_to_webhook_url(url: channel.webhook_url, message: message)
+      response.is_a?(Net::HTTPSuccess)
     rescue => e
       Rails.logger.error("[DiscordWebhookService] Failed to post (purpose=#{purpose}): #{e.message}")
+      false
     end
 
     def post_to_webhook_url(url:, message:)
