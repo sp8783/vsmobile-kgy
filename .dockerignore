@@ -10,6 +10,9 @@
 # Ignore all environment files.
 /.env*
 
+# Ignore local-only config (e.g. test Discord webhooks for sample data).
+/config/*.local.yml
+
 # Ignore all default key files.
 /config/master.key
 /config/credentials/*.key
