@@ -4,7 +4,8 @@ require "active_support/testing/time_helpers"
 # seed（管理者・ゲスト・機体マスタ・絵文字）が入った状態で実行する前提。
 # 乱数の種を固定しているので、同じ機体マスタなら毎回同じデータになる。機体は名前で決め打ちせず、
 # その時点の機体マスタから選ぶ（機体が増えても修正は不要）。
-# ローテーションの生成・結果の記録・次の試合へ進む・スキップ・次周の作成は本番と同じ処理を使う
+# ローテーションの生成・結果の記録・次の試合へ進む・スキップ・次周の作成は本番と同じ処理を使う。
+# config/discord.local.yml があれば、テスト用の Discord の投稿先も設定する
 class SampleData
   include ActiveSupport::Testing::TimeHelpers
 
@@ -31,12 +32,17 @@ class SampleData
     [ 14, 6, 1 ]
   ].freeze
 
-  Summary = Struct.new(:users, :events, :matches, keyword_init: true)
+  # テスト用の Discord の設定（Git の管理対象外）。書き方は config/discord.local.yml.example
+  DISCORD_CONFIG_PATH = Rails.root.join("config/discord.local.yml")
+  DISCORD_DEFAULT_KEY = "default"
+
+  Summary = Struct.new(:users, :events, :matches, :discord_channels, keyword_init: true)
 
   # past_events: テストでは少なくして時間を短くする
-  def initialize(random: Random.new(SEED), past_events: PAST_EVENTS)
+  def initialize(random: Random.new(SEED), past_events: PAST_EVENTS, discord_config_path: DISCORD_CONFIG_PATH)
     @random = random
     @past_events = past_events
+    @discord_config_path = discord_config_path
   end
 
   def call
@@ -49,15 +55,16 @@ class SampleData
     create_today_event(users)
     create_reactions_and_favorites(users)
     create_announcement
+    create_discord_channels
 
-    Summary.new(users: users.size, events: Event.count, matches: Match.count)
+    Summary.new(users: users.size, events: Event.count, matches: Match.count, discord_channels: DiscordChannel.count)
   ensure
     travel_back
   end
 
   private
 
-  attr_reader :random, :now, :past_events
+  attr_reader :random, :now, :past_events, :discord_config_path
 
   def create_users
     USERS.map do |username, nickname, favorite_count|
@@ -230,5 +237,21 @@ class SampleData
       is_active: true,
       published_at: Time.current
     )
+  end
+
+  # default の Webhook を全部の投稿先に使い、投稿先ごとに書いたものを優先する
+  def create_discord_channels
+    webhooks = discord_config["webhooks"] || {}
+    unknown = webhooks.keys - DiscordChannel::PURPOSES - [ DISCORD_DEFAULT_KEY ]
+    warn "#{discord_config_path.basename}: 知らない投稿先は無視しました（#{unknown.join(', ')}）" if unknown.any?
+
+    DiscordChannel::PURPOSES.each do |purpose|
+      url = webhooks[purpose].presence || webhooks[DISCORD_DEFAULT_KEY].presence
+      DiscordChannel.create!(purpose: purpose, webhook_url: url, label: "テスト用（#{discord_config_path.basename}）") if url
+    end
+  end
+
+  def discord_config
+    @discord_config ||= File.exist?(discord_config_path) ? YAML.safe_load_file(discord_config_path) || {} : {}
   end
 end

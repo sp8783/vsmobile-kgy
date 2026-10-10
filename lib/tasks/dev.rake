@@ -8,6 +8,7 @@ namespace :dev do
     summary = SampleData.new.call
     puts "\nサンプルデータを作成しました: ユーザー #{summary.users} 人 / イベント #{summary.events} 件 / 試合 #{summary.matches} 件"
     puts "  ログイン: sample_a 〜 sample_f（パスワード #{SampleData::PASSWORD}）、管理者は admin（パスワード password）"
+    puts "  Discord の投稿先: #{summary.discord_channels.positive? ? "#{summary.discord_channels} 件を #{SampleData::DISCORD_CONFIG_PATH.basename} から設定" : "未設定（#{SampleData::DISCORD_CONFIG_PATH.basename} がないため）"}"
   end
 
   namespace :sample_data do
