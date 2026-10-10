@@ -2,16 +2,25 @@ require "net/http"
 
 class DiscordWebhookService
   class << self
-    # 投稿できたら true（投稿先が未設定・失敗なら false）
-    def post(purpose:, message:)
+    # 投稿できたら true（投稿先が未設定・失敗なら false）。
+    # thread_id を渡すと、Webhook のチャンネル内のスレッド（フォーラムの記事など）に投稿する
+    def post(purpose:, message:, thread_id: nil)
       channel = DiscordChannel.find_by(purpose: purpose)
       return false if channel&.webhook_url.blank?
 
-      response = post_to_webhook_url(url: channel.webhook_url, message: message)
+      response = post_to_webhook_url(url: webhook_url_for(channel.webhook_url, thread_id: thread_id), message: message)
       response.is_a?(Net::HTTPSuccess)
     rescue => e
       Rails.logger.error("[DiscordWebhookService] Failed to post (purpose=#{purpose}): #{e.message}")
       false
+    end
+
+    def webhook_url_for(url, thread_id: nil)
+      return url if thread_id.blank?
+
+      uri = URI(url)
+      uri.query = URI.encode_www_form(URI.decode_www_form(uri.query.to_s) + [ [ "thread_id", thread_id ] ])
+      uri.to_s
     end
 
     def post_to_webhook_url(url:, message:)
