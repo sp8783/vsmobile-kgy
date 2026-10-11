@@ -1,12 +1,15 @@
 import { Controller } from "@hotwired/stimulus"
 
+// 先頭のまとまり（data-lead-group）ごとの見出し
+const OPTGROUPS = {
+  recent: [{ value: "recent", label: "最近使った機体" }, { value: "others", label: "その他の機体" }]
+}
+
 export default class extends Controller {
   connect() {
     if (typeof TomSelect === "undefined" || this.element.tomselect) return
 
-    const optgroups = this.element.dataset.hasFavorites === "true"
-      ? [{ value: "favorites", label: "お気に入り機体" }, { value: "others", label: "その他の機体" }]
-      : []
+    const optgroups = OPTGROUPS[this.element.dataset.leadGroup] ?? []
 
     this.tomSelect = new TomSelect(this.element, {
       placeholder: this.element.dataset.placeholder || "機体を検索...",
