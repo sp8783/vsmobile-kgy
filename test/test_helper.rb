@@ -56,3 +56,15 @@ module RotationTestHelper
     rotation.reload.rotation_matches.order(:match_index).map { |rm| rm.progress_status(rotation.current_match_index) }
   end
 end
+
+# 機体データの更新確認のテスト用の units.json の 1 機体（exvs2ib-wiki-scraper の出力と同じ形）
+module MobileSuitUnitHelper
+  def suit_unit(page_id, name, cost: "3000", series: "テスト", durability: "650", bd_count: "7", red_lock_range: "100m", image: true)
+    {
+      "name" => name, "pageId" => page_id.to_s, "cost" => cost, "series" => series,
+      "wikiUrl" => "https://w.atwiki.jp/exvs2infiniteboost/pages/#{page_id}.html",
+      "imageLocalPath" => image ? "./output/images/#{page_id}_#{name}.png" : nil,
+      "metadata" => { "durability" => durability, "bdCount" => bd_count, "redLockRange" => red_lock_range }
+    }
+  end
+end
