@@ -5,6 +5,23 @@ class MobileSuitCatalogSync
 
   DEFAULT_PATH = Rails.root.join("db/data/units.json")
 
+  # units.json の 1 機体を、機体マスタの属性にする（position は units.json 内の並び順、1 始まり）
+  def self.attributes_for(unit, position)
+    metadata = unit["metadata"] || {}
+    {
+      wiki_page_id:   unit["pageId"].to_i,
+      name:           unit["name"],
+      series:         unit["series"],
+      cost:           unit["cost"].to_i,
+      position:       position,
+      wiki_url:       unit["wikiUrl"],
+      image_filename: unit["imageLocalPath"].presence && File.basename(unit["imageLocalPath"]),
+      durability:     metadata["durability"]&.to_i.presence,
+      bd_count:       metadata["bdCount"].presence,
+      red_lock_range: metadata["redLockRange"].presence
+    }
+  end
+
   def initialize(path: DEFAULT_PATH)
     @path = path
   end
@@ -15,7 +32,7 @@ class MobileSuitCatalogSync
     MobileSuit.transaction do
       units.each.with_index(1) do |unit, position|
         suit = find_suit(unit)
-        suit.assign_attributes(attributes_for(unit, position))
+        suit.assign_attributes(self.class.attributes_for(unit, position))
 
         status = if suit.new_record? then :created
         elsif suit.changed? then :updated
@@ -42,21 +59,5 @@ class MobileSuitCatalogSync
     MobileSuit.find_by(wiki_page_id: unit["pageId"].to_i) ||
       MobileSuit.find_by(wiki_page_id: nil, name: [ unit["name"], unit["name"].tr("()", "（）") ]) ||
       MobileSuit.new
-  end
-
-  def attributes_for(unit, position)
-    metadata = unit["metadata"] || {}
-    {
-      wiki_page_id:   unit["pageId"].to_i,
-      name:           unit["name"],
-      series:         unit["series"],
-      cost:           unit["cost"].to_i,
-      position:       position,
-      wiki_url:       unit["wikiUrl"],
-      image_filename: unit["imageLocalPath"].presence && File.basename(unit["imageLocalPath"]),
-      durability:     metadata["durability"]&.to_i.presence,
-      bd_count:       metadata["bdCount"].presence,
-      red_lock_range: metadata["redLockRange"].presence
-    }
   end
 end
