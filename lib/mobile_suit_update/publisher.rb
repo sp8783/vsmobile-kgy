@@ -16,7 +16,7 @@ module MobileSuitUpdate
       def standalone? = !version.nil?
     end
 
-    def initialize(standalone: false, shell: Shell.new, root: Rails.root)
+    def initialize(standalone: false, shell: CommandShell.new, root: Rails.root)
       @standalone = standalone
       @shell = shell
       @root = Pathname(root)
