@@ -14,6 +14,9 @@ class User < ApplicationRecord
   has_many :favorite_matches, dependent: :destroy
   has_many :favorited_matches, through: :favorite_matches, source: :match
 
+  # 対戦結果入力のプルダウンの先頭に出す、最近使った機体の数
+  RECENT_MOBILE_SUITS_LIMIT = 10
+
   # Validations
   validates :username, presence: true, uniqueness: { case_sensitive: false },
             format: { with: /\A[a-zA-Z0-9_-]+\z/, message: "は半角英数字と記号（_ -）のみ使用できます" }
@@ -48,6 +51,16 @@ class User < ApplicationRecord
 
   def will_save_change_to_email?
     false
+  end
+
+  # 試合で使った機体を、最後に使った日時の新しい順に重複なく返す（お気に入りは画像のボタンで選べるため除く）
+  def recent_mobile_suit_ids(limit: RECENT_MOBILE_SUITS_LIMIT)
+    match_players.joins(:match)
+      .where.not(mobile_suit_id: user_favorite_suits.select(:mobile_suit_id))
+      .group(:mobile_suit_id)
+      .order(Arel.sql("MAX(matches.played_at) DESC, MAX(matches.id) DESC"))
+      .limit(limit)
+      .pluck(:mobile_suit_id)
   end
 
   # Check if user can receive push notifications
