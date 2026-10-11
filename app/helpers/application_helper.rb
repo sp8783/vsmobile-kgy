@@ -69,28 +69,25 @@ module ApplicationHelper
   # お気に入り機体を先頭にした <option> タグ群を返す
   # お気に入りがある場合は favorites / others の2グループに分けて TomSelect に渡す
   def mobile_suit_options_with_favorites(suits, user, selected_ids = [])
-    selected_ids = Array(selected_ids)
     fav_ids = user&.user_favorite_suits&.order(:slot)&.pluck(:mobile_suit_id) || []
+    mobile_suit_options_leading(suits, fav_ids, "favorites", selected_ids)
+  end
 
-    favorites = suits.select { |s| fav_ids.include?(s.id) }.sort_by { |s| fav_ids.index(s.id) }
-    others    = suits.reject { |s| fav_ids.include?(s.id) }
+  # lead_ids の機体をその順で先頭にした <option> タグ群を返す
+  # 先頭の機体がある場合は lead_group / others の2グループに分ける
+  def mobile_suit_options_leading(suits, lead_ids, lead_group, selected_ids = [])
+    selected_ids = Array(selected_ids)
+    leading = suits.select { |s| lead_ids.include?(s.id) }.sort_by { |s| lead_ids.index(s.id) }
+    others  = suits.reject { |s| lead_ids.include?(s.id) }
 
-    if favorites.any?
-      safe_join(favorites.map { |s|
-        content_tag(:option, "#{s.name} (#{s.cost})", value: s.id,
-                    data: { optgroup: "favorites" },
-                    selected: selected_ids.include?(s.id))
-      }) + safe_join(others.map { |s|
-        content_tag(:option, "#{s.name} (#{s.cost})", value: s.id,
-                    data: { optgroup: "others" },
-                    selected: selected_ids.include?(s.id))
-      })
-    else
-      safe_join(others.map { |s|
-        content_tag(:option, "#{s.name} (#{s.cost})", value: s.id,
-                    selected: selected_ids.include?(s.id))
-      })
-    end
+    option = ->(s, group) {
+      content_tag(:option, "#{s.name} (#{s.cost})", value: s.id,
+                  data: group ? { optgroup: group } : {},
+                  selected: selected_ids.include?(s.id))
+    }
+    return safe_join(others.map { |s| option.(s, nil) }) if leading.empty?
+
+    safe_join(leading.map { |s| option.(s, lead_group) }) + safe_join(others.map { |s| option.(s, "others") })
   end
 
   # コスト帯の組み合わせ（例："3000+2500"）を2つのバッジで表示
