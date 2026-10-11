@@ -16,6 +16,7 @@ module MobileSuitUpdate
       [
         MARKER,
         intro,
+        changes_section,
         incomplete_section,
         added_section,
         changed_section,
@@ -42,6 +43,15 @@ module MobileSuitUpdate
       end
       lines << "このPRは自動で作り直します（手で編集した内容は、次に変化が見つかったときに上書きされます）。"
       lines.join("\n")
+    end
+
+    # 単独リリースの「主な変更」。デプロイ後のタグ・GitHub Release の本文になる（ReleaseFinalizer）
+    def changes_section
+      return unless standalone?
+
+      lines = diff.added.map { |suit| "- 新機体: #{ReleaseText.added_line(suit)}" } +
+        diff.changed.map { |change| "- 機体データの更新: #{ReleaseText.change_line(change)}" }
+      [ "## 主な変更", *lines ].join("\n")
     end
 
     def incomplete_section
