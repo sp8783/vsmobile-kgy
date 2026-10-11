@@ -19,8 +19,13 @@ module Api
       event = Event.find_by(id: params[:id])
       return render json: { error: "Event not found" }, status: :not_found unless event
 
+      # source: 失敗したツール（stats = 統計のスクレイピング、それ以外 = タイムスタンプ解析）
       error_msg = params[:error].presence || "不明なエラー"
-      PushNotificationService.notify_timestamps_failed(event: event, error: error_msg)
+      if params[:source] == "stats"
+        PushNotificationService.notify_stats_failed(event: event, error: error_msg)
+      else
+        PushNotificationService.notify_timestamps_failed(event: event, error: error_msg)
+      end
       render json: { message: "OK" }
     end
 
