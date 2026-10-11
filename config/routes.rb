@@ -112,6 +112,7 @@ Rails.application.routes.draw do
   # Admin
   namespace :admin do
     resources :discord_channels, only: [ :index, :update ], param: :purpose
+    resources :discord_notices, only: [ :index, :update ], param: :kind
     resources :announcements
     resources :users, except: [ :show ] do
       member do

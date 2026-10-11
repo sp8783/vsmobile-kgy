@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_10_052220) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_10_095951) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -31,6 +31,27 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_10_052220) do
     t.datetime "updated_at", null: false
     t.string "webhook_url"
     t.index ["purpose"], name: "index_discord_channels_on_purpose", unique: true
+  end
+
+  create_table "discord_notice_deliveries", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.integer "days_before", null: false
+    t.bigint "event_id", null: false
+    t.string "kind", null: false
+    t.datetime "sent_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["event_id", "kind", "days_before"], name: "index_discord_notice_deliveries_uniqueness", unique: true
+    t.index ["event_id"], name: "index_discord_notice_deliveries_on_event_id"
+  end
+
+  create_table "discord_notices", force: :cascade do |t|
+    t.text "body", null: false
+    t.datetime "created_at", null: false
+    t.boolean "enabled", default: true, null: false
+    t.string "kind", null: false
+    t.jsonb "timings", default: [], null: false
+    t.datetime "updated_at", null: false
+    t.index ["kind"], name: "index_discord_notices_on_kind", unique: true
   end
 
   create_table "events", force: :cascade do |t|
@@ -239,6 +260,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_10_052220) do
     t.index ["username"], name: "index_users_on_username", unique: true
   end
 
+  add_foreign_key "discord_notice_deliveries", "events", on_delete: :cascade
   add_foreign_key "favorite_matches", "matches"
   add_foreign_key "favorite_matches", "users"
   add_foreign_key "match_players", "matches"

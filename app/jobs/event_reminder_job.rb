@@ -1,52 +1,33 @@
+# 毎時実行し、管理画面の「Discord 投稿文」で設定した時刻のタイミングの投稿を送る。
+# 同じイベント・同じ日数の投稿は一度だけ送る（時刻の設定を変えても二重に送らない）
 class EventReminderJob < ApplicationJob
   queue_as :default
 
-  PREPARATION_MESSAGE_URL = "https://discord.com/channels/731348521269329971/1483812692023181554/1483813049029623910"
-
-  # poster: テストで差し替えられるようにする
-  def perform(poster: DiscordWebhookService.method(:post))
-    today = Date.current
-
-    { 1 => "明日", 7 => "1週間後" }.each do |days, label|
-      target_date = today + days
-      events = Event.where(held_on: target_date)
-      next if events.none?
-
-      events.each do |event|
-        # 前日は、フォーラムの記事に事前準備のお願いを先に投稿する。アーカイブされた記事が復活し、
-        # リマインドに貼る記事のリンクが「#不明」ではなく「#記事名」で表示される
-        if days == 1 && event.discord_thread_id
-          poster.call(purpose: :event_forum, message: build_preparation_message, thread_id: event.discord_thread_id)
+  # now / poster: テストで差し替えられるようにする
+  def perform(now: Time.current, poster: DiscordWebhookService.method(:post))
+    # DiscordNotice::KINDS の順（事前準備のお願い → リマインド）に送る
+    DiscordNotice::KINDS.map { |kind| DiscordNotice.for(kind) }.select(&:enabled?).each do |notice|
+      notice.timing_list.select { |timing| timing.hour == now.hour }.each do |timing|
+        Event.where(held_on: now.to_date + timing.days_before).order(:id).each do |event|
+          deliver(notice, event, timing.days_before, poster)
         end
-
-        poster.call(purpose: :reminder, message: build_message(event, label))
       end
     end
   end
 
   private
 
-  def build_message(event, label)
-    lines = []
-    lines << "@everyone"
-    lines << "【リマインド】"
-    lines << "↓こちら、#{label}の開催です！！"
-    lines << event.discord_thread_url if event.discord_thread_url.present?
-    lines << "参加したい方はフォーラムまで連絡下さい！！"
-    lines.join("\n")
-  end
+  def deliver(notice, event, days_before, poster)
+    return if DiscordNoticeDelivery.exists?(event: event, kind: notice.kind, days_before: days_before)
 
-  def build_preparation_message
-    <<~MSG.chomp
-      【事前準備のお願い】
+    # 事前準備のお願いはイベントのフォーラム記事に投稿する。記事が未登録なら送らない
+    thread_id = event.discord_thread_id if notice.preparation?
+    return if notice.preparation? && thread_id.nil?
 
-      明日のイベントに向けて、以下の準備をお願いします！
-      ・通知設定（ホーム画面に追加 & プッシュ通知ON）
-      ・Cookieの共有
-      ・お気に入り機体の設定
+    message = notice.message_for(event, days_before)
+    return if message.blank?
 
-      準備内容の詳細はこちら↓
-      #{PREPARATION_MESSAGE_URL}
-    MSG
+    posted = poster.call(purpose: notice.purpose, message: message, thread_id: thread_id)
+    DiscordNoticeDelivery.create!(event: event, kind: notice.kind, days_before: days_before, sent_at: Time.current) if posted
   end
 end
