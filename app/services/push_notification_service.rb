@@ -55,6 +55,19 @@ class PushNotificationService
       end
     end
 
+    def notify_stats_failed(event:, error:)
+      User.where(is_admin: true).find_each do |user|
+        next unless user.push_notifications_enabled?
+
+        SendPushNotificationJob.perform_later(
+          user_id: user.id,
+          title: "統計スクレイピング失敗",
+          body: "#{event.name}: #{error}",
+          path: "/events/#{event.id}"
+        )
+      end
+    end
+
     def notify_expired_cookies(event:, users:)
       User.where(is_admin: true).find_each do |user|
         next unless user.push_notifications_enabled?
