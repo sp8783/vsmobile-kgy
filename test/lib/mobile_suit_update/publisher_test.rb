@@ -99,6 +99,8 @@ class MobileSuitUpdate::PublisherTest < ActiveSupport::TestCase
     create = shell.find("gh", "pr", "create")
     assert_equal [ "main", "chore: v2.3.2 リリース" ], [ create[create.index("--base") + 1], create[create.index("--title") + 1] ]
     assert_equal "🔧 v2.3.2 リリース！ 機体データを更新", YAML.safe_load_file(@root.join("config/release_notes/v2.3.2.yml"))["title"]
+    # デプロイ後のタグ・GitHub Release（ReleaseFinalizer）は、リリース PR 本文の「主な変更」から作る
+    assert_includes create[create.index("--body") + 1], "## 主な変更\n- 機体データの更新: `機体A`（耐久値 650 → 600）"
   end
 
   test "情報が足りない機体があれば、下書きの PR にする" do
