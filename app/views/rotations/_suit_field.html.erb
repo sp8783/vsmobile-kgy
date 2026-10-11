@@ -1,6 +1,7 @@
-<%# 機体選択フィールド（お気に入り画像クイック選択＋検索ドロップダウン）
+<%# 機体選択フィールド（お気に入り画像クイック選択＋最近使った機体を先頭にした検索ドロップダウン）
     locals: field_name, player, selected, all_mobile_suits %>
 <% favs = player.user_favorite_suits.order(:slot).includes(:mobile_suit).map(&:mobile_suit).compact %>
+<% recent_ids = player.recent_mobile_suit_ids %>
 <div class="r-rf-field" data-controller="suit-quickpick">
   <label for="<%= field_name %>"><%= player.nickname %></label>
 
@@ -24,7 +25,7 @@
   <% end %>
 
   <%= select_tag field_name,
-    safe_join([content_tag(:option, "機体を選択...", value: "")]) + mobile_suit_options_with_favorites(all_mobile_suits, player, [selected].compact),
+    safe_join([content_tag(:option, "機体を選択...", value: "")]) + mobile_suit_options_leading(all_mobile_suits, recent_ids, "recent", [selected].compact),
     class: "ui-form-control",
-    data: { controller: "enhanced-select", "suit-quickpick-target": "select", has_favorites: player.user_favorite_suits.any?, player_name: player.nickname } %>
+    data: { controller: "enhanced-select", "suit-quickpick-target": "select", lead_group: ("recent" if recent_ids.any?), player_name: player.nickname } %>
 </div>

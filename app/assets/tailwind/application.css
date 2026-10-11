@@ -2476,3 +2476,19 @@
     .dn-card-foot .ui-btn { width: 100%; min-height: 48px; }
   }
 }
+
+/* tom-select のまとまりの見出し（最近使った機体／その他の機体など）。機体の行と見分けられるよう帯にし、スクロール中も上に残す。
+   tom-select.css はレイヤーの外で読み込まれるため、上書きするこの指定も @layer の外に置く */
+.ts-dropdown .optgroup::before { display: none; }
+.ts-dropdown .optgroup + .optgroup { margin-top: 6px; }
+.ts-dropdown .optgroup-header {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: 6px 10px;
+  background: var(--color-surface-2);
+  color: var(--color-muted);
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}

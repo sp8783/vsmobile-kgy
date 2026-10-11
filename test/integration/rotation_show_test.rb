@@ -82,6 +82,32 @@ class RotationShowTest < ActionDispatch::IntegrationTest
     assert_select "a", text: "現在の試合に戻る", count: 0
   end
 
+  test "機体のプルダウンは最近使った機体（お気に入りを除く）を先頭にする" do
+    favorite = MobileSuit.create!(name: "お気に入りの機体", series: "テスト", cost: 3000)
+    recent = MobileSuit.create!(name: "最近の機体", series: "テスト", cost: 2500)
+    @players["A"].user_favorite_suits.create!(slot: 0, mobile_suit: favorite)
+    manager.record_current_match!(winning_team: 1, suit_ids: suit_ids.merge(team1_player1: recent.id), expected_index: 0)
+    manager.record_current_match!(winning_team: 1, suit_ids: suit_ids.merge(team1_player1: favorite.id), expected_index: 1)
+
+    # 第3試合で A さんはチーム2の1人目
+    get rotation_path(@rotation)
+
+    assert_select "select[name='team2_player1_suit'][data-lead-group='recent']" do
+      assert_select "option[data-optgroup='recent']", count: 1
+      assert_select "option[data-optgroup='recent'][value='#{recent.id}']"
+      assert_select "option[data-optgroup='others'][value='#{favorite.id}']"
+    end
+    assert_select "button.r-qp-btn[data-suit-id='#{favorite.id}']"
+  end
+
+  test "試合に出ていないプレイヤーの機体のプルダウンはまとまりを分けない" do
+    get rotation_path(@rotation)
+
+    assert_select "select[name='team1_player1_suit']:not([data-lead-group])" do
+      assert_select "option[data-optgroup]", count: 0
+    end
+  end
+
   test "結果を入力せずに次へ進むとお知らせを表示する" do
     post next_match_rotation_path(@rotation), params: { match_index: 0 }
 
