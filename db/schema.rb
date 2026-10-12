@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_12_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_13_090000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -135,6 +135,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_12_120000) do
   end
 
   create_table "matches", force: :cascade do |t|
+    t.integer "analysis_video_timestamp"
     t.datetime "created_at", null: false
     t.bigint "event_id", null: false
     t.datetime "game_started_at"
