@@ -42,7 +42,7 @@ module Api
       matches_data  = payload["matches"]
       expired_users = Array(payload["expired_users"])
 
-      db_matches = event.matches.includes(:match_timeline, match_players: [ :user ]).order(:played_at, :id)
+      db_matches = event.matches.includes(:match_timeline, :stats_payload, match_players: [ :user ]).order(:played_at, :id)
 
       if matches_data.size != db_matches.size
         return render json: {
@@ -57,6 +57,10 @@ module Api
       end
 
       PushNotificationService.notify_expired_cookies(event: event, users: expired_users) if expired_users.any?
+
+      # 1試合目の配信上の時刻が入っていれば、取り込んだ試合の開始時刻から全試合のタイムスタンプを計算する
+      timestamp_count = EventTimestampCalculator.new(event: event).apply!
+      PushNotificationService.notify_timestamps_registered(event: event, count: timestamp_count) if timestamp_count
 
       render json: { message: "OK", updated: db_matches.size, expired_users: expired_users }
     rescue JSON::ParserError

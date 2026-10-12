@@ -64,6 +64,7 @@ Rails.application.routes.draw do
     member do
       get :edit_timestamps
       patch :update_timestamps
+      patch :update_first_match_timestamp
       post :trigger_analysis
       post :trigger_scraping
       post :post_broadcast_to_discord
