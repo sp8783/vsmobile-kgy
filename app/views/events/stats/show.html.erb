@@ -1,0 +1,81 @@
+<%
+  imported_count = @matches.count { |match| match.match_timeline.present? }
+  tabs = [
+    [ "bulk", "VS.モバイルから一括取得" ],
+    [ "per_match", "試合ごとに入力" ]
+  ]
+%>
+<%= link_to "← イベントに戻る", event_path(@event), class: "md-backlink" %>
+
+<div class="m-head">
+  <div>
+    <h1>試合の統計</h1>
+    <div class="m-who"><%= @event.name %>（<%= @event.held_on.strftime("%Y年%m月%d日") %>）</div>
+  </div>
+  <span class="m-ctx">取り込み済み <b class="m-num"><%= imported_count %> / <%= @matches.size %></b> 試合</span>
+</div>
+
+<p class="ed-lead">
+  各試合のスコア・撃墜・与ダメージ・タイムラインなどを登録します。登録すると、試合の画面と統計の画面に出ます。<br>
+  登録のしかたを 1 つ選んでください。
+</p>
+
+<nav class="st-tabs" aria-label="登録のしかた">
+  <% tabs.each do |tab, label| %>
+    <%= link_to label, event_stats_path(@event, tab: tab), class: class_names("st-tab", on: tab == @tab), "aria-current": (tab == @tab ? "page" : nil) %>
+  <% end %>
+</nav>
+
+<div class="m-panel ed-method">
+  <% case @tab %>
+  <% when "bulk" %>
+    <div class="m-phead"><h2>VS.モバイルから一括取得する</h2></div>
+    <div class="m-pbody">
+      <p class="ed-note">対戦会のあとに、参加者の VS.モバイルの戦績から全試合分を GitHub Actions で取り込みます（10〜20 分）。VS.モバイルの試合数とイベントの試合数がそろっていないと取り込めません。</p>
+      <p class="ed-warn">取り込み済みの試合の統計は、取り込んだ内容で上書きされます。</p>
+      <div class="mt-4">
+        <%= button_to "取得を始める", scraping_event_stats_path(@event), method: :post, class: "m-btn m-btn-primary",
+              data: { turbo_confirm: "VS.モバイルからの統計の取得を始めますか？終わったら統計が自動で登録されます。" } %>
+      </div>
+    </div>
+  <% when "per_match" %>
+    <div class="m-phead"><h2>試合ごとに入力する</h2></div>
+    <div class="m-pbody">
+      <p class="ed-note">下の一覧の「入力する」「直す」から、試合ごとの統計の入力画面に移れます。一括取得で取り込めなかった試合や、取り込んだ内容を直したい試合に使います。</p>
+    </div>
+  <% end %>
+</div>
+
+<div class="m-panel">
+  <div class="m-phead">
+    <h2>試合ごとの統計</h2>
+    <span class="m-num ed-count"><%= imported_count %> / <%= @matches.size %> 試合</span>
+  </div>
+  <% if @matches.any? %>
+    <div class="ed-table ed-table-stats" role="table" aria-label="試合ごとの統計">
+      <div class="ed-tr ed-th" role="row">
+        <span role="columnheader">#</span>
+        <span role="columnheader">対戦</span>
+        <span role="columnheader">統計</span>
+        <span role="columnheader"><span class="sr-only">操作</span></span>
+      </div>
+      <% @matches.each_with_index do |match, index| %>
+        <% team1 = match.match_players.select { |p| p.team_number == 1 }.sort_by(&:position) %>
+        <% team2 = match.match_players.select { |p| p.team_number == 2 }.sort_by(&:position) %>
+        <% imported = match.match_timeline.present? %>
+        <div class="ed-tr" role="row">
+          <span class="m-num ed-no" role="cell"><%= index + 1 %></span>
+          <span class="ed-teams" role="cell">
+            <span class="<%= "win" if match.winning_team == 1 %>"><%= team1.map { |p| p.user.nickname }.join(" & ") %></span>
+            <span class="vs">VS</span>
+            <span class="<%= "win" if match.winning_team == 2 %>"><%= team2.map { |p| p.user.nickname }.join(" & ") %></span>
+          </span>
+          <span role="cell"><span class="ed-chip <%= "done" if imported %>"><%= imported ? "取り込み済み" : "未登録" %></span></span>
+          <span class="ed-act" role="cell"><%= link_to imported ? "直す" : "入力する", edit_match_stats_path(match), class: "m-link" %></span>
+        </div>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="m-pbody"><p class="ed-note">まだ試合がありません。</p></div>
+  <% end %>
+</div>
