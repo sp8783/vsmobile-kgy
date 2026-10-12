@@ -43,9 +43,9 @@ class EventTimestampsFromGameStartTest < ActionDispatch::IntegrationTest
     post_stats
     sign_in @admin
 
-    patch update_first_match_timestamp_event_path(@event), params: { first_match_video_timestamp: "0:03:20" }
+    patch first_match_event_timestamps_path(@event), params: { first_match_video_timestamp: "0:03:20" }
 
-    assert_redirected_to edit_timestamps_event_path(@event)
+    assert_redirected_to event_timestamps_path(@event, tab: "calculate")
     assert_equal "3 試合のタイムスタンプを、試合の開始時刻から計算して保存しました。", flash[:notice]
     assert_equal [ 200, 476, 753 ], @matches.map { |match| match.reload.video_timestamp }
   end
@@ -53,7 +53,7 @@ class EventTimestampsFromGameStartTest < ActionDispatch::IntegrationTest
   test "統計の取り込みの前に1試合目の配信上の時刻を入れたときは、時刻だけを保存する" do
     sign_in @admin
 
-    patch update_first_match_timestamp_event_path(@event), params: { first_match_video_timestamp: "3:20" }
+    patch first_match_event_timestamps_path(@event), params: { first_match_video_timestamp: "3:20" }
 
     assert_equal 200, @event.reload.first_match_video_timestamp
     assert_match "統計を取り込んだあとに", flash[:notice]
@@ -63,24 +63,26 @@ class EventTimestampsFromGameStartTest < ActionDispatch::IntegrationTest
   test "1試合目の配信上の時刻の形式が不正なら保存しない" do
     sign_in @admin
 
-    patch update_first_match_timestamp_event_path(@event), params: { first_match_video_timestamp: "3分20秒" }
+    patch first_match_event_timestamps_path(@event), params: { first_match_video_timestamp: "3分20秒" }
 
-    assert_redirected_to edit_timestamps_event_path(@event)
+    assert_redirected_to event_timestamps_path(@event, tab: "calculate")
     assert_match "形式が不正です", flash[:alert]
     assert_nil @event.reload.first_match_video_timestamp
   end
 
-  test "タイムスタンプ一括設定の画面に、1試合目の配信上の時刻と各試合の開始時刻を表示する" do
+  test "タイムスタンプの画面に、1試合目の配信上の時刻と各試合の開始時刻・タイムスタンプを表示する" do
     @event.update!(first_match_video_timestamp: 200)
     post_stats
     sign_in @admin
 
-    get edit_timestamps_event_path(@event)
+    get event_timestamps_path(@event)
 
     assert_response :success
     assert_select "input#first_match_video_timestamp[value=?]", "0:03:20"
+    assert_select ".ed-step-title .ed-chip.done", text: "3 / 3 試合"
+    assert_select ".ed-result"
     assert_select "span[title=?]", "VS.モバイルの試合の開始時刻", text: "10:12:05"
-    assert_match "3 / 3 試合取り込み済み", response.body
+    assert_select ".ed-tr a.m-link", text: "0:03:20"
   end
 
   test "統計データを削除すると、試合の開始時刻と届いたデータも消す" do

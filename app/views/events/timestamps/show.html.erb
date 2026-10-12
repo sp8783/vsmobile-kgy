@@ -1,0 +1,140 @@
+<%
+  registered_count = @matches.count { |match| match.video_timestamp.present? }
+  tabs = [
+    [ "calculate", "試合の開始時刻から計算（おすすめ）" ],
+    [ "analysis", "動画を解析" ],
+    [ "manual", "手で入力" ]
+  ]
+%>
+<%= link_to "← イベントに戻る", event_path(@event), class: "md-backlink" %>
+
+<div class="m-head">
+  <div>
+    <h1>アーカイブのタイムスタンプ</h1>
+    <div class="m-who"><%= @event.name %>（<%= @event.held_on.strftime("%Y年%m月%d日") %>）</div>
+  </div>
+  <span class="m-ctx">登録済み <b class="m-num"><%= registered_count %> / <%= @matches.size %></b> 試合</span>
+</div>
+
+<p class="ed-lead">
+  配信のアーカイブで、各試合が何秒目にあるかを登録します。登録すると、対戦記録から試合の場面に直接飛べます。<br>
+  登録のしかたを 1 つ選んでください。どの方法で登録しても、下の「登録されているタイムスタンプ」に入ります。
+</p>
+
+<% if @event.broadcast_url.blank? %>
+  <p class="ed-warn mb-4">配信 URL が入っていません。イベントの「編集」で配信 URL を入れてください。</p>
+<% end %>
+
+<nav class="st-tabs" aria-label="登録のしかた">
+  <% tabs.each do |tab, label| %>
+    <%= link_to label, event_timestamps_path(@event, tab: tab), class: class_names("st-tab", on: tab == @tab), "aria-current": (tab == @tab ? "page" : nil) %>
+  <% end %>
+</nav>
+
+<div class="m-panel ed-method">
+  <% case @tab %>
+  <% when "calculate" %>
+    <div class="m-phead"><h2>試合の開始時刻から計算する</h2></div>
+    <div class="m-pbody">
+      <p class="ed-note">次の 2 つがそろうと、全試合のタイムスタンプを自動で計算して登録します。どちらを先にしてもかまいません。</p>
+      <ol class="ed-steps">
+        <li class="ed-step">
+          <span class="ed-step-no">1</span>
+          <div class="ed-step-body">
+            <div class="ed-step-title">
+              1試合目の配信上の時刻
+              <% if @event.first_match_video_timestamp %>
+                <span class="ed-chip done">入力済み</span>
+              <% else %>
+                <span class="ed-chip">未入力</span>
+              <% end %>
+            </div>
+            <p class="ed-note">配信で 1 試合目の VS 画面が出た時刻を入れます。対戦会の途中でも入れられます。</p>
+            <%= form_with url: first_match_event_timestamps_path(@event), method: :patch, local: true, class: "ed-inline-form" do |f| %>
+              <input type="text" name="first_match_video_timestamp" id="first_match_video_timestamp"
+                     value="<%= @first_match_video_timestamp_text %>" class="ui-form-control ed-time-input"
+                     placeholder="0:03:20" aria-label="1試合目の配信上の時刻">
+              <%= f.submit "保存", class: "m-btn m-btn-primary" %>
+            <% end %>
+          </div>
+        </li>
+        <li class="ed-step">
+          <span class="ed-step-no">2</span>
+          <div class="ed-step-body">
+            <div class="ed-step-title">
+              各試合の開始時刻
+              <span class="ed-chip <%= "done" if @timestamp_calculator.started_count == @matches.size && @matches.any? %>">
+                <%= @timestamp_calculator.started_count %> / <%= @matches.size %> 試合
+              </span>
+            </div>
+            <p class="ed-note">試合の統計を VS.モバイルから取り込むと、各試合の開始時刻も入ります（対戦会のあと）。</p>
+            <%= link_to "試合の統計の画面へ →", event_stats_path(@event), class: "m-link" %>
+          </div>
+        </li>
+      </ol>
+      <% if @timestamp_calculator.ready? %>
+        <p class="ed-result">2 つそろっています。全試合のタイムスタンプを計算して登録しました。</p>
+      <% end %>
+    </div>
+  <% when "analysis" %>
+    <div class="m-phead"><h2>動画を解析する</h2></div>
+    <div class="m-pbody">
+      <p class="ed-note">配信のアーカイブを GitHub Actions で解析し、終わったら全試合のタイムスタンプを自動で登録します。配信が終わってすぐは、動画の準備に時間がかかることがあります（数時間）。</p>
+      <p class="ed-warn">登録済みのタイムスタンプは、解析の結果で上書きされます。</p>
+      <div class="mt-4">
+        <%= button_to "解析を始める", analysis_event_timestamps_path(@event), method: :post, class: "m-btn m-btn-primary",
+              disabled: @event.broadcast_url.blank?,
+              data: { turbo_confirm: "配信のアーカイブの解析を始めますか？終わったらタイムスタンプが自動で登録されます。" } %>
+      </div>
+    </div>
+  <% when "manual" %>
+    <div class="m-phead"><h2>手で入力する・直す</h2></div>
+    <%= form_with url: event_timestamps_path(@event), method: :patch, local: true, class: "m-pbody" do |f| %>
+      <label for="timestamps" class="ed-note">1 行に 1 試合ずつ、配信開始からの時刻を入れます（例: 0:03:20）。1 行目が第 1 試合です。登録済みの時刻が入っているので、直すときにも使えます。</label>
+      <textarea name="timestamps" id="timestamps" class="ui-form-control ed-textarea"
+                placeholder="0:03:20&#10;0:07:45&#10;0:12:10"><%= @timestamps_text %></textarea>
+      <div class="mt-4">
+        <%= f.submit "保存", class: "m-btn m-btn-primary" %>
+      </div>
+    <% end %>
+  <% end %>
+</div>
+
+<div class="m-panel">
+  <div class="m-phead">
+    <h2>登録されているタイムスタンプ</h2>
+    <span class="m-num ed-count"><%= registered_count %> / <%= @matches.size %> 試合</span>
+  </div>
+  <% if @matches.any? %>
+    <div class="ed-table" role="table" aria-label="登録されているタイムスタンプ">
+      <div class="ed-tr ed-th" role="row">
+        <span role="columnheader">#</span>
+        <span role="columnheader">対戦</span>
+        <span role="columnheader">試合の開始時刻</span>
+        <span role="columnheader">タイムスタンプ</span>
+      </div>
+      <% @matches.each_with_index do |match, index| %>
+        <% team1 = match.match_players.select { |p| p.team_number == 1 }.sort_by(&:position) %>
+        <% team2 = match.match_players.select { |p| p.team_number == 2 }.sort_by(&:position) %>
+        <div class="ed-tr" role="row">
+          <span class="m-num ed-no" role="cell"><%= index + 1 %></span>
+          <span class="ed-teams" role="cell">
+            <span class="<%= "win" if match.winning_team == 1 %>"><%= team1.map { |p| p.user.nickname }.join(" & ") %></span>
+            <span class="vs">VS</span>
+            <span class="<%= "win" if match.winning_team == 2 %>"><%= team2.map { |p| p.user.nickname }.join(" & ") %></span>
+          </span>
+          <span class="m-num ed-time" role="cell" title="VS.モバイルの試合の開始時刻"><%= match.game_started_at&.strftime("%H:%M:%S") || "—" %></span>
+          <span class="m-num ed-time" role="cell">
+            <% if match.video_url %>
+              <%= link_to match.video_timestamp_text, safe_external_url(match.video_url), target: "_blank", rel: "noopener noreferrer", class: "m-link" %>
+            <% else %>
+              —
+            <% end %>
+          </span>
+        </div>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="m-pbody"><p class="ed-note">まだ試合がありません。</p></div>
+  <% end %>
+</div>
