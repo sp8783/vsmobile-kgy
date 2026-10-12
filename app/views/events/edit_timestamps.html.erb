@@ -14,6 +14,24 @@
     </div>
   <% end %>
 
+  <%= form_with url: update_first_match_timestamp_event_path(@event), method: :patch, local: true, class: "ui-card mb-5 p-5" do |f| %>
+    <label for="first_match_video_timestamp" class="ui-label">1試合目の配信上の時刻</label>
+    <div class="flex flex-wrap items-center gap-3">
+      <input
+        type="text"
+        name="first_match_video_timestamp"
+        id="first_match_video_timestamp"
+        value="<%= @first_match_video_timestamp_text %>"
+        class="ui-form-control w-40 font-mono"
+        placeholder="0:03:20"
+      >
+      <%= f.submit "保存", class: "ui-btn ui-btn-primary cursor-pointer" %>
+    </div>
+    <p class="mt-2 text-sm font-bold text-subtle">
+      1試合目の VS 画面が出た配信上の時刻を入力すると、統計で取り込んだ試合の開始時刻から全試合のタイムスタンプを計算します（試合の開始時刻: <%= @timestamp_calculator.started_count %> / <%= @matches.size %> 試合取り込み済み）。
+    </p>
+  <% end %>
+
   <%= form_with url: update_timestamps_event_path(@event), method: :patch, local: true do |f| %>
     <div class="grid gap-5 md:grid-cols-2">
       <section class="ui-card p-5">
@@ -46,6 +64,9 @@
                   <%= team2.map { |p| p.user.nickname }.join(" & ") %>
                 </span>
               </div>
+              <% if match.game_started_at %>
+                <span class="shrink-0 font-mono text-subtle" title="VS.モバイルの試合の開始時刻"><%= match.game_started_at.strftime("%H:%M:%S") %></span>
+              <% end %>
             </div>
           <% end %>
         </div>

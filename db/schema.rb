@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_10_095951) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_12_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -59,6 +59,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_10_095951) do
     t.datetime "created_at", null: false
     t.text "description"
     t.string "discord_thread_url"
+    t.integer "first_match_video_timestamp"
     t.date "held_on", null: false
     t.string "name", null: false
     t.datetime "updated_at", null: false
@@ -115,6 +116,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_10_095951) do
     t.index ["user_id"], name: "index_match_players_on_user_id"
   end
 
+  create_table "match_stats_payloads", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "match_id", null: false
+    t.jsonb "payload", null: false
+    t.datetime "updated_at", null: false
+    t.index ["match_id"], name: "index_match_stats_payloads_on_match_id", unique: true
+  end
+
   create_table "match_timelines", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.integer "game_end_cs"
@@ -128,6 +137,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_10_095951) do
   create_table "matches", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.bigint "event_id", null: false
+    t.datetime "game_started_at"
     t.datetime "played_at", null: false
     t.integer "reactions_count", default: 0, null: false
     t.bigint "rotation_match_id"
@@ -266,6 +276,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_10_095951) do
   add_foreign_key "match_players", "matches"
   add_foreign_key "match_players", "mobile_suits"
   add_foreign_key "match_players", "users"
+  add_foreign_key "match_stats_payloads", "matches", on_delete: :cascade
   add_foreign_key "match_timelines", "matches"
   add_foreign_key "matches", "events"
   add_foreign_key "matches", "rotation_matches"
