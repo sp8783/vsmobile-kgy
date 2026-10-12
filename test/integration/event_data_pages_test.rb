@@ -56,6 +56,18 @@ class EventDataPagesTest < ActionDispatch::IntegrationTest
     assert_select "form[action=?] button", analysis_event_timestamps_path(@event), text: "解析を始める"
   end
 
+  test "タイムスタンプの画面に、動画解析の時刻と 25 秒以上の違いを出す" do
+    @event.update!(first_match_video_timestamp: 200)
+    @matches.each_with_index { |match, index| match.update!(game_started_at: Time.zone.local(2026, 11, 7, 10, 12, 5) + (index * 300), video_timestamp: 200 + index * 300, analysis_video_timestamp: 200 + index * 330) }
+
+    get event_timestamps_path(@event, tab: "analysis")
+
+    assert_response :success
+    assert_select ".ed-result", text: /2 試合を比べました。差の中央値 \+15 秒・最大 \+30 秒。25 秒以上の違い: 第2試合（\+30 秒）/
+    assert_select ".ed-tr .ed-chip.warn", text: "+30 秒", count: 1
+    assert_select ".ed-tr", text: /0:08:50/
+  end
+
   test "手で入力したタイムスタンプを保存すると、手で入力のタブに戻る" do
     patch event_timestamps_path(@event), params: { timestamps: "0:03:20\n0:08:00" }
 

@@ -4,15 +4,20 @@ module Api
       event = Event.find_by(id: params[:id])
       return render json: { error: "Event not found" }, status: :not_found unless event
 
-      result = EventTimestampBatch.new(event: event).update(params[:timestamps].to_s)
+      result = EventAnalysisTimestamps.new(event: event).apply(params[:timestamps].to_s)
       unless result.success?
         error_msg = result.error_message
         PushNotificationService.notify_timestamps_failed(event: event, error: error_msg)
         return render json: { error: error_msg }, status: :unprocessable_entity
       end
 
-      PushNotificationService.notify_timestamps_registered(event: event, count: result.updated_count)
-      render json: { message: "OK", updated: result.updated_count }
+      # 試合の開始時刻から計算したタイムスタンプがあれば比べた結果を、なければ登録したことを知らせる
+      if result.comparison
+        PushNotificationService.notify_timestamps_compared(event: event, summary: result.comparison.summary)
+      else
+        PushNotificationService.notify_timestamps_registered(event: event, count: result.updated_count)
+      end
+      render json: { message: "OK", updated: result.updated_count, comparison: result.comparison&.summary }
     end
 
     def notify_failure
@@ -58,9 +63,14 @@ module Api
 
       PushNotificationService.notify_expired_cookies(event: event, users: expired_users) if expired_users.any?
 
-      # 1試合目の配信上の時刻が入っていれば、取り込んだ試合の開始時刻から全試合のタイムスタンプを計算する
+      # 1試合目の配信上の時刻が入っていれば、取り込んだ試合の開始時刻から全試合のタイムスタンプを計算する。
+      # 動画解析のタイムスタンプが先に届いていれば、あわせて比べる
       timestamp_count = EventTimestampCalculator.new(event: event).apply!
-      PushNotificationService.notify_timestamps_registered(event: event, count: timestamp_count) if timestamp_count
+      if timestamp_count
+        PushNotificationService.notify_timestamps_registered(event: event, count: timestamp_count)
+        comparison = EventTimestampComparison.new(event: event)
+        PushNotificationService.notify_timestamps_compared(event: event, summary: comparison.summary) if comparison.comparable?
+      end
 
       render json: { message: "OK", updated: db_matches.size, expired_users: expired_users }
     rescue JSON::ParserError
