@@ -20,15 +20,27 @@ const INLINE_RULES = [
 // 箇条書きの印（字下げの深さごと）
 const BULLETS = ["•", "◦", "▪"]
 const DISCORD_LINK = /^https:\/\/(?:ptb\.|canary\.)?discord(?:app)?\.com\/channels\/\d+\/\d+(\/\d+)?\/?$/
+// 登録の連絡のプレビューの切り替え（何がそろったか）。サーバーの DiscordNotice.registered_label と同じ言い方
+const STATS_LABEL = "各試合の統計"
+const TIMESTAMPS_LABEL = "配信アーカイブのタイムスタンプ"
+const REGISTRATION_VARIANTS = [
+  { label: "統計とタイムスタンプ", items: [STATS_LABEL, TIMESTAMPS_LABEL] },
+  { label: "統計だけ", items: [STATS_LABEL] },
+  { label: "タイムスタンプだけ", items: [TIMESTAMPS_LABEL] }
+]
 
-// 管理画面「Discord 投稿文」の 1 枚のカード。送るタイミングの行の追加・削除と、Discord の見た目のプレビューを担う
+// 管理画面「Discord 投稿文」の 1 枚のカード。送るタイミングの行の追加・削除と、Discord の見た目のプレビューを担う。
+// 登録の連絡（scheduled が false）にはタイミングがなく、プレビューは「何がそろったか」で切り替える
 export default class extends Controller {
   static targets = [
     "enabled", "enabledLabel", "fields", "timings", "timing", "timingTemplate", "emptyTimings", "duplicate",
     "body", "previewTabs", "previewMessage", "previewEmpty", "previewLines", "sendAt", "schedule"
   ]
 
-  static values = { eventName: String, heldOn: String, threadUrl: String, previewIndex: { type: Number, default: 0 } }
+  static values = {
+    scheduled: { type: Boolean, default: true }, eventName: String, heldOn: String, threadUrl: String,
+    eventUrl: String, previewIndex: { type: Number, default: 0 }
+  }
 
   connect() {
     this.refresh()
@@ -69,6 +81,7 @@ export default class extends Controller {
     const enabled = this.enabledTarget.checked
     this.enabledLabelTarget.textContent = enabled ? "送る" : "送らない"
     this.fieldsTarget.classList.toggle("dn-off", !enabled)
+    if (!this.scheduledValue) return this.refreshRegistration(enabled)
 
     const timings = this.timingValues()
     timings.forEach(({ row, days }) => { row.querySelector("[data-role=when]").textContent = `{いつ} →「${this.when(days)}」` })
@@ -79,7 +92,7 @@ export default class extends Controller {
     }
 
     const index = Math.min(this.previewIndexValue, Math.max(timings.length - 1, 0))
-    if (this.hasPreviewTabsTarget) this.renderTabs(timings, index)
+    if (this.hasPreviewTabsTarget) this.renderTabs(timings.map((timing) => `${timing.days}日前 ${timing.hour}:00`), index)
 
     const current = timings[index]
     const showMessage = enabled && Boolean(current)
@@ -88,15 +101,30 @@ export default class extends Controller {
     this.previewEmptyTarget.textContent = enabled ? "送るタイミングがありません。" : "この投稿は送りません。"
     if (showMessage) {
       this.sendAtTarget.textContent = this.sendAt(current)
-      this.renderLines(this.bodyTarget.value, current.days)
+      this.renderLines(this.bodyTarget.value, current)
     }
 
     this.scheduleTarget.textContent = this.scheduleText(enabled, timings)
   }
 
+  // 登録の連絡: そろったものの組み合わせごとにプレビューを出す
+  refreshRegistration(enabled) {
+    const index = Math.min(this.previewIndexValue, REGISTRATION_VARIANTS.length - 1)
+    this.renderTabs(REGISTRATION_VARIANTS.map((variant) => variant.label), index)
+    this.previewMessageTarget.hidden = !enabled
+    this.previewEmptyTarget.hidden = enabled
+    this.previewEmptyTarget.textContent = "この投稿は送りません。"
+    if (enabled) {
+      this.sendAtTarget.textContent = "登録がそろったとき"
+      this.renderLines(this.bodyTarget.value, REGISTRATION_VARIANTS[index])
+    }
+    this.scheduleTarget.textContent = enabled ? "統計・タイムスタンプが全試合そろったときに、イベントの記事に送信" : "送らない設定です"
+  }
+
   // private
 
   timingValues() {
+    if (!this.hasTimingsTarget) return []
     return this.timingTargets.map((row) => ({
       row,
       days: Number(row.querySelector("[data-role=days]").value),
@@ -133,36 +161,45 @@ export default class extends Controller {
     return `${this.eventNameValue}（${this.formatDate(this.heldOn)} 開催）の場合: ${ordered.map((timing) => this.sendAt(timing)).join("・")} に送信`
   }
 
-  renderTabs(timings, index) {
-    this.previewTabsTarget.replaceChildren(...timings.map((timing, i) => {
+  renderTabs(labels, index) {
+    this.previewTabsTarget.replaceChildren(...labels.map((label, i) => {
       const button = document.createElement("button")
       button.type = "button"
       button.className = `dn-ptab${i === index ? " on" : ""}`
       button.setAttribute("aria-pressed", String(i === index))
       button.dataset.index = String(i)
       button.dataset.action = "discord-notice#selectPreview"
-      button.textContent = `${timing.days}日前 ${timing.hour}:00`
+      button.textContent = label
       return button
     }))
   }
 
-  // サーバーの DiscordNotice#message_for と同じく、値が空の差し込みを含む行は消し、差し込み用の文字を置き換える
-  fill(body, days) {
-    const values = {
-      "{イベント名}": this.eventNameValue,
-      "{開催日}": this.formatDate(this.heldOn),
-      "{いつ}": this.when(days),
-      "{フォーラムURL}": this.threadUrlValue
-    }
+  // サーバーの DiscordNotice#message_for / #registration_message_for と同じく、値が空の差し込みを含む行は消し、差し込み用の文字を置き換える。
+  // context は時刻で送る投稿ならタイミング（days）、登録の連絡なら REGISTRATION_VARIANTS の 1 つ
+  fill(body, context) {
+    const values = this.scheduledValue
+      ? {
+        "{イベント名}": this.eventNameValue,
+        "{開催日}": this.formatDate(this.heldOn),
+        "{いつ}": this.when(context.days),
+        "{フォーラムURL}": this.threadUrlValue
+      }
+      : {
+        "{イベント名}": this.eventNameValue,
+        "{登録したものの箇条書き}": context.items.map((item) => `- ${item}`).join("\n"),
+        "{登録したもの}": context.items.join("と"),
+        "{対戦履歴URL}": this.eventUrlValue
+      }
     return body.split(/\r?\n/)
       .filter((line) => !Object.entries(values).some(([token, value]) => !value && line.includes(token)))
       .map((line) => Object.entries(values).reduce((text, [token, value]) => text.split(token).join(value), line))
+      .flatMap((line) => line.split("\n"))
   }
 
-  renderLines(body, days) {
+  renderLines(body, context) {
     const lines = []
     let inCode = false
-    this.fill(body, days).forEach((line) => {
+    this.fill(body, context).forEach((line) => {
       if (/^```/.test(line)) { inCode = !inCode; return }
       if (inCode) { lines.push(this.lineElement("dn-codeblock", [this.span(line || " ", [])])); return }
 

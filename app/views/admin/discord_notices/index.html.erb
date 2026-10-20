@@ -3,16 +3,32 @@
   preview = @preview_event || Event.new(name: "イベント名", held_on: Date.current + 7, discord_thread_url: "https://discord.com/channels/0/0")
 %>
 <div class="ui-page">
-  <%= render "admin/shared/discord_header", current: :notices, description: "イベントのリマインドと事前準備のお願いの文面・送るタイミングを設定します。投稿先の Webhook は「投稿先」で設定します。" %>
+  <%= render "admin/shared/discord_header", current: :notices, description: "イベントのリマインド・事前準備のお願い・登録の連絡の文面と送るタイミングを設定します。投稿先の Webhook は「投稿先」で設定します。" %>
 
   <div class="grid gap-4">
     <%= render Ui::CardComponent.new(title: "差し込み用の文字", padded: true) do %>
+      <p class="dn-caption mb-2">リマインド・事前準備のお願い</p>
       <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <% [
           [ "{イベント名}", "イベント名", preview.name ],
           [ "{開催日}", "開催日", DiscordNotice.format_date(preview.held_on) ],
           [ "{いつ}", "送るタイミングから決まる言い方", "明日・1週間後・3日後" ],
           [ "{フォーラムURL}", "イベントのフォーラム記事のリンク", "#記事名 で表示" ]
+        ].each do |token, description, example| %>
+          <div class="flex min-w-0 flex-col gap-1 rounded-lg bg-bg px-3 py-2.5">
+            <code class="dn-token"><%= token %></code>
+            <span class="text-sm font-bold text-ink"><%= description %></span>
+            <span class="text-xs font-bold text-muted">例: <%= example %></span>
+          </div>
+        <% end %>
+      </div>
+      <p class="dn-caption mb-2 mt-4">登録の連絡</p>
+      <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <% [
+          [ "{イベント名}", "イベント名", preview.name ],
+          [ "{登録したものの箇条書き}", "そろったものの箇条書き", "- 各試合の統計 / - 配信アーカイブのタイムスタンプ（1 行ずつ）" ],
+          [ "{登録したもの}", "そろったものを 1 行で", "各試合の統計と配信アーカイブのタイムスタンプ" ],
+          [ "{対戦履歴URL}", "イベントの対戦履歴のリンク", "#{root_url}events/…" ]
         ].each do |token, description, example| %>
           <div class="flex min-w-0 flex-col gap-1 rounded-lg bg-bg px-3 py-2.5">
             <code class="dn-token"><%= token %></code>

@@ -16,8 +16,8 @@ class EventDataPagesTest < ActionDispatch::IntegrationTest
     get event_path(@event)
 
     assert_response :success
-    assert_select "a.ed-card[href=?]", event_timestamps_path(@event), text: /アーカイブのタイムスタンプ.*1 \/ 2/m
-    assert_select "a.ed-card[href=?]", event_stats_path(@event), text: /試合の統計.*1 \/ 2/m
+    assert_select "a.ed-card[href=?]", event_timestamps_path(@event), text: /配信アーカイブのタイムスタンプ.*1 \/ 2/m
+    assert_select "a.ed-card[href=?]", event_stats_path(@event), text: /各試合の統計.*1 \/ 2/m
   end
 
   test "配信 URL がないイベントでは、タイムスタンプのカードを出さない" do

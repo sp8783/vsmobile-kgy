@@ -32,15 +32,40 @@
 <% if current_user.is_admin? %>
   <div class="ed-cards">
     <% if @event.broadcast_url.present? %>
-      <%= render "events/data_card", title: "アーカイブのタイムスタンプ",
+      <%= render "events/data_card", title: "配信アーカイブのタイムスタンプ",
             description: "配信のアーカイブで、各試合が何秒目にあるか",
             label: "登録済み", count: @data_status[:timestamps], total: @data_status[:total],
             path: event_timestamps_path(@event) %>
     <% end %>
-    <%= render "events/data_card", title: "試合の統計",
+    <%= render "events/data_card", title: "各試合の統計",
           description: "各試合のスコア・撃墜・与ダメージ・タイムライン",
           label: "取り込み済み", count: @data_status[:stats], total: @data_status[:total],
           path: event_stats_path(@event) %>
+  </div>
+
+  <%# 全試合そろったら Discord のフォーラムの記事に自動で知らせる。そろっているのに知らせていないときだけボタンを出す %>
+  <div class="ed-announce">
+    <div class="ed-announce-main">
+      <div class="ed-announce-title"><%= image_tag "/discord_logo_blurple.png", alt: "" %>Discord のフォーラムの記事への連絡</div>
+      <p class="ed-note">
+        <% if !@data_announcer.notice.enabled? %>
+          「登録の連絡」は送らない設定です。Discord 設定の「投稿文」で変えられます。
+        <% elsif !@data_announcer.can_post? %>
+          イベントの「編集」で Discord フォーラムスレッド URL を入れると、統計・タイムスタンプが全試合そろったときに自動で知らせます。
+        <% elsif @data_announcer.announced_kinds.any? %>
+          知らせました: <%= @data_announcer.announced_kinds.map { |kind| "#{EventDataAnnouncer::LABELS[kind]}（#{@data_announcer.announced_at(kind).strftime('%-m/%-d %H:%M')}）" }.join("・") %>
+        <% else %>
+          統計・タイムスタンプが全試合そろうと、自動で知らせます（それぞれ 1 回だけ）。
+        <% end %>
+        <% if @data_announcer.can_post? && @data_announcer.pending_kinds.any? %>
+          <br><%= @data_announcer.labels(@data_announcer.pending_kinds) %>がそろっていますが、まだ知らせていません。
+        <% end %>
+      </p>
+    </div>
+    <% if @data_announcer.can_post? && @data_announcer.pending_kinds.any? %>
+      <%= button_to "Discord に知らせる", announce_data_to_discord_event_path(@event), method: :post, class: "m-btn m-btn-primary",
+            data: { turbo_confirm: "Discord のフォーラムの記事に、#{@data_announcer.labels(@data_announcer.pending_kinds)}を登録したことを知らせますか？" } %>
+    <% end %>
   </div>
 <% end %>
 
@@ -78,10 +103,10 @@
   <% end %>
 </div>
 
-<%# ===== 対戦記録 ===== %>
+<%# ===== 対戦履歴 ===== %>
 <div class="m-panel">
   <div class="m-phead">
-    <h2>対戦記録</h2>
+    <h2>対戦履歴</h2>
     <span class="m-num" style="color:var(--color-muted);font-size:12px">全 <%= @matches.total_count %> 試合</span>
   </div>
   <div class="m-pbody">

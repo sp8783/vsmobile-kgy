@@ -17,6 +17,7 @@ module Api
       else
         PushNotificationService.notify_timestamps_registered(event: event, count: result.updated_count)
       end
+      EventDataAnnouncer.announce_later(event)
       render json: { message: "OK", updated: result.updated_count, comparison: result.comparison&.summary }
     end
 
@@ -71,6 +72,7 @@ module Api
         comparison = EventTimestampComparison.new(event: event)
         PushNotificationService.notify_timestamps_compared(event: event, summary: comparison.summary) if comparison.comparable?
       end
+      EventDataAnnouncer.announce_later(event)
 
       render json: { message: "OK", updated: db_matches.size, expired_users: expired_users }
     rescue JSON::ParserError

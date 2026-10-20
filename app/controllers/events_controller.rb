@@ -1,7 +1,7 @@
 class EventsController < ApplicationController
   before_action :authenticate_user!
-  before_action :require_admin, only: [ :new, :create, :edit, :update, :destroy, :post_broadcast_to_discord ]
-  before_action :set_event, only: [ :show, :edit, :update, :destroy, :post_broadcast_to_discord ]
+  before_action :require_admin, only: [ :new, :create, :edit, :update, :destroy, :post_broadcast_to_discord, :announce_data_to_discord ]
+  before_action :set_event, only: [ :show, :edit, :update, :destroy, :post_broadcast_to_discord, :announce_data_to_discord ]
 
   def index
     @events = Event.includes(:matches).order(held_on: :desc)
@@ -42,9 +42,23 @@ class EventsController < ApplicationController
       return redirect_to event_path(@event), alert: "配信URLが設定されていません。"
     end
 
-    message = @event.broadcast_url
-    DiscordWebhookService.post(purpose: "broadcast_url", message: message)
-    redirect_to event_path(@event), notice: "Discordへ配信URLを投稿しました。"
+    if DiscordWebhookService.post(purpose: "broadcast_url", message: @event.broadcast_url)
+      redirect_to event_path(@event), notice: "Discordへ配信URLを投稿しました。"
+    else
+      redirect_to event_path(@event), alert: "Discord への投稿に失敗しました。「配信URL投稿」の投稿先の設定を確認してください。"
+    end
+  end
+
+  # 統計・タイムスタンプがそろっているのにまだ知らせていないときの予備（ふだんは登録のあとに自動で知らせる）
+  def announce_data_to_discord
+    announcer = EventDataAnnouncer.new(event: @event)
+    result = announcer.announce!
+
+    if result.posted?
+      redirect_to event_path(@event), notice: "Discord のフォーラムの記事に、#{announcer.labels(result.kinds)}の登録を知らせました。"
+    else
+      redirect_to event_path(@event), alert: result.error_message
+    end
   end
 
   def destroy
@@ -63,7 +77,7 @@ class EventsController < ApplicationController
     @event = Event.find(params[:id])
   end
 
-  # 対戦会のあとに登録するデータ（アーカイブのタイムスタンプ・試合の統計）の登録状況
+  # 対戦会のあとに登録するデータ（配信アーカイブのタイムスタンプ・各試合の統計）の登録状況
   def assign_data_status
     matches = @event.matches
     @data_status = {
@@ -71,6 +85,7 @@ class EventsController < ApplicationController
       timestamps: matches.where.not(video_timestamp: nil).count,
       stats: matches.joins(:match_timeline).count
     }
+    @data_announcer = EventDataAnnouncer.new(event: @event)
   end
 
   def assign_view_state(attributes)
