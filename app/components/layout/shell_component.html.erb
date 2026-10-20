@@ -1,20 +1,30 @@
-<div class="page-shell">
+<%# スマホではトップバーの下の中身（.app-scroll）だけがスクロールする。一番上から下に引くと更新マークが出て、離すとページを読み直す（pull-refresh） %>
+<div class="<%= classes("page-shell", !user_signed_in? && "page-shell--bare") %>" data-controller="pull-refresh">
   <% if user_signed_in? %>
     <%= render Layout::SidebarComponent.new(current_user: current_user, viewing_as_user: viewing_as_user, viewing_as_someone_else: viewing_as_someone_else?, switchable_users: switchable_users) %>
     <%= render Layout::TopbarComponent.new(current_user: current_user, viewing_as_user: viewing_as_user, viewing_as_someone_else: viewing_as_someone_else?, switchable_users: switchable_users) %>
   <% end %>
 
-  <div id="flash-messages" class="<%= classes("app-flash page-container", !user_signed_in? && "app-flash--bare") %>">
-    <% flash.each do |type, message| %>
-      <%= render "shared/flash_message", type: type, message: message %>
-    <% end %>
+  <div class="pr-indicator" data-pull-refresh-target="indicator" aria-hidden="true">
+    <svg class="pr-spinner" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+      <path d="M12 3a9 9 0 1 1-6.36 2.64"/>
+      <path d="M5.5 2.5v3.5H9"/>
+    </svg>
   </div>
 
-  <main class="<%= classes("app-content", !user_signed_in? && "app-content--bare") %>">
-    <div class="page-container">
-      <%= content %>
+  <div class="app-scroll" data-pull-refresh-target="scroller">
+    <div id="flash-messages" class="<%= classes("app-flash page-container", !user_signed_in? && "app-flash--bare") %>">
+      <% flash.each do |type, message| %>
+        <%= render "shared/flash_message", type: type, message: message %>
+      <% end %>
     </div>
-  </main>
+
+    <main class="<%= classes("app-content", !user_signed_in? && "app-content--bare") %>">
+      <div class="page-container">
+        <%= content %>
+      </div>
+    </main>
+  </div>
 
   <% if unread_announcement %>
     <%= render "announcements/modal", announcement: unread_announcement %>
