@@ -154,6 +154,92 @@
     background: var(--color-bg);
   }
 
+  /* スマホ: ページ全体ではなく、トップバーの下の中身（.app-scroll）だけをスクロールさせる。
+     一番上で下に引いてもトップバーが動かず、引っ張って更新（pull-refresh）が使える。トップバーは中身の上に重ね、下を通る中身がぼけて見える見た目はそのまま */
+  @media (max-width: 1023px) {
+    html, body {
+      height: 100%;
+      overflow: hidden;
+    }
+
+    .page-shell {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      height: 100dvh;
+      min-height: 0;
+    }
+
+    .page-shell > .nav-topbar {
+      position: absolute;
+      inset-inline: 0;
+      top: 0;
+    }
+
+    .app-scroll {
+      position: relative;
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      overflow-x: clip;
+      padding-top: 4rem;
+      overscroll-behavior-y: none;
+      -webkit-overflow-scrolling: touch;
+      /* 引っ張って更新で中身を押し下げたあと、離すと戻る動き（transform は引いている間だけ付く） */
+      transition: transform 0.2s ease;
+    }
+
+    .app-scroll.pulling {
+      transition: none;
+    }
+
+    .page-shell--bare .app-scroll {
+      padding-top: 0;
+    }
+  }
+
+  /* 引っ張って更新のマーク。トップバーの下に置き、引いて中身が下にずれたすき間（中身の上の余白）の真ん中に出す。
+     ふだんは opacity 0 で見えない */
+  .pr-indicator {
+    position: absolute;
+    top: 4rem;
+    left: 50%;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    margin-left: -0.75rem;
+    color: var(--color-accent);
+    opacity: 0;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+    pointer-events: none;
+  }
+
+  .page-shell--bare .pr-indicator {
+    top: 0;
+  }
+
+  .pr-indicator.pulling {
+    transition: none;
+  }
+
+  .pr-spinner {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+
+  .pr-indicator.refreshing .pr-spinner {
+    animation: pr-spin 0.8s linear infinite;
+  }
+
+  @media (min-width: 1024px) {
+    .pr-indicator {
+      display: none;
+    }
+  }
+
   .page-container {
     box-sizing: border-box;
     width: auto;
@@ -1025,6 +1111,10 @@
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+@keyframes pr-spin {
+  to { transform: rotate(360deg); }
 }
 
 @keyframes pulse-dot {
