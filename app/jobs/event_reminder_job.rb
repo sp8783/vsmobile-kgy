@@ -5,8 +5,8 @@ class EventReminderJob < ApplicationJob
 
   # now / poster: テストで差し替えられるようにする
   def perform(now: Time.current, poster: DiscordWebhookService.method(:post))
-    # DiscordNotice::KINDS の順（事前準備のお願い → リマインド）に送る
-    DiscordNotice::KINDS.map { |kind| DiscordNotice.for(kind) }.select(&:enabled?).each do |notice|
+    # DiscordNotice::SCHEDULED_KINDS の順（事前準備のお願い → リマインド）に送る
+    DiscordNotice::SCHEDULED_KINDS.map { |kind| DiscordNotice.for(kind) }.select(&:enabled?).each do |notice|
       notice.timing_list.select { |timing| timing.hour == now.hour }.each do |timing|
         Event.where(held_on: now.to_date + timing.days_before).order(:id).each do |event|
           deliver(notice, event, timing.days_before, poster)

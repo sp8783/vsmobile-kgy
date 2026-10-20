@@ -63,6 +63,7 @@ Rails.application.routes.draw do
   resources :events do
     member do
       post :post_broadcast_to_discord
+      post :announce_data_to_discord
     end
     resources :matches, only: [ :new, :create ]
     resources :rotations, only: [ :new, :create ]

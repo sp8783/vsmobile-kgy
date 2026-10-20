@@ -2,14 +2,16 @@
       class: "ui-card dn-card",
       data: {
         controller: "discord-notice",
+        discord_notice_scheduled_value: notice.scheduled?,
         discord_notice_event_name_value: preview.name,
         discord_notice_held_on_value: preview.held_on.iso8601,
-        discord_notice_thread_url_value: preview.discord_thread_url.to_s
+        discord_notice_thread_url_value: preview.discord_thread_url.to_s,
+        discord_notice_event_url_value: (event_url(preview) if preview.persisted?).to_s.presence || "#{root_url}events/1"
       } do |f| %>
   <div class="dn-card-head">
     <div class="flex min-w-0 flex-col gap-1">
       <h2 class="text-lg font-black text-ink"><%= notice.label %></h2>
-      <p class="text-sm font-bold text-muted">投稿先: <%= notice.preparation? ? "イベントフォーラム（イベントの記事）" : "イベントリマインド" %></p>
+      <p class="text-sm font-bold text-muted">投稿先: <%= notice.to_thread? ? "イベントフォーラム（イベントの記事）" : "イベントリマインド" %></p>
     </div>
     <label class="dn-switch">
       <%= f.check_box :enabled, class: "sr-only", data: { discord_notice_target: "enabled", action: "discord-notice#refresh" } %>
@@ -30,18 +32,22 @@
     <div class="dn-fields" data-discord-notice-target="fields">
       <div class="flex flex-col gap-2">
         <p class="dn-caption">送るタイミング</p>
-        <div class="flex flex-col gap-2" data-discord-notice-target="timings">
-          <% notice.timing_list.each do |timing| %>
-            <%= render "timing", timing: timing, removable: !notice.preparation? %>
+        <% if notice.scheduled? %>
+          <div class="flex flex-col gap-2" data-discord-notice-target="timings">
+            <% notice.timing_list.each do |timing| %>
+              <%= render "timing", timing: timing, removable: !notice.preparation? %>
+            <% end %>
+          </div>
+          <% unless notice.preparation? %>
+            <p class="dn-note" data-discord-notice-target="emptyTimings" hidden>送るタイミングがありません。追加すると、そのタイミングでリマインドを送ります。</p>
+            <p class="dn-warn" data-discord-notice-target="duplicate" hidden>同じ日数のタイミングが2つあります。日数を変えるか消してください。</p>
+            <button type="button" class="dn-add" data-action="discord-notice#addTiming">＋ タイミングを追加</button>
+            <template data-discord-notice-target="timingTemplate">
+              <%= render "timing", timing: DiscordNotice::Timing.new(days_before: 3, hour: 8), removable: true %>
+            </template>
           <% end %>
-        </div>
-        <% unless notice.preparation? %>
-          <p class="dn-note" data-discord-notice-target="emptyTimings" hidden>送るタイミングがありません。追加すると、そのタイミングでリマインドを送ります。</p>
-          <p class="dn-warn" data-discord-notice-target="duplicate" hidden>同じ日数のタイミングが2つあります。日数を変えるか消してください。</p>
-          <button type="button" class="dn-add" data-action="discord-notice#addTiming">＋ タイミングを追加</button>
-          <template data-discord-notice-target="timingTemplate">
-            <%= render "timing", timing: DiscordNotice::Timing.new(days_before: 3, hour: 8), removable: true %>
-          </template>
+        <% else %>
+          <p class="dn-note">対戦会のあと、各試合の統計・配信アーカイブのタイムスタンプのそれぞれが全試合そろったときに送ります（イベントごとに統計 1 回・タイムスタンプ 1 回。同時にそろえば 1 回にまとめます）。</p>
         <% end %>
       </div>
 
@@ -51,7 +57,7 @@
               data: { discord_notice_target: "body", action: "input->discord-notice#refresh" } %>
         <div class="mt-2 flex flex-wrap items-center gap-1.5">
           <span class="dn-caption">差し込む:</span>
-          <% DiscordNotice::PLACEHOLDERS.each do |token| %>
+          <% notice.placeholders.each do |token| %>
             <button type="button" class="dn-chip" data-token="<%= token %>" data-action="discord-notice#insert"><%= token %></button>
           <% end %>
         </div>
@@ -64,7 +70,7 @@
         <div class="flex flex-wrap gap-1.5" data-discord-notice-target="previewTabs"></div>
       <% end %>
       <div class="dn-discord">
-        <div class="dn-discord-channel"><%= notice.preparation? ? "フォーラム › #{preview.name}の記事" : "# イベントリマインド" %></div>
+        <div class="dn-discord-channel"><%= notice.to_thread? ? "フォーラム › #{preview.name}の記事" : "# イベントリマインド" %></div>
         <div class="flex gap-3" data-discord-notice-target="previewMessage">
           <div class="dn-discord-avatar" aria-hidden="true">VS</div>
           <div class="min-w-0 flex-1">
@@ -80,6 +86,8 @@
       </div>
       <% if notice.preparation? %>
         <p class="dn-note">フォーラムの記事が登録されていないイベントには送りません。リマインドと同じ日時のときは、リマインドより先に送ります。</p>
+      <% elsif !notice.scheduled? %>
+        <p class="dn-note">フォーラムの記事が登録されていないイベントには送りません。</p>
       <% end %>
     </div>
   </div>

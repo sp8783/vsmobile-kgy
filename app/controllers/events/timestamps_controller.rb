@@ -1,5 +1,5 @@
 module Events
-  # イベントのアーカイブのタイムスタンプ（配信で各試合が何秒目か）の登録。
+  # イベントの配信アーカイブのタイムスタンプ（配信で各試合が何秒目か）の登録。
   # 登録のしかたは 3 つ: 試合の開始時刻から計算する・動画を解析する・手で入力する
   class TimestampsController < ApplicationController
     include TimestampParseable
@@ -21,6 +21,7 @@ module Events
       result = timestamp_batch.update(params[:timestamps].to_s)
 
       if result.success?
+        EventDataAnnouncer.announce_later(@event)
         redirect_to event_timestamps_path(@event, tab: "manual"), notice: "タイムスタンプを保存しました。"
       else
         flash.now[:alert] = result.error_message
@@ -41,6 +42,7 @@ module Events
 
       @event.update!(first_match_video_timestamp: seconds)
       count = EventTimestampCalculator.new(event: @event).apply!
+      EventDataAnnouncer.announce_later(@event) if count
       notice =
         if count
           comparison = EventTimestampComparison.new(event: @event)

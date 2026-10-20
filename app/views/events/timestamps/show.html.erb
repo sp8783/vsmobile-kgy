@@ -10,14 +10,14 @@
 
 <div class="m-head">
   <div>
-    <h1>アーカイブのタイムスタンプ</h1>
+    <h1>配信アーカイブのタイムスタンプ</h1>
     <div class="m-who"><%= @event.name %>（<%= @event.held_on.strftime("%Y年%m月%d日") %>）</div>
   </div>
   <span class="m-ctx">登録済み <b class="m-num"><%= registered_count %> / <%= @matches.size %></b> 試合</span>
 </div>
 
 <p class="ed-lead">
-  配信のアーカイブで、各試合が何秒目にあるかを登録します。登録すると、対戦記録から試合の場面に直接飛べます。<br>
+  配信のアーカイブで、各試合が何秒目にあるかを登録します。登録すると、対戦履歴から試合の場面に直接飛べます。<br>
   登録のしかたを 1 つ選んでください。どの方法で登録しても、下の「登録されているタイムスタンプ」に入ります。
 </p>
 
@@ -67,8 +67,8 @@
                 <%= @timestamp_calculator.started_count %> / <%= @matches.size %> 試合
               </span>
             </div>
-            <p class="ed-note">試合の統計を VS.モバイルから取り込むと、各試合の開始時刻も入ります（対戦会のあと）。</p>
-            <%= link_to "試合の統計の画面へ →", event_stats_path(@event), class: "m-link" %>
+            <p class="ed-note">各試合の統計を VS.モバイルから取り込むと、試合の開始時刻も入ります（対戦会のあと）。</p>
+            <%= link_to "各試合の統計の画面へ →", event_stats_path(@event), class: "m-link" %>
           </div>
         </li>
       </ol>

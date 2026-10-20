@@ -5,9 +5,7 @@
 # Discord の投稿先。default はすべての投稿先に使う Webhook（テスト用のテキストチャンネル）。
 # 投稿先ごとに書くと、そちらが優先される
 #   reminder         イベントリマインド
-#   event_forum      イベントフォーラム（フォーラムのチャンネルで作った Webhook が必要）
-#   timestamp_result タイムスタンプ解析結果
-#   stats_result     統計スクレイピング結果
+#   event_forum      イベントフォーラム（フォーラムのチャンネルで作った Webhook が必要。事前準備のお願いと、統計・タイムスタンプの登録の連絡）
 #   broadcast_url    配信URL投稿
 #   release          リリース告知
 webhooks:

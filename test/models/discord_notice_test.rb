@@ -60,4 +60,18 @@ class DiscordNoticeTest < ActiveSupport::TestCase
     assert_not DiscordNotice.new(kind: "preparation", body: "本文", timings: []).valid?
     assert_not DiscordNotice.new(kind: "preparation", body: "本文", timings: [ { days_before: 1, hour: 8 }, { days_before: 2, hour: 8 } ]).valid?
   end
+
+  test "登録の連絡はタイミングを持たず、登録したものと対戦履歴のリンクを差し込む" do
+    notice = DiscordNotice.for("data_registered")
+
+    assert_not notice.scheduled?
+    assert notice.to_thread?
+    assert_equal "event_forum", notice.purpose
+    assert_equal DiscordNotice::REGISTRATION_PLACEHOLDERS, notice.placeholders
+    assert_equal "第12回 対戦会 の対戦履歴に、次のデータを登録しました。\n- 各試合の統計\n- 配信アーカイブのタイムスタンプ\n\n本イベントの対戦履歴: http://example.com/events/1",
+                 notice.registration_message_for(@event, %w[stats timestamps], event_url: "http://example.com/events/1")
+    assert_equal "第12回 対戦会 の対戦履歴に、次のデータを登録しました。\n- 各試合の統計\n\n本イベントの対戦履歴: http://example.com/events/1",
+                 notice.registration_message_for(@event, %w[stats], event_url: "http://example.com/events/1")
+    assert_not DiscordNotice.new(kind: "data_registered", body: "本文", timings: [ { days_before: 1, hour: 8 } ]).valid?
+  end
 end

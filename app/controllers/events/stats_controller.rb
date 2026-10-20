@@ -1,5 +1,5 @@
 module Events
-  # イベントの試合の統計（各試合のスコア・撃墜・タイムラインなど）の登録。
+  # イベントの各試合の統計（スコア・撃墜・タイムラインなど）の登録。
   # 登録のしかたは 2 つ: VS.モバイルから一括取得する・試合ごとに入力する
   class StatsController < ApplicationController
     TABS = %w[bulk per_match].freeze
