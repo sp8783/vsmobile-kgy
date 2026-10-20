@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_13_090000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_21_090100) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -62,6 +62,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_13_090000) do
     t.integer "first_match_video_timestamp"
     t.date "held_on", null: false
     t.string "name", null: false
+    t.datetime "stats_announced_at"
+    t.datetime "timestamps_announced_at"
     t.datetime "updated_at", null: false
     t.index ["held_on"], name: "index_events_on_held_on"
   end
