@@ -80,7 +80,10 @@
     <div class="m-phead"><h2>動画を解析する</h2></div>
     <div class="m-pbody">
       <p class="ed-note">配信のアーカイブを GitHub Actions で解析し、終わったら全試合のタイムスタンプを自動で登録します。配信が終わってすぐは、動画の準備に時間がかかることがあります（数時間）。</p>
-      <p class="ed-warn">登録済みのタイムスタンプは、解析の結果で上書きされます。</p>
+      <p class="ed-note">試合の開始時刻から計算したタイムスタンプがあるときは上書きせず、解析の結果と比べて <%= EventTimestampComparison::THRESHOLD %> 秒以上の違いを知らせます。解析の結果は下の一覧の「動画解析」に出ます。</p>
+      <% if @comparison.comparable? %>
+        <p class="ed-result">前回の解析の結果と比べると: <%= @comparison.summary %></p>
+      <% end %>
       <div class="mt-4">
         <%= button_to "解析を始める", analysis_event_timestamps_path(@event), method: :post, class: "m-btn m-btn-primary",
               disabled: @event.broadcast_url.blank?,
@@ -112,7 +115,9 @@
         <span role="columnheader">対戦</span>
         <span role="columnheader">試合の開始時刻</span>
         <span role="columnheader">タイムスタンプ</span>
+        <span role="columnheader">動画解析</span>
       </div>
+      <% differences = @comparison.differences.index_by(&:match_number) %>
       <% @matches.each_with_index do |match, index| %>
         <% team1 = match.match_players.select { |p| p.team_number == 1 }.sort_by(&:position) %>
         <% team2 = match.match_players.select { |p| p.team_number == 2 }.sort_by(&:position) %>
@@ -127,6 +132,17 @@
           <span class="m-num ed-time" role="cell">
             <% if match.video_url %>
               <%= link_to match.video_timestamp_text, safe_external_url(match.video_url), target: "_blank", rel: "noopener noreferrer", class: "m-link" %>
+            <% else %>
+              —
+            <% end %>
+          </span>
+          <span class="m-num ed-time" role="cell">
+            <% difference = differences[index + 1] %>
+            <% if match.analysis_video_timestamp %>
+              <%= format_timestamp(match.analysis_video_timestamp) %>
+              <% if difference && difference.seconds.abs >= EventTimestampComparison::THRESHOLD %>
+                <span class="ed-chip warn"><%= format("%+d 秒", difference.seconds) %></span>
+              <% end %>
             <% else %>
               —
             <% end %>

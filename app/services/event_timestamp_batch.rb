@@ -17,11 +17,7 @@ class EventTimestampBatch
   end
 
   def update(raw_text)
-    lines = normalized_lines(raw_text)
-
-    return failure_result(raw_text, "行数（#{lines.size}）と試合数（#{matches.size}）が一致しません。") if lines.size != matches.size
-
-    timestamps = parse_lines(lines, raw_text)
+    timestamps = parse(raw_text)
     return timestamps if timestamps.is_a?(Result)
 
     ActiveRecord::Base.transaction do
@@ -31,6 +27,14 @@ class EventTimestampBatch
     end
 
     Result.new(success?: true, timestamps_text: raw_text, updated_count: matches.size)
+  end
+
+  # 1行1試合のテキストを秒のリストにする。行数が試合数と合わない・形式が不正なら失敗の Result を返す
+  def parse(raw_text)
+    lines = normalized_lines(raw_text)
+    return failure_result(raw_text, "行数（#{lines.size}）と試合数（#{matches.size}）が一致しません。") if lines.size != matches.size
+
+    parse_lines(lines, raw_text)
   end
 
   private

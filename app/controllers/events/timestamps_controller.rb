@@ -9,6 +9,7 @@ module Events
     before_action :authenticate_user!
     before_action :require_admin
     before_action :set_event
+    helper_method :format_timestamp
 
     def show
       @timestamps_text = timestamp_batch.existing_text
@@ -42,7 +43,8 @@ module Events
       count = EventTimestampCalculator.new(event: @event).apply!
       notice =
         if count
-          "#{count} 試合のタイムスタンプを、試合の開始時刻から計算して保存しました。"
+          comparison = EventTimestampComparison.new(event: @event)
+          "#{count} 試合のタイムスタンプを、試合の開始時刻から計算して保存しました。" + (comparison.comparable? ? " 動画解析の結果と比べると: #{comparison.summary}" : "")
         elsif seconds
           "1試合目の配信上の時刻を保存しました。統計を取り込んだあとに、全試合のタイムスタンプを計算します。"
         else
@@ -86,6 +88,7 @@ module Events
       @tab = TABS.include?(tab) ? tab : TABS.first
       @matches = timestamp_batch.matches
       @timestamp_calculator = EventTimestampCalculator.new(event: @event)
+      @comparison = EventTimestampComparison.new(event: @event)
       @first_match_video_timestamp_text = format_timestamp(@event.first_match_video_timestamp)
     end
   end

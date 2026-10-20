@@ -42,6 +42,20 @@ class PushNotificationService
       end
     end
 
+    # 動画解析のタイムスタンプを、試合の開始時刻から計算したタイムスタンプと比べた結果
+    def notify_timestamps_compared(event:, summary:)
+      User.where(is_admin: true).find_each do |user|
+        next unless user.push_notifications_enabled?
+
+        SendPushNotificationJob.perform_later(
+          user_id: user.id,
+          title: "タイムスタンプ照合結果",
+          body: "#{event.name}: #{summary}",
+          path: "/events/#{event.id}/timestamps"
+        )
+      end
+    end
+
     def notify_timestamps_failed(event:, error:)
       User.where(is_admin: true).find_each do |user|
         next unless user.push_notifications_enabled?
