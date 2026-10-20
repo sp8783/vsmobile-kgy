@@ -1,0 +1,11 @@
+<div class="ui-page-header">
+  <div>
+    <p class="text-xs font-black uppercase tracking-wide text-subtle">Integrations</p>
+    <h1 class="font-display text-3xl font-black text-ink">Discord 設定</h1>
+    <p class="mt-2 text-sm font-semibold text-muted"><%= description %></p>
+  </div>
+  <nav class="st-tabs" aria-label="Discord 設定">
+    <%= link_to "投稿先", admin_discord_channels_path, class: ["st-tab", ("on" if current == :channels)], aria: { current: (current == :channels ? "page" : nil) } %>
+    <%= link_to "投稿文", admin_discord_notices_path, class: ["st-tab", ("on" if current == :notices)], aria: { current: (current == :notices ? "page" : nil) } %>
+  </nav>
+</div>

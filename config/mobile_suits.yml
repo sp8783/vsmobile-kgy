@@ -1,0 +1,4 @@
+# 機体データの更新確認（.github/workflows/mobile-suits-update.yml）の設定
+#
+# Wiki に載っていても、まだゲームで使えない機体は、Wiki のページ ID（pages/{id}.html の id）をここに足すと取り込まない
+exclude_page_ids: []

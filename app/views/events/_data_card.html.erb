@@ -1,0 +1,18 @@
+<%#
+  イベント詳細の「対戦会のあとに登録するデータ」のカード（登録状況と、登録する画面へのリンク）
+  locals: title, description, label（例: 登録済み）, count, total, path
+%>
+<%= link_to path, class: "ed-card" do %>
+  <div class="ed-card-main">
+    <div class="ed-card-title"><%= title %></div>
+    <div class="ed-card-desc"><%= description %></div>
+  </div>
+  <div class="ed-card-side">
+    <div class="ed-card-count">
+      <span class="lab"><%= label %></span>
+      <span class="m-num <%= "done" if total.positive? && count == total %>"><%= count %> / <%= total %></span>
+      <span class="lab">試合</span>
+    </div>
+    <span class="m-link">登録する →</span>
+  </div>
+<% end %>

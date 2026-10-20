@@ -1203,7 +1203,8 @@
         "一方通行換装",
         "カウンター",
         "劇場版 機動戦士ガンダム00 -A wakening of the Trailblazer-",
-        "トランザム"
+        "トランザム",
+        "換装機"
       ],
       "metadata": {
         "durability": "680",
@@ -1306,7 +1307,8 @@
         "機動戦士ガンダム00V",
         "自動回避",
         "カウンター",
-        "ブーメラン"
+        "ブーメラン",
+        "ファンネル"
       ],
       "metadata": {
         "durability": "680",
@@ -2174,8 +2176,8 @@
         "durability": "680",
         "formChange": "なし",
         "moveType": "通常BD",
-        "bdCount": "7",
-        "redLockRange": "A",
+        "bdCount": "6",
+        "redLockRange": "B",
         "hasTransform": false,
         "hasShield": true,
         "difficulty": "ノーマル",
@@ -2273,7 +2275,7 @@
         "機動戦士ガンダム 閃光のハサウェイ"
       ],
       "metadata": {
-        "durability": "650",
+        "durability": "600",
         "formChange": "フライト・フォーム半壊状態",
         "moveType": "通常BD",
         "bdCount": "7",
@@ -2338,7 +2340,7 @@
         "鞭"
       ],
       "metadata": {
-        "durability": "660",
+        "durability": "640",
         "formChange": "なし",
         "moveType": "通常BD",
         "bdCount": "7",
@@ -2739,7 +2741,7 @@
         "redLockRange": "C",
         "hasTransform": false,
         "hasShield": true,
-        "difficulty": "テクニカル",
+        "difficulty": "オススメ",
         "defaultBGM": "LAST IMPRESSION"
       }
     },
@@ -2758,7 +2760,8 @@
       "imageLocalPath": "./output/images/392_ガンダムヘビーアームズ改(EW版).png",
       "tags": [
         "ガンダム",
-        "新機動戦記ガンダムW Endless Waltz"
+        "新機動戦記ガンダムW Endless Waltz",
+        "コスト2500"
       ],
       "metadata": {
         "durability": "680",
@@ -2821,7 +2824,8 @@
         "ガンダム",
         "コスト2500",
         "変形",
-        "機動新世紀ガンダムX"
+        "機動新世紀ガンダムX",
+        "鞭"
       ],
       "metadata": {
         "durability": "660",
@@ -4015,7 +4019,7 @@
         "formChange": "△(連動バズパージ)",
         "moveType": "通常BD",
         "bdCount": "7",
-        "redLockRange": "C",
+        "redLockRange": "B",
         "hasTransform": false,
         "hasShield": true,
         "difficulty": "ノーマル",
@@ -4116,7 +4120,7 @@
         "redLockRange": "A",
         "hasTransform": false,
         "hasShield": true,
-        "difficulty": "ノーマル",
+        "difficulty": "オススメ",
         "defaultBGM": "AERIAL REBUILD"
       }
     },
@@ -4176,7 +4180,7 @@
         "ガンダムビルドファイターズ"
       ],
       "metadata": {
-        "durability": "660",
+        "durability": "640",
         "formChange": "なし",
         "moveType": "通常BD",
         "bdCount": "7",
@@ -6734,7 +6738,8 @@
         "主役機",
         "復活",
         "機動戦士ガンダム00",
-        "トランザム"
+        "トランザム",
+        "機体スキン"
       ],
       "metadata": {
         "durability": "600",
@@ -6911,7 +6916,7 @@
         "hasTransform": false,
         "hasShield": true,
         "difficulty": "ノーマル",
-        "defaultBGM": "FIGHT"
+        "defaultBGM": "COUNTER ATTACK"
       }
     },
     {
@@ -7289,7 +7294,7 @@
         "formChange": "なし",
         "moveType": "通常BD",
         "bdCount": "6",
-        "redLockRange": "通常時:Cレーダー通信時:S",
+        "redLockRange": "通常時:Bレーダー通信時:S",
         "hasTransform": false,
         "hasShield": true,
         "difficulty": "テクニカル",
@@ -8380,10 +8385,10 @@
     }
   ],
   "metadata": {
-    "scrapedAt": "2026-10-08T11:48:39.323840+00:00",
+    "scrapedAt": "2026-10-11T05:25:08.965445+00:00",
     "sourceUrl": "https://w.atwiki.jp/exvs2infiniteboost/pages/123.html",
     "totalUnits": 254,
-    "scraperVersion": "0.1.0",
+    "scraperVersion": "0.2.0",
     "phase": 3
   }
 }

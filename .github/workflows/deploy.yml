@@ -68,3 +68,41 @@ jobs:
 
       - name: Deploy with Kamal
         run: bin/kamal deploy
+
+  # リリース PR（release/vX.Y.Z → main）のデプロイが成功したら、タグ・GitHub Release を作り、
+  # そのリリースの Issue を閉じて GitHub Project を Done にする（lib/release_finalizer.rb。リリース PR 以外では何もしない）
+  finalize:
+    needs: deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: read
+
+    env:
+      GH_TOKEN: ${{ github.token }}
+      # GitHub Project の更新は、機体データの更新確認と同じ Fine-grained PAT（Projects の書き込みがあるとき）
+      PROJECT_TOKEN: ${{ secrets.MOBILE_SUITS_UPDATE_TOKEN }}
+      SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ env.SHA }}
+          fetch-depth: 0
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@14594264cd68ce8a2345dd349bc3d138a4ef85c8 # v1.327.0
+        with:
+          bundler-cache: true
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Tag, release and close issues
+        run: bin/rails release:finalize

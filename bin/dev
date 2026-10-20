@@ -13,4 +13,7 @@ export PORT="${PORT:-3000}"
 export RUBY_DEBUG_OPEN="true"
 export RUBY_DEBUG_LAZY="true"
 
+# 機体マスタ（db/data/units.json）を反映する。失敗しても（DB が起動していなくても）開発サーバーは起動する
+bin/rails mobile_suits:sync || echo "機体マスタの同期に失敗しました。DB が起動しているか確認してください"
+
 exec foreman start -f Procfile.dev "$@"

@@ -62,14 +62,19 @@ Rails.application.routes.draw do
   # Events
   resources :events do
     member do
-      get :edit_timestamps
-      patch :update_timestamps
-      post :trigger_analysis
-      post :trigger_scraping
       post :post_broadcast_to_discord
+      post :announce_data_to_discord
     end
     resources :matches, only: [ :new, :create ]
     resources :rotations, only: [ :new, :create ]
+    # アーカイブのタイムスタンプ・試合の統計の登録
+    resource :timestamps, only: [ :show, :update ], controller: "events/timestamps" do
+      patch :first_match
+      post :analysis
+    end
+    resource :stats, only: [ :show ], controller: "events/stats" do
+      post :scraping
+    end
   end
 
   # Matches
@@ -112,6 +117,7 @@ Rails.application.routes.draw do
   # Admin
   namespace :admin do
     resources :discord_channels, only: [ :index, :update ], param: :purpose
+    resources :discord_notices, only: [ :index, :update ], param: :kind
     resources :announcements
     resources :users, except: [ :show ] do
       member do

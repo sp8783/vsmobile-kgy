@@ -23,9 +23,11 @@ class MatchStatisticsResetter
     match.match_players.update_all(STAT_COLUMNS.index_with(nil))
     match.update!(
       team1_ex_overlimit_before_end: nil,
-      team2_ex_overlimit_before_end: nil
+      team2_ex_overlimit_before_end: nil,
+      game_started_at: nil
     )
     match.match_timeline&.destroy!
+    match.stats_payload&.destroy!
   end
 
   private

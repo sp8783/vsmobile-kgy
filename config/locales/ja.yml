@@ -45,6 +45,9 @@ ja:
         series: シリーズ
         cost: コスト
         position: 表示順
+      discord_notice:
+        body: 文面
+        timings: 送るタイミング
   errors:
     format: "%{attribute}%{message}"
     messages:

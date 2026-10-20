@@ -12,6 +12,7 @@ class MatchStatsController < ApplicationController
     ActiveRecord::Base.transaction do
       update_timeline_data!
     end
+    EventDataAnnouncer.announce_later(@match.event)
 
     redirect_to @match, notice: "統計データを保存しました。"
   rescue ActiveRecord::RecordInvalid => e

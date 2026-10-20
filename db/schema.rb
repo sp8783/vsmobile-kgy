@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_08_114016) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_21_090100) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -33,13 +33,37 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_08_114016) do
     t.index ["purpose"], name: "index_discord_channels_on_purpose", unique: true
   end
 
+  create_table "discord_notice_deliveries", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.integer "days_before", null: false
+    t.bigint "event_id", null: false
+    t.string "kind", null: false
+    t.datetime "sent_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["event_id", "kind", "days_before"], name: "index_discord_notice_deliveries_uniqueness", unique: true
+    t.index ["event_id"], name: "index_discord_notice_deliveries_on_event_id"
+  end
+
+  create_table "discord_notices", force: :cascade do |t|
+    t.text "body", null: false
+    t.datetime "created_at", null: false
+    t.boolean "enabled", default: true, null: false
+    t.string "kind", null: false
+    t.jsonb "timings", default: [], null: false
+    t.datetime "updated_at", null: false
+    t.index ["kind"], name: "index_discord_notices_on_kind", unique: true
+  end
+
   create_table "events", force: :cascade do |t|
     t.string "broadcast_url"
     t.datetime "created_at", null: false
     t.text "description"
     t.string "discord_thread_url"
+    t.integer "first_match_video_timestamp"
     t.date "held_on", null: false
     t.string "name", null: false
+    t.datetime "stats_announced_at"
+    t.datetime "timestamps_announced_at"
     t.datetime "updated_at", null: false
     t.index ["held_on"], name: "index_events_on_held_on"
   end
@@ -94,6 +118,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_08_114016) do
     t.index ["user_id"], name: "index_match_players_on_user_id"
   end
 
+  create_table "match_stats_payloads", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "match_id", null: false
+    t.jsonb "payload", null: false
+    t.datetime "updated_at", null: false
+    t.index ["match_id"], name: "index_match_stats_payloads_on_match_id", unique: true
+  end
+
   create_table "match_timelines", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.integer "game_end_cs"
@@ -105,8 +137,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_08_114016) do
   end
 
   create_table "matches", force: :cascade do |t|
+    t.integer "analysis_video_timestamp"
     t.datetime "created_at", null: false
     t.bigint "event_id", null: false
+    t.datetime "game_started_at"
     t.datetime "played_at", null: false
     t.integer "reactions_count", default: 0, null: false
     t.bigint "rotation_match_id"
@@ -163,6 +197,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_08_114016) do
     t.index ["match_id"], name: "index_reactions_on_match_id"
     t.index ["user_id", "match_id", "master_emoji_id"], name: "index_reactions_unique", unique: true
     t.index ["user_id"], name: "index_reactions_on_user_id"
+  end
+
+  create_table "release_announcements", force: :cascade do |t|
+    t.bigint "announcement_id"
+    t.datetime "created_at", null: false
+    t.datetime "discord_posted_at"
+    t.datetime "updated_at", null: false
+    t.string "version", null: false
+    t.index ["announcement_id"], name: "index_release_announcements_on_announcement_id"
+    t.index ["version"], name: "index_release_announcements_on_version", unique: true
   end
 
   create_table "rotation_matches", force: :cascade do |t|
@@ -229,11 +273,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_08_114016) do
     t.index ["username"], name: "index_users_on_username", unique: true
   end
 
+  add_foreign_key "discord_notice_deliveries", "events", on_delete: :cascade
   add_foreign_key "favorite_matches", "matches"
   add_foreign_key "favorite_matches", "users"
   add_foreign_key "match_players", "matches"
   add_foreign_key "match_players", "mobile_suits"
   add_foreign_key "match_players", "users"
+  add_foreign_key "match_stats_payloads", "matches", on_delete: :cascade
   add_foreign_key "match_timelines", "matches"
   add_foreign_key "matches", "events"
   add_foreign_key "matches", "rotation_matches"
@@ -241,6 +287,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_08_114016) do
   add_foreign_key "reactions", "master_emojis"
   add_foreign_key "reactions", "matches"
   add_foreign_key "reactions", "users"
+  add_foreign_key "release_announcements", "announcements", on_delete: :nullify
   add_foreign_key "rotation_matches", "matches"
   add_foreign_key "rotation_matches", "rotations"
   add_foreign_key "rotation_matches", "users", column: "team1_player1_id"

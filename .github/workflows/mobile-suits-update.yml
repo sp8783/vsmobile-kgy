@@ -1,0 +1,85 @@
+name: 機体データの更新確認
+
+# 毎日 5:00（日本時間）に Wiki から全機体を取り直し、アプリが使う項目に変化があれば、機体データ更新の PR を作る・更新する。
+# 開発中のリリースブランチがあれば相乗り、なければ（または「単独で出す」を選んだときは）パッチ版の単独リリース。
+# 中身は lib/mobile_suit_update/ を参照
+on:
+  schedule:
+    - cron: "0 20 * * *" # 20:00 UTC = 5:00 JST
+  workflow_dispatch:
+    inputs:
+      release:
+        description: 出し方
+        type: choice
+        default: 相乗り（開発中のリリースに含める）
+        options:
+          - 相乗り（開発中のリリースに含める）
+          - 単独で出す
+
+concurrency:
+  group: mobile-suits-update
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  # exvs2ib-wiki-scraper のバージョン（タグ）
+  SCRAPER_REF: v0.2.0
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    env:
+      # PR で CI が動くよう、GitHub 標準のトークンではなく Fine-grained PAT を使う（contents / pull requests / issues の書き込み）
+      GH_TOKEN: ${{ secrets.MOBILE_SUITS_UPDATE_TOKEN }}
+      STANDALONE: ${{ inputs.release == '単独で出す' && '1' || '' }}
+      SCRAPER_DIR: ${{ github.workspace }}/.scraper
+
+    steps:
+      # 外部の Actions はコミット SHA で固定する
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.MOBILE_SUITS_UPDATE_TOKEN }}
+
+      - name: Checkout scraper
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: sp8783/exvs2ib-wiki-scraper
+          ref: ${{ env.SCRAPER_REF }}
+          path: .scraper
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+
+      - name: Install scraper dependencies
+        run: pip install -r .scraper/requirements.txt
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@14594264cd68ce8a2345dd349bc3d138a4ef85c8 # v1.327.0
+        with:
+          bundler-cache: true
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Decide base branch
+        id: target
+        run: echo "base=$(bin/rails mobile_suits:update:target | tail -n 1)" >> "$GITHUB_OUTPUT"
+
+      # 起点のブランチから作り直す（Gemfile が違うこともあるので入れ直す）
+      - name: Check out base branch
+        run: |
+          git checkout -B mobile-suits-update "origin/${{ steps.target.outputs.base }}"
+          bundle install
+
+      - name: Refresh mobile suits and publish PR
+        run: bin/rails mobile_suits:update:publish

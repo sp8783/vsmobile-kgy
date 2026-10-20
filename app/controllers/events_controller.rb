@@ -1,7 +1,7 @@
 class EventsController < ApplicationController
   before_action :authenticate_user!
-  before_action :require_admin, only: [ :new, :create, :edit, :update, :destroy, :edit_timestamps, :update_timestamps, :trigger_analysis, :trigger_scraping, :post_broadcast_to_discord ]
-  before_action :set_event, only: [ :show, :edit, :update, :destroy, :edit_timestamps, :update_timestamps, :trigger_analysis, :trigger_scraping, :post_broadcast_to_discord ]
+  before_action :require_admin, only: [ :new, :create, :edit, :update, :destroy, :post_broadcast_to_discord, :announce_data_to_discord ]
+  before_action :set_event, only: [ :show, :edit, :update, :destroy, :post_broadcast_to_discord, :announce_data_to_discord ]
 
   def index
     @events = Event.includes(:matches).order(held_on: :desc)
@@ -9,6 +9,7 @@ class EventsController < ApplicationController
 
   def show
     assign_view_state(EventMatchListing.new(event: @event, params: params, viewing_as_user: viewing_as_user).to_h)
+    assign_data_status if current_user.is_admin?
   end
 
   def new
@@ -36,73 +37,28 @@ class EventsController < ApplicationController
     end
   end
 
-  def edit_timestamps
-    timestamp_batch = EventTimestampBatch.new(event: @event)
-    @matches = timestamp_batch.matches
-    @timestamps_text = timestamp_batch.existing_text
-  end
-
-  def update_timestamps
-    timestamp_batch = EventTimestampBatch.new(event: @event)
-    @matches = timestamp_batch.matches
-    result = timestamp_batch.update(params[:timestamps].to_s)
-
-    if result.success?
-      redirect_to event_path(@event), notice: "タイムスタンプを保存しました。"
-    else
-      flash.now[:alert] = result.error_message
-      @timestamps_text = result.timestamps_text
-      render :edit_timestamps, status: :unprocessable_entity
-    end
-  end
-
-  def trigger_analysis
-    dispatch_result = GithubActionsWorkflowDispatcher.new(
-      repo: ENV["GITHUB_REPO"].presence,
-      workflow_id: ENV["GITHUB_WORKFLOW_ID"].presence,
-      token: ENV["GITHUB_TOKEN"].presence,
-      inputs: {
-        event_id: @event.id.to_s,
-        broadcast_url: @event.broadcast_url
-      },
-      missing_config_message: "GitHub Actions の設定が不完全です（GITHUB_REPO / GITHUB_WORKFLOW_ID / GITHUB_TOKEN を確認してください）。",
-      exception_message_prefix: "解析開始でエラーが発生しました"
-    ).call
-
-    if dispatch_result.success?
-      redirect_to event_path(@event), notice: "解析を開始しました。完了後にタイムスタンプが自動登録されます。"
-    else
-      redirect_to event_path(@event), alert: dispatch_result.error_message
-    end
-  end
-
-  def trigger_scraping
-    dispatch_result = GithubActionsWorkflowDispatcher.new(
-      repo: ENV["SCRAPER_GITHUB_REPO"].presence,
-      workflow_id: ENV["SCRAPER_GITHUB_WORKFLOW_ID"].presence,
-      token: ENV["GITHUB_TOKEN"].presence,
-      inputs: {
-        event_id: @event.id.to_s
-      },
-      missing_config_message: "スクレイパーの設定が不完全です（SCRAPER_GITHUB_REPO / SCRAPER_GITHUB_WORKFLOW_ID / GITHUB_TOKEN を確認してください）。",
-      exception_message_prefix: "スクレイピング開始でエラーが発生しました"
-    ).call
-
-    if dispatch_result.success?
-      redirect_to event_path(@event), notice: "統計スクレイピングを開始しました。完了後に統計データが自動登録されます。"
-    else
-      redirect_to event_path(@event), alert: dispatch_result.error_message
-    end
-  end
-
   def post_broadcast_to_discord
     if @event.broadcast_url.blank?
       return redirect_to event_path(@event), alert: "配信URLが設定されていません。"
     end
 
-    message = @event.broadcast_url
-    DiscordWebhookService.post(purpose: "broadcast_url", message: message)
-    redirect_to event_path(@event), notice: "Discordへ配信URLを投稿しました。"
+    if DiscordWebhookService.post(purpose: "broadcast_url", message: @event.broadcast_url)
+      redirect_to event_path(@event), notice: "Discordへ配信URLを投稿しました。"
+    else
+      redirect_to event_path(@event), alert: "Discord への投稿に失敗しました。「配信URL投稿」の投稿先の設定を確認してください。"
+    end
+  end
+
+  # 統計・タイムスタンプがそろっているのにまだ知らせていないときの予備（ふだんは登録のあとに自動で知らせる）
+  def announce_data_to_discord
+    announcer = EventDataAnnouncer.new(event: @event)
+    result = announcer.announce!
+
+    if result.posted?
+      redirect_to event_path(@event), notice: "Discord のフォーラムの記事に、#{announcer.labels(result.kinds)}の登録を知らせました。"
+    else
+      redirect_to event_path(@event), alert: result.error_message
+    end
   end
 
   def destroy
@@ -119,6 +75,17 @@ class EventsController < ApplicationController
 
   def set_event
     @event = Event.find(params[:id])
+  end
+
+  # 対戦会のあとに登録するデータ（配信アーカイブのタイムスタンプ・各試合の統計）の登録状況
+  def assign_data_status
+    matches = @event.matches
+    @data_status = {
+      total: matches.count,
+      timestamps: matches.where.not(video_timestamp: nil).count,
+      stats: matches.joins(:match_timeline).count
+    }
+    @data_announcer = EventDataAnnouncer.new(event: @event)
   end
 
   def assign_view_state(attributes)

@@ -20,6 +20,7 @@ class MatchTimelineImporter
     return parsed unless workflow_payload?
 
     import_from_workflow_json!
+    save_stats_payload!
 
     parsed["timeline_raw"].merge(
       "_player_order" => {
@@ -45,6 +46,13 @@ class MatchTimelineImporter
     else
       match.create_match_timeline!(attributes)
     end
+  end
+
+  # スクレイパーから届いたデータをそのまま残し、試合の開始時刻（match_ts）を取り出す
+  def save_stats_payload!
+    (match.stats_payload || match.build_stats_payload).update!(payload: parsed)
+    match_ts = Integer(parsed["match_ts"], exception: false)
+    match.update!(game_started_at: match_ts && Time.zone.at(match_ts))
   end
 
   def recalculate_match_ranks!

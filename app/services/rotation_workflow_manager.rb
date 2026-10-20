@@ -1,8 +1,10 @@
 class RotationWorkflowManager
   Result = Struct.new(:success?, :rotation, :new_rotation, :completed, :error_message, keyword_init: true)
 
-  def initialize(rotation:)
+  # random: ローテーション表の組み合わせを決める乱数（サンプルデータの作成で種を固定するために渡せる）
+  def initialize(rotation:, random: Random.new)
     @rotation = rotation
+    @random = random
   end
 
   def generate_matches!(player_ids:)
@@ -12,7 +14,7 @@ class RotationWorkflowManager
     return success_result(rotation: rotation) if players.size < 4
 
     ActiveRecord::Base.transaction do
-      create_rotation_matches!(rotation, RotationGenerator.new(players.shuffle).generate)
+      create_rotation_matches!(rotation, RotationGenerator.new(players.shuffle(random: random)).generate)
     end
 
     success_result(rotation: rotation)
@@ -217,7 +219,7 @@ class RotationWorkflowManager
 
   private
 
-  attr_reader :rotation
+  attr_reader :rotation, :random
 
   def stale?(expected_index)
     !expected_index.nil? && expected_index != rotation.current_match_index
@@ -335,9 +337,10 @@ class RotationWorkflowManager
 
     planned = NextRoundRotationPlanner.new(
       previous_matches: previous_matches,
-      history_matches: matches_by_rotation.values.flatten(1)
+      history_matches: matches_by_rotation.values.flatten(1),
+      random: random
     ).plan
-    return RotationGenerator.new(users_by_id.values.shuffle).generate unless planned
+    return RotationGenerator.new(users_by_id.values.shuffle(random: random)).generate unless planned
 
     planned.map do |match_data|
       match_data.merge(RotationGenerator::MATCH_PLAYER_KEYS.to_h { |key| [ key, users_by_id.fetch(match_data[key]) ] })
