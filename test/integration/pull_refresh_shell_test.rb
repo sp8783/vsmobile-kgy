@@ -16,6 +16,12 @@ class PullRefreshShellTest < ActionDispatch::IntegrationTest
     assert_select ".page-shell > .app-scroll[data-pull-refresh-target=scroller] > main.app-content", 1
   end
 
+  test "スマホで入力欄にフォーカスしても拡大されないよう、viewport で拡大を止める" do
+    get new_user_session_path
+
+    assert_select "meta[name=viewport][content=?]", "width=device-width,initial-scale=1,maximum-scale=1"
+  end
+
   test "ログイン前の画面は、トップバーのない入れ物として描く" do
     get new_user_session_path
 
