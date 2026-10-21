@@ -1,9 +1,13 @@
 version: 2
+# 毎週月曜 9:00（日本時間）に更新を確認する。PR は .github/workflows/dependabot-auto-merge.yml が CI 後に自動でマージする
 updates:
 - package-ecosystem: bundler
   directory: "/"
   schedule:
     interval: weekly
+    day: monday
+    time: "09:00"
+    timezone: Asia/Tokyo
   open-pull-requests-limit: 10
   groups:
       ruby-dependencies:
@@ -13,6 +17,9 @@ updates:
   directory: "/"
   schedule:
     interval: weekly
+    day: monday
+    time: "09:00"
+    timezone: Asia/Tokyo
   open-pull-requests-limit: 10
   groups:
       actions-dependencies:
