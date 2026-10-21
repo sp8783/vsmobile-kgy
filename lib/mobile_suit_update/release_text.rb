@@ -6,6 +6,8 @@ module MobileSuitUpdate
   class ReleaseText
     APP_URL = "https://vsm-kgy.com/".freeze
     DIVIDER = "──────────────────────────────".freeze
+    # Discord の #バグ報告・要望 へのリンク（Webhook の投稿では「#チャンネル名」はリンクにならないため <#ID> で書く）
+    BUG_REPORT_CHANNEL = "<#1462281876524896458>".freeze
     DISCORD_LIMIT = ReleaseAnnouncer::DISCORD_LIMIT
 
     def initialize(diff, version: nil)
@@ -91,7 +93,7 @@ module MobileSuitUpdate
         DIVIDER,
         *discord_sections(lines),
         DIVIDER,
-        "**バグの報告**や**機能要望**は引き続き #バグ報告・要望 へお願いします :person_bowing:"
+        "**バグの報告**や**機能要望**は引き続き #{BUG_REPORT_CHANNEL} へお願いします :person_bowing:"
       ].join("\n\n") + "\n"
     end
 
