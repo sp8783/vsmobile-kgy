@@ -37,7 +37,7 @@ class MobileSuitUpdate::ReleaseTextTest < ActiveSupport::TestCase
 
       ──────────────────────────────
 
-      **バグの報告**や**機能要望**は引き続き #バグ報告・要望 へお願いします :person_bowing:
+      **バグの報告**や**機能要望**は引き続き <#1462281876524896458> へお願いします :person_bowing:
     DISCORD
   end
 
