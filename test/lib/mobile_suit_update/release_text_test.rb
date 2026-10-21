@@ -17,9 +17,7 @@ class MobileSuitUpdate::ReleaseTextTest < ActiveSupport::TestCase
       - `TX-ff104 アリュゼウス`（耐久値 650 → 600）
       - `ウイングガンダムフェニーチェ`（耐久値 660 → 640）
     BODY
-    assert_equal <<~DISCORD, note["discord"]
-      @everyone
-
+    assert_equal <<~DISCORD, note["discord"], "調整値だけの更新は @everyone を付けない"
       # :sparkles: **VS.モバイル for KGY v2.3.2 リリース！**
 
       v2.3.2をリリースしました :tada:
@@ -59,6 +57,7 @@ class MobileSuitUpdate::ReleaseTextTest < ActiveSupport::TestCase
     note = release_note([], [ suit_unit(772, "ブラックナイトスコード カルラ") ])
 
     assert_equal "🆕 v2.3.2 リリース！ 新機体1機を追加", note["title"]
+    assert note["discord"].start_with?("@everyone\n\n"), "新機体の追加は @everyone で知らせる"
     assert_includes note["discord"], "今回は新機体1機の追加アップデートです！"
     assert_includes note["discord"], "* **ブラックナイトスコード カルラ** を追加しました :crossed_swords:"
     assert_not_includes note["discord"], ":wrench:"
@@ -88,7 +87,7 @@ class MobileSuitUpdate::ReleaseTextTest < ActiveSupport::TestCase
     note = ReleaseAnnouncer.load_notes(dir).sole
 
     assert_equal [ "v2.3.2", "🔧 v2.3.2 リリース！ 機体データを更新" ], [ note.version, note.title ]
-    assert_includes note.discord, "@everyone"
+    assert_not_includes note.discord, "@everyone"
   ensure
     FileUtils.remove_entry(dir) if dir
   end

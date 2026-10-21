@@ -84,9 +84,10 @@ module MobileSuitUpdate
     def added_lines(prefix:) = added.map { |suit| "#{prefix}#{self.class.added_line(suit)}" }
     def changed_lines(prefix:) = changed.map { |change| "#{prefix}#{self.class.change_line(change)}" }
 
+    # @everyone は新機体の追加があるときだけ付ける（調整値だけの更新で全員に通知しない）
     def discord_text(lines)
       [
-        "@everyone",
+        ("@everyone" if added.any?),
         "# :sparkles: **VS.モバイル for KGY #{version} リリース！**",
         "#{version}をリリースしました :tada:\n#{summary}！",
         ":link: **アプリURL**\n#{APP_URL}",
@@ -94,7 +95,7 @@ module MobileSuitUpdate
         *discord_sections(lines),
         DIVIDER,
         "**バグの報告**や**機能要望**は引き続き #{BUG_REPORT_CHANNEL} へお願いします :person_bowing:"
-      ].join("\n\n") + "\n"
+      ].compact.join("\n\n") + "\n"
     end
 
     # Discord の文字数の上限を超えるときは、調整した機体の行を減らして「ほか N 機」にまとめる
