@@ -1,0 +1,38 @@
+name: Dependabot の自動マージ
+
+# Dependabot の PR（gem・GitHub Actions の更新）は、patch / minor の更新なら CI が通り次第 main にマージする。
+# major の更新は何もしない（手でマージ）。main の保護ルール（lint / scan_ruby / scan_js / test が必須）があるので、
+# 予約した自動マージは CI が通るまで待つ。マージ後は通常どおり CI → デプロイが走る（リリース PR ではないのでタグ・告知は動かない）。
+#
+# Dependabot の PR では通常の secrets が読めないため pull_request_target で動かす。
+# base ブランチの権限で動くので、PR 側のコードはチェックアウトも実行もしない。
+on:
+  pull_request_target:
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  auto-merge:
+    if: github.event.pull_request.user.login == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    env:
+      # マージ後に CI・デプロイが動くよう、GitHub 標準のトークンではなく Fine-grained PAT を使う（機体データの更新確認と同じ理由）
+      GH_TOKEN: ${{ secrets.MOBILE_SUITS_UPDATE_TOKEN }}
+      PR_URL: ${{ github.event.pull_request.html_url }}
+
+    steps:
+      # 外部の Actions はコミット SHA で固定する
+      - name: Fetch Dependabot metadata
+        id: metadata
+        uses: dependabot/fetch-metadata@25dd0e34f4fe68f24cc83900b1fe3fe149efef98 # v3.1.0
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      # CI がすでに通っていて予約できないときは、そのままマージする
+      - name: Enable auto-merge
+        if: steps.metadata.outputs.update-type != 'version-update:semver-major'
+        run: gh pr merge --auto --merge "$PR_URL" || gh pr merge --merge "$PR_URL"
