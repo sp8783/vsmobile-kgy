@@ -100,9 +100,9 @@ export default class extends Controller {
     if (emojiElement) {
       const img = emojiElement.querySelector('img')
       if (img) {
-        emojiHtml = `<img src="${img.src}" alt="${img.alt}" class="w-8 h-8">`
+        emojiHtml = `<img src="${this.escapeHtml(img.src)}" alt="${this.escapeHtml(img.alt)}" class="w-8 h-8">`
       } else {
-        emojiHtml = `<span class="text-3xl">${emojiElement.textContent}</span>`
+        emojiHtml = `<span class="text-3xl">${this.escapeHtml(emojiElement.textContent)}</span>`
       }
     }
 

@@ -1,5 +1,8 @@
 class Users::SessionsController < Devise::SessionsController
   before_action :configure_sign_in_params, only: [ :create ]
+  # 同じ IP からのログインの試行は 3 分に 10 回まで（パスワードの総当たりを防ぐ）
+  rate_limit to: 10, within: 3.minutes, only: [ :create, :guest ],
+             with: -> { redirect_to new_user_session_path, alert: "ログインの試行が多すぎます。しばらく待ってからやり直してください。" }
 
   # Set user_id in encrypted cookies for Action Cable authentication
   def create

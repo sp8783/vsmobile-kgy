@@ -34,7 +34,8 @@ class DiscordWebhookService
       req.body = { content: message }.to_json
       http.request(req)
     rescue => e
-      Rails.logger.error("[DiscordWebhookService] Failed to post_to_webhook_url (url=#{url}): #{e.message}")
+      # Webhook URL は秘密なのでログに出さない
+      Rails.logger.error("[DiscordWebhookService] Failed to post_to_webhook_url: #{e.class}: #{e.message}")
     end
   end
 end
