@@ -1,6 +1,5 @@
 class PushSubscriptionsController < ApplicationController
   before_action :authenticate_user!
-  skip_before_action :verify_authenticity_token, only: [ :create, :destroy, :unsubscribe_all ]
 
   # GET /vapid_public_key
   def vapid_public_key
