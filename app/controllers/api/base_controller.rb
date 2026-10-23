@@ -8,7 +8,7 @@ module Api
       token = request.headers["Authorization"]&.sub(/\ABearer /, "")
       api_token = ENV["VSMOBILE_API_TOKEN"].presence
 
-      if api_token.blank? || token != api_token
+      if api_token.blank? || !ActiveSupport::SecurityUtils.secure_compare(token.to_s, api_token)
         render json: { error: "Unauthorized" }, status: :unauthorized
       end
     end

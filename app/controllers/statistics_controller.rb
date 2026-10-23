@@ -46,8 +46,11 @@ class StatisticsController < ApplicationController
     @regular_users = User.regular_users.order(:nickname)
   end
 
+  # 一般ユーザーは view_user_id で他のユーザーの視点に切り替えられる。
+  # ゲストは誰でもログインできるので、切り替えを許すと全プレイヤーの実名と個人統計が見えてしまう。無視する
   def viewing_as_user
     return super if current_user&.is_admin
+    return current_user if current_user.is_guest
 
     if params[:view_user_id].present?
       User.regular_users.find_by(id: params[:view_user_id]) || current_user
