@@ -29,7 +29,7 @@ module Admin
       def success_message
         parts = [ "#{imported_count}件の試合データをインポートしました。" ]
         parts << "#{created_event_count}個のイベントを作成しました。" if created_event_count.positive?
-        parts << "#{created_user_count}人のユーザーを作成しました。" if created_user_count.positive?
+        parts << "#{created_user_count}人のユーザーを作成しました（パスワードは未設定です。ユーザー管理から設定してください）。" if created_user_count.positive?
         parts.join(" ")
       end
 
@@ -126,11 +126,12 @@ module Admin
       player_rows(row).map { |player_data| player_data[:nickname] }
     end
 
+    # 新しいユーザーのパスワードは乱数の仮の値にする（固定の値だと総当たりでログインされる）。
+    # 本人が使うときは管理者がユーザー管理の画面でパスワードを設定する
     def find_or_create_user(nickname)
       User.find_or_create_by(nickname: nickname) do |user|
         user.username = next_generated_username
-        user.password = "password"
-        user.password_confirmation = "password"
+        user.password = user.password_confirmation = SecureRandom.hex(16)
         user.is_admin = false
         user.notification_enabled = false
       end
