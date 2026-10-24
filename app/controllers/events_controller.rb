@@ -10,6 +10,7 @@ class EventsController < ApplicationController
   def show
     assign_view_state(EventMatchListing.new(event: @event, params: params, viewing_as_user: viewing_as_user).to_h)
     assign_data_status if current_user.is_admin?
+    assign_stats_coverage
   end
 
   def new
@@ -86,6 +87,18 @@ class EventsController < ApplicationController
       stats: matches.joins(:match_timeline).count
     }
     @data_announcer = EventDataAnnouncer.new(event: @event)
+  end
+
+  # VS.モバイル連携: 各試合の統計データの集まり具合。対戦会のあと 30 日のあいだ、まだ全試合そろっていないときだけ出す。
+  # 管理者（視点切り替え中でない）には誰が送ったかの一覧、それ以外には本人への呼びかけ（視点切り替え中はその人のもの）
+  def assign_stats_coverage
+    return if viewing_as_user.is_guest || @event.held_on < Api::Vsmobile::TargetsController::RETENTION_DAYS.days.ago.to_date
+
+    coverage = Vsmobile::Coverage.new(event: @event)
+    return unless coverage.total.positive? && !coverage.complete?
+
+    @coverage = coverage
+    @coverage_mode = current_user.is_admin? && !viewing_as_someone_else? ? :admin : :viewer
   end
 
   def assign_view_state(attributes)
