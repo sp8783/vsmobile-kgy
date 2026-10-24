@@ -41,6 +41,8 @@ Rails.application.routes.draw do
 
   # Profile (User settings)
   resource :profile, only: [ :edit, :update ]
+  # VS.モバイル連携の鍵（ブックマークレットの URL）を作る・作り直す
+  resource :vsmobile_token, only: [ :create ]
 
   # Statistics
   get "statistics", to: "statistics#index", as: :statistics
@@ -56,6 +58,11 @@ Rails.application.routes.draw do
         post :notify_failure
         post :stats
       end
+    end
+    # VS.モバイル連携（web.vsmobile.jp 上のブックマークレットから。本人用の鍵で認証。CORS は config/initializers/cors.rb）
+    namespace :vsmobile do
+      resource :targets, only: [ :show ]
+      resources :matches, only: [ :create ]
     end
   end
 
