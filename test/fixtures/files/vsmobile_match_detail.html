@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head><meta charset="utf-8"><title>対戦詳細 | VS.モバイル（テスト用の形）</title></head>
+<body>
+<div class="tabs">
+  <div id="panel1">
+    <div class="box">
+      <h3><p class="tag-name">チームA</p></h3>
+      <ul>
+        <li class="item">
+          <img class="item-icon-img" data-original="https://img.example.com/icons/1.png?v=10">
+          <span class="name">Aさん</span><span class="mastery m-gold"></span>
+          <p class="col-stand fz-s">東京都</p>
+          <a class="right-arrow" href="/exvs2ib/profile?param=p-a"></a>
+        </li>
+        <li class="item">
+          <img class="item-icon-img" data-original="https://img.example.com/icons/2.png?v=10">
+          <span class="name">Bさん</span><span class="mastery m-silver"></span>
+          <p class="col-stand fz-s">神奈川県</p>
+          <a class="right-arrow" href="/exvs2ib/profile?param=p-b"></a>
+        </li>
+      </ul>
+    </div>
+    <div class="box">
+      <h3><p class="tag-name">チームB</p></h3>
+      <ul>
+        <li class="item">
+          <img class="item-icon-img" data-original="https://img.example.com/icons/3.png?v=10">
+          <span class="name">Cさん</span>
+          <p class="col-stand fz-s">埼玉県</p>
+          <a class="right-arrow" href="/exvs2ib/profile?param=p-c"></a>
+        </li>
+        <li class="item">
+          <img class="item-icon-img" data-original="https://img.example.com/icons/4.png?v=10">
+          <span class="name">Dさん</span><span class="mastery m-bronze"></span>
+          <p class="col-stand fz-s">千葉県</p>
+          <a class="right-arrow" href="/exvs2ib/profile?param=p-d"></a>
+        </li>
+      </ul>
+    </div>
+  </div>
+  <div id="panel2">
+    <div id="timeline"></div>
+    <script>
+      var groups = new vis.DataSet([
+        {id:'team1-1',content:'<img src="https://img.example.com/icons/1.png?v=10">'},
+        {id:'team1-2',content:'<img src="https://img.example.com/icons/2.png?v=10">'},
+        {id:'team2-1',content:'<img src="https://img.example.com/icons/3.png?v=10">'},
+        {id:'team2-2',content:'<img src="https://img.example.com/icons/4.png?v=10">'}
+      ]);
+      var dataset = [];
+      var start_time = new Date(0, 0, 0, 0, 40, 10);
+      var end_time = new Date(0, 0, 0, 1, 5, 0);
+      dataset.push({group: "team1-1", className: 'ex', start: start_time, end: end_time});
+      var start_time = new Date(0, 0, 0, 1, 0, 50);
+      dataset.push({group: "team2-1", className: 'down', start: start_time, type:'point'});
+      var start_time = new Date(0, 0, 0, 1, 10, 0);
+      var end_time = new Date(0, 0, 0, 1, 20, 0);
+      dataset.push({group: "team1-2", className: 'exbst-f', start: start_time, end: end_time});
+      var start_time = new Date(0, 0, 0, 2, 15, 30);
+      dataset.push({group: "team1-1", className: 'down', start: start_time, type: 'point'});
+      var timeline = new vis.Timeline(document.getElementById('timeline'), new vis.DataSet(dataset), groups, {});
+      timeline.addCustomTime(new Date(0, 0, 0, 2, 30, 15), 'game-over');
+    </script>
+  </div>
+  <div id="panel3">
+    <div class="box">
+      <ul>
+        <li class="item rank-band2">
+          <img class="item-icon-img" data-original="https://img.example.com/icons/1.png?v=11">
+          <dl><dt>スコア</dt><dd>1200<span class="unit">pt</span></dd></dl>
+          <dl><dt>撃墜</dt><dd>2</dd></dl>
+          <dl><dt>被撃墜</dt><dd>1</dd></dl>
+          <dl><dt>与ダメージ</dt><dd>720</dd></dl>
+          <dl><dt>被ダメージ</dt><dd>650</dd></dl>
+          <dl><dt>EXバーストダメージ</dt><dd>180</dd></dl>
+        </li>
+        <li class="item rank-band1">
+          <img class="item-icon-img" data-original="https://img.example.com/icons/2.png?v=11">
+          <dl><dt>スコア</dt><dd>1500<span class="unit">pt</span></dd></dl>
+          <dl><dt>撃墜</dt><dd>3</dd></dl>
+          <dl><dt>被撃墜</dt><dd>0</dd></dl>
+          <dl><dt>与ダメージ</dt><dd>910</dd></dl>
+          <dl><dt>被ダメージ</dt><dd>300</dd></dl>
+          <dl><dt>EXバーストダメージ</dt><dd>240</dd></dl>
+        </li>
+      </ul>
+    </div>
+    <div class="box">
+      <ul>
+        <li class="item rank-band3">
+          <img class="item-icon-img" data-original="https://img.example.com/icons/3.png?v=11">
+          <dl><dt>スコア</dt><dd>800<span class="unit">pt</span></dd></dl>
+          <dl><dt>撃墜</dt><dd>1</dd></dl>
+          <dl><dt>被撃墜</dt><dd>2</dd></dl>
+          <dl><dt>与ダメージ</dt><dd>500</dd></dl>
+          <dl><dt>被ダメージ</dt><dd>700</dd></dl>
+          <dl><dt>EXバーストダメージ</dt><dd>0</dd></dl>
+        </li>
+        <li class="item rank-band4">
+          <img class="item-icon-img" data-original="https://img.example.com/icons/4.png?v=11">
+          <dl><dt>スコア</dt><dd>600<span class="unit">pt</span></dd></dl>
+          <dl><dt>撃墜</dt><dd>0</dd></dl>
+          <dl><dt>被撃墜</dt><dd>3</dd></dl>
+          <dl><dt>与ダメージ</dt><dd>410</dd></dl>
+          <dl><dt>被ダメージ</dt><dd>900</dd></dl>
+          <dl><dt>EXバーストダメージ</dt><dd>60</dd></dl>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>
+</body>
+</html>

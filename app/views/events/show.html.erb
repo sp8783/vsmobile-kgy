@@ -69,6 +69,11 @@
   </div>
 <% end %>
 
+<%# ===== 各試合の統計の取得状況（VS.モバイル連携。対戦会のあと 30 日、まだそろっていないとき） ===== %>
+<% if @coverage %>
+  <div class="vc-wrap"><%= render "events/stats_coverage", coverage: @coverage, mode: @coverage_mode, viewer: viewing_as_user %></div>
+<% end %>
+
 <%# ===== ローテーション ===== %>
 <div class="m-panel" style="margin-bottom:18px">
   <div class="m-phead"><h2>ローテーション</h2><span class="m-num" style="color:var(--color-muted);font-size:12px">全 <%= @rotations.count %> 個</span></div>
