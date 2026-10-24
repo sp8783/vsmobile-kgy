@@ -10,7 +10,8 @@ class RotationWorkflowManager
   def generate_matches!(player_ids:)
     return success_result(rotation: rotation) unless player_ids.present?
 
-    players = User.where(id: player_ids).to_a
+    # id 順に並べてからシャッフルする（並び順を DB 任せにすると、同じ乱数の種でも結果が変わる）
+    players = User.where(id: player_ids).order(:id).to_a
     return success_result(rotation: rotation) if players.size < 4
 
     ActiveRecord::Base.transaction do
@@ -332,7 +333,7 @@ class RotationWorkflowManager
   def next_round_match_data
     matches_by_rotation = event_rotation_match_player_ids
     previous_matches = matches_by_rotation.fetch(rotation.id, [])
-    users_by_id = User.where(id: previous_matches.flatten.uniq).index_by(&:id)
+    users_by_id = User.where(id: previous_matches.flatten.uniq).order(:id).index_by(&:id)
     return [] if users_by_id.size < 4
 
     planned = NextRoundRotationPlanner.new(
