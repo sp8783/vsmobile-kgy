@@ -93,4 +93,79 @@
       </div>
     <% end %>
   </div>
+
+  <%# VS.モバイル連携: 対戦会のあと、自分のスマホのブラウザから各試合の統計を送るためのブックマーク（ブックマークレット） %>
+  <section class="ui-card p-5 sm:p-6 mt-6" id="vsmobile" data-controller="clipboard">
+    <h2 class="mb-2 text-lg font-black text-ink">VS.モバイル連携</h2>
+    <p class="mb-5 text-sm font-bold text-muted">
+      対戦会のあと、VS.モバイルに記録された自分の対戦結果を、スマホからこのアプリに送るための機能です。
+      送られるのは対戦結果のページの内容だけで、VS.モバイルのログイン情報（Cookie やパスワード）は送られません。
+    </p>
+
+    <% if @user.vsmobile_token.present? %>
+      <h3 class="vl-h3">あなたの連携 URL</h3>
+      <div class="vl-copy">
+        <textarea id="vsmobile-bookmarklet" readonly rows="3" data-clipboard-target="source" aria-label="連携 URL"
+                  class="ui-form-control font-mono text-xs break-all" spellcheck="false"><%= vsmobile_bookmarklet(@user) %></textarea>
+        <div class="vl-copy-actions">
+          <button type="button" data-action="clipboard#copy" data-clipboard-target="button" class="ui-btn ui-btn-primary vl-copy-btn" aria-label="URL をコピー">
+            <svg class="vl-ico-copy" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            <svg class="vl-ico-done" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+            <span data-clipboard-target="label">コピー</span>
+          </button>
+          <%= button_to "作り直す", vsmobile_token_path, method: :post, class: "ui-btn ui-btn-secondary",
+                form: { data: { turbo_confirm: "連携 URL を作り直しますか？いまのブックマークは使えなくなるので、新しい URL でブックマークを登録し直す必要があります。" } } %>
+          <span class="vl-meta">最後に使用: <%= @user.vsmobile_token_used_at ? @user.vsmobile_token_used_at.strftime("%Y/%m/%d %H:%M") : "まだ使っていません" %></span>
+        </div>
+      </div>
+      <p class="vl-caution">
+        この URL はあなた専用です。他の人に知られると、その人があなたの名前で対戦結果を送れてしまい、統計が正しくなくなるおそれがあります。
+        知られてしまった場合は「作り直す」を押し、新しい URL でブックマークを登録し直してください。
+      </p>
+
+      <h3 class="vl-h3 mt-6">準備（最初に 1 回だけ）</h3>
+      <ol class="vl-steps">
+        <li>
+          <span class="vl-no">1</span>
+          <div>上の「コピー」を押して、URL をコピーします。</div>
+        </li>
+        <li>
+          <span class="vl-no">2</span>
+          <div>
+            VS.モバイルにログインしているブラウザで、次の内容のブックマークを作ります。
+            <dl class="vl-bookmark">
+              <dt>名前</dt><dd>自由（例: <%= vsmobile_bookmark_name %>）</dd>
+              <dt>URL</dt><dd>コピーした URL</dd>
+            </dl>
+            <span class="vl-sub">ブックマークはいったん追加してから「編集」を開き、名前と URL を書き換えます。URL は元の内容を消してから貼り付けてください。</span>
+          </div>
+        </li>
+      </ol>
+
+      <h3 class="vl-h3 mt-6">対戦会のあと（毎回）</h3>
+      <ol class="vl-steps">
+        <li>
+          <span class="vl-no">1</span>
+          <div>事前にブックマークを作っておいたブラウザで VS.モバイルを開き、ログインしていることを確認します。</div>
+        </li>
+        <li>
+          <span class="vl-no">2</span>
+          <div>VS.モバイルのページを開いたまま、作ったブックマークを開きます。<span class="vl-sub">VS.モバイルの中であれば、どのページでも構いません。VS.モバイル以外のページで開いた場合は VS.モバイルに移動するので、もう一度ブックマークを開いてください。</span></div>
+        </li>
+        <li>
+          <span class="vl-no">3</span>
+          <div>画面の上に「◯ 試合を送りました」と出れば完了です。<span class="vl-sub">イベントの画面で、どの試合が届いたかを確認できます。</span></div>
+        </li>
+      </ol>
+
+      <h3 class="vl-h3 mt-6">注意</h3>
+      <ul class="vl-notes">
+        <li>ブラウザは、VS.モバイルにログインしているものならどれでも構いません。このアプリを開いているブラウザと同じである必要はありません。</li>
+        <li>Discord や LINE の中で開くブラウザでは使えません。ブラウザのアプリで開いてください。</li>
+        <li>VS.モバイルの対戦履歴は 30 日で消えます。それまでに送ってください。</li>
+      </ul>
+    <% else %>
+      <%= button_to "連携 URL を作る", vsmobile_token_path, method: :post, class: "ui-btn ui-btn-primary" %>
+    <% end %>
+  </section>
 </div>
