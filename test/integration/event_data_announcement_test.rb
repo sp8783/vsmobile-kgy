@@ -124,12 +124,17 @@ class EventDataAnnouncementTest < ActionDispatch::IntegrationTest
   end
 
   def post_stats
-    matches = OFFSETS.map do |offset|
-      { "match_ts" => FIRST_MATCH_TS + offset, "team_a" => { "players" => [] }, "team_b" => { "players" => [] },
+    matches = OFFSETS.each_with_index.map do |offset, index|
+      { "match_ts" => FIRST_MATCH_TS + offset, "team_a" => { "players" => players_json(@matches[index], 1) }, "team_b" => { "players" => players_json(@matches[index], 2) },
         "timeline_raw" => { "groups" => [], "events" => [], "game_end_cs" => 12000, "game_end_str" => "2:00.00" } }
     end
     post "/api/events/#{@event.id}/stats", params: { matches: matches, expired_users: [] }.to_json, headers: api_headers
     assert_response :success
+  end
+
+  # 試合の 4 人を scrape.py の players の形に（統計の取り込みは 4 人の名前で試合に対応づけるため）
+  def players_json(match, team_number)
+    match.match_players.select { |player| player.team_number == team_number }.sort_by(&:position).map { |player| { "name" => player.user.nickname } }
   end
 
   def api_headers
