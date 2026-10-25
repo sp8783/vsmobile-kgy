@@ -39,7 +39,7 @@ class DiscordNotice < ApplicationRecord
 
         {いつ}のイベントに向けて、以下の準備をお願いします！
         ・通知設定（ホーム画面に追加 & プッシュ通知ON）
-        ・Cookie の共有、または VS.モバイル連携の準備（初回のみ。アプリの「設定」から）
+        ・VS.モバイル連携の準備（初回のみ。アプリの「設定」から。使い方 → https://vsm-kgy.com/vsmobile/guide ）
         ・お気に入り機体の設定
 
         準備内容の詳細はこちら↓
