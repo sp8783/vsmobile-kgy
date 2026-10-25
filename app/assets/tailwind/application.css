@@ -1628,7 +1628,11 @@
   .vc-cta-foot .dim, .vc-thanks .dim { color: var(--color-muted); font-weight: 700; }
   .vc-thanks { margin: 0; padding: 10px 14px; border-radius: var(--m-r-sm); background: var(--color-surface); box-shadow: var(--shadow-card); font-size: 12.5px; font-weight: 700; color: var(--color-ink); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; }
 
-  /* VS.モバイル連携: 設定（URL のコピーと手順） */
+  /* VS.モバイル連携: 設定（URL のコピー）と使い方ページ（手順） */
+  .vl-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+  .vl-guide-link { font-size: 12.5px; font-weight: 800; white-space: nowrap; }
+  .vl-guide { display: grid; gap: 14px; }
+  .vl-h2 { margin: 0 0 12px; font-size: 15px; font-weight: 900; color: var(--color-ink); }
   .vl-h3 { margin: 0 0 8px; font-size: 13.5px; font-weight: 800; color: var(--color-ink); }
   .vl-copy { display: flex; flex-direction: column; gap: 8px; }
   .vl-copy-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
@@ -1647,8 +1651,10 @@
   .vl-bookmark { display: grid; grid-template-columns: auto 1fr; gap: 2px 12px; margin: 8px 0; padding: 8px 12px; border-radius: var(--m-r-sm); background: var(--color-surface); font-size: 12.5px; }
   .vl-bookmark dt { color: var(--color-subtle); font-weight: 700; }
   .vl-bookmark dd { margin: 0; color: var(--color-ink); font-weight: 700; }
-  .vl-notes { margin: 0; padding-left: 1.3em; display: grid; gap: 4px; font-size: 12.5px; color: var(--color-muted); line-height: 1.7; }
-  .vl-notes li { list-style: disc; }
+  .vl-faq { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+  .vl-faq li { padding: 10px 14px; border-radius: var(--m-r-sm); border: 1px solid var(--color-line); font-size: 12.5px; line-height: 1.7; }
+  .vl-faq b { display: block; color: var(--color-ink); font-weight: 800; }
+  .vl-faq span { color: var(--color-muted); }
 
   .ed-steps { list-style: none; margin: 16px 0 0; padding: 0; display: grid; gap: 12px; }
   .ed-step { display: flex; gap: 14px; padding: 16px; border-radius: var(--m-r-sm); background: var(--color-bg); }

@@ -1,0 +1,85 @@
+<%# VS.モバイル連携の使い方。設定ページの「使い方 →」、呼びかけカードの「送り方を見る」、Discord の「対戦会前のお願い」から来る %>
+<div class="ui-page mx-auto max-w-2xl">
+  <div class="ui-page-header">
+    <div>
+      <p class="ui-eyebrow">VS.Mobile link</p>
+      <h1 class="ui-title">VS.モバイル連携の使い方</h1>
+      <p class="ui-subtitle">
+        対戦会のあと、スマホのブラウザで公式の VS.モバイル（web.vsmobile.jp）を開き、自分の対戦結果をこのアプリに送ります。
+        操作するのはブラウザで、VS.モバイルの公式アプリからは使えません。
+        送られるのは対戦結果のページの内容だけで、VS.モバイルのログイン情報（Cookie やパスワード）は送られません。
+      </p>
+    </div>
+  </div>
+
+  <div class="vl-guide">
+    <section class="ui-card p-5 sm:p-6">
+      <h2 class="vl-h2">準備（最初に 1 回だけ）</h2>
+      <ol class="vl-steps">
+        <li>
+          <span class="vl-no">1</span>
+          <div>
+            アプリの「設定」で、あなたの連携 URL をコピーします。
+            <span class="vl-sub"><%= link_to "設定を開く →", user_signed_in? ? edit_profile_path(anchor: "vsmobile") : new_user_session_path, class: "m-link" %></span>
+          </div>
+        </li>
+        <li>
+          <span class="vl-no">2</span>
+          <div>
+            公式の VS.モバイルにログインしているブラウザ（Safari や Chrome など）で、次の内容のブックマークを作ります。
+            <dl class="vl-bookmark">
+              <dt>名前</dt><dd>自由（例: <%= vsmobile_bookmark_name %>）</dd>
+              <dt>URL</dt><dd>コピーした URL</dd>
+            </dl>
+            <span class="vl-sub">
+              ブックマークはいったん追加してから「編集」を開き、名前と URL を書き換えます。URL は元の内容を消してから貼り付けてください。
+              ブラウザは VS.モバイルにログインしているものならどれでも構いません（このアプリを開いているブラウザと同じでなくてもよい）。ただし、Discord や LINE の中で開くブラウザでは使えません。
+            </span>
+          </div>
+        </li>
+      </ol>
+    </section>
+
+    <section class="ui-card p-5 sm:p-6">
+      <h2 class="vl-h2">対戦会のあと（毎回）</h2>
+      <ol class="vl-steps">
+        <li>
+          <span class="vl-no">1</span>
+          <div>ブックマークを作ったブラウザで公式の VS.モバイルを開き、ログインしていることを確認します。</div>
+        </li>
+        <li>
+          <span class="vl-no">2</span>
+          <div>
+            そのまま、作ったブックマークを開きます。
+            <span class="vl-sub">VS.モバイルの中であれば、どのページでも構いません。別のサイトで開いた場合は VS.モバイルに移動するので、もう一度ブックマークを開いてください。</span>
+          </div>
+        </li>
+        <li>
+          <span class="vl-no">3</span>
+          <div>
+            画面の上に「◯ 試合を送りました」と出れば完了です。
+            <span class="vl-sub">VS.モバイルの対戦履歴は 30 日で消えます。それまでに送ってください。</span>
+          </div>
+        </li>
+      </ol>
+    </section>
+
+    <section class="ui-card p-5 sm:p-6">
+      <h2 class="vl-h2">うまくいかないとき</h2>
+      <ul class="vl-faq">
+        <li>
+          <b>「連携 URL が無効です」と出る</b>
+          <span>設定で URL を作り直したあと、ブックマークを貼り直していません。新しい URL でブックマークを登録し直してください。</span>
+        </li>
+        <li>
+          <b>「あなたのニックネームがありません」と出る</b>
+          <span>アプリのニックネームを、VS.モバイルの名前と同じにしてください。</span>
+        </li>
+        <li>
+          <b>ブックマークを開いても何も起きない</b>
+          <span>Discord や LINE の中のブラウザや、VS.モバイルの公式アプリで開いていないか確かめ、Safari や Chrome などのブラウザで公式の VS.モバイルを開いてください。</span>
+        </li>
+      </ul>
+    </section>
+  </div>
+</div>
