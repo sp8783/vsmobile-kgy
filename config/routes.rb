@@ -118,9 +118,8 @@ Rails.application.routes.draw do
 
   # Announcements
   resources :announcements, only: [] do
-    member do
-      post :mark_as_read
-    end
+    # お知らせのモーダルの「閉じる」。そのとき未読だったお知らせをまとめて既読にする
+    post :mark_all_as_read, on: :collection
   end
 
   # Admin
