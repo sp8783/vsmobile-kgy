@@ -43,6 +43,8 @@ Rails.application.routes.draw do
   resource :profile, only: [ :edit, :update ]
   # VS.モバイル連携の鍵（ブックマークレットの URL）を作る・作り直す
   resource :vsmobile_token, only: [ :create ]
+  # VS.モバイル連携の使い方（ログイン不要。Discord の「対戦会前のお願い」からもリンクする）
+  get "vsmobile/guide", to: "vsmobile_guides#show", as: :vsmobile_guide
 
   # Statistics
   get "statistics", to: "statistics#index", as: :statistics

@@ -9,17 +9,37 @@ class ProfileVsmobileLinkTest < ActionDispatch::IntegrationTest
     sign_in @user
   end
 
-  test "設定に、本人用の鍵を埋めたブックマークの URL と手順を出す" do
+  test "設定に、本人用の鍵を埋めたブックマークの URL と使い方へのリンクを出す（手順は載せない）" do
     get edit_profile_path
 
     assert_response :success
     assert_select "section#vsmobile h2", text: "VS.モバイル連携"
+    assert_select "section#vsmobile a[href=?]", vsmobile_guide_path, text: "使い方 →"
     assert_select "textarea#vsmobile-bookmarklet", text: %r{\Ajavascript:\(function\(\)\{.*http://www\.example\.com/vsm/collect\.js\?k=#{@user.vsmobile_token}&t='\+Date\.now\(\).*\}\)\(\)\z}
-    assert_select "h3.vl-h3", text: "準備（最初に 1 回だけ）"
-    assert_select ".vl-steps li", 5
-    assert_select ".vl-bookmark dd", text: "自由（例: KGY 戦績送信）"
     assert_select "button.vl-copy-btn", text: /コピー/
     assert_select "form[action=?] button", vsmobile_token_path, text: "作り直す"
+    assert_select "section#vsmobile .vl-caution", text: /あなた専用です/
+    assert_select "section#vsmobile .vl-steps", 0
+  end
+
+  test "使い方のページは、ログインしていなくても見られる" do
+    sign_out @user
+
+    get vsmobile_guide_path
+
+    assert_response :success
+    assert_select "h1", text: "VS.モバイル連携の使い方"
+    assert_select "h2.vl-h2", text: "準備（最初に 1 回だけ）"
+    assert_select "h2.vl-h2", text: "対戦会のあと（毎回）"
+    assert_select "h2.vl-h2", text: "うまくいかないとき"
+    assert_select ".vl-steps li", 5
+    assert_select ".vl-bookmark dd", text: "自由（例: KGY 戦績送信）"
+    assert_select ".vl-faq li", 3
+    assert_select ".vl-steps a[href=?]", new_user_session_path, text: "設定を開く →"
+
+    sign_in @user
+    get vsmobile_guide_path
+    assert_select ".vl-steps a[href=?]", edit_profile_path(anchor: "vsmobile"), text: "設定を開く →"
   end
 
   test "鍵を作り直すと古い URL は使えなくなる" do
@@ -65,7 +85,7 @@ class ProfileVsmobileLinkTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select ".vc-cta-title", text: "対戦結果の送信をお願いします"
     assert_select ".vc-cta-body", text: /\Aあなたの 1 試合分が、まだ登録されていません。\s*VS.モバイルを開いて、連携のブックマークを開いてください。\z/
-    assert_select ".vc-cta a[href=?]", edit_profile_path(anchor: "vsmobile")
+    assert_select ".vc-cta a[href=?]", vsmobile_guide_path, text: "送り方を見る →"
     assert_select ".vc-cta-foot", text: /統計の登録状況 0 \/ 1 試合/
     assert_select ".vc-people", 0, "一般の人には誰が送ったかの一覧は出さない"
 
