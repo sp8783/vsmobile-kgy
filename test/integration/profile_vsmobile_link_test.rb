@@ -105,6 +105,13 @@ class ProfileVsmobileLinkTest < ActionDispatch::IntegrationTest
     assert_select ".vc-people li:first-child", text: /Bさん\s*送信済み/
     assert_select ".vc-people li", text: /Aさん\s*送ると 1 試合（全部そろう）/
     assert_select ".vc-cta", 0
+    assert_select ".vc-fail", 0
+
+    VsmobileParseFailure.create!(user: others["Cさん"], event: event, match_ts: 1, error_message: "試合のメンバーが見つかりません", html: "<p>x</p>")
+    VsmobileParseFailure.create!(user: others["Cさん"], event: event, match_ts: 2, error_message: "試合のメンバーが見つかりません", html: "<p>x</p>")
+    VsmobileParseFailure.create!(user: nil, event: event, match_ts: 3, error_message: "試合がイベントに見つかりません", html: "<p>x</p>")
+    get event_path(event)
+    assert_select ".vc-fail", text: /取り込めなかった送信: 3 件（退会した人・Cさん）\s*最新のエラー: 試合がイベントに見つかりません/
     assert_select "a[href=?]", edit_profile_path(anchor: "vsmobile"), 0
   end
 

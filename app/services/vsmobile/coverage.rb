@@ -34,6 +34,15 @@ module Vsmobile
       total.positive? && covered_count == total
     end
 
+    # 取り込めなかった送信（解析・対応づけの失敗の記録）。新しいものから
+    def failures
+      @failures ||= VsmobileParseFailure.where(event: event).includes(:user).order(updated_at: :desc).to_a
+    end
+
+    def failure_senders
+      failures.map(&:sender_name).uniq
+    end
+
     # 足りない試合の番号
     def missing_numbers
       matches.each_with_index.reject { |match, _| covered?(match) }.map { |_, index| index + 1 }
