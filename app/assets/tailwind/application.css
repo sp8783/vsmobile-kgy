@@ -1620,6 +1620,7 @@
   .vc-ic.todo { border: 1.5px dashed var(--color-subtle); }
   .vc-nm { flex: 1; min-width: 0; font-weight: 700; color: var(--color-ink); }
   .vc-r { color: var(--color-muted); white-space: nowrap; }
+  .vc-fail { color: var(--color-neg); }
   .vc-cta { padding: 14px 16px; border-radius: var(--m-r); background: color-mix(in oklab, var(--color-accent) 9%, var(--color-surface)); box-shadow: var(--shadow-card); display: grid; gap: 8px; }
   .vc-cta-title { font-family: var(--font-display); font-size: 15px; font-weight: 800; color: var(--color-ink); }
   .vc-cta-body { margin: 0; font-size: 13px; line-height: 1.75; color: var(--color-ink); }

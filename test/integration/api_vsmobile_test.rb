@@ -88,10 +88,15 @@ class ApiVsmobileTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_entity
     assert_match "あなたのニックネーム「Eさん」がありません", response.parsed_body["error"]
     assert_nil @match.reload.game_started_at
+    failure = VsmobileParseFailure.sole
+    assert_equal [ @users["Eさん"], @event, MATCH_TS ], [ failure.user, failure.event, failure.match_ts ]
+    assert_match "ニックネーム「Eさん」がありません", failure.error_message
+    assert_equal({ "result_self" => "win", "self_name" => "Eさん", "time" => "10:12", "game_date" => "2026/11/07(土)", "shop_name" => "テスト店" }, failure.request_params)
+    assert_equal @html, failure.html
   end
 
   test "解析できないページや、イベントにない試合は 422 で理由を返す" do
-    post "/api/vsmobile/matches", params: match_params.merge(html: "<html><body>ログイン</body></html>").to_json, headers: headers_for(@users["Bさん"])
+    post "/api/vsmobile/matches", params: match_params(match_ts: MATCH_TS + 1).merge(html: "<html><body>ログイン</body></html>").to_json, headers: headers_for(@users["Bさん"])
     assert_response :unprocessable_entity
     assert_match "メンバーが見つかりません", response.parsed_body["error"]
 
@@ -102,6 +107,37 @@ class ApiVsmobileTest < ActionDispatch::IntegrationTest
 
     post "/api/vsmobile/matches", params: match_params.merge(event_id: 0).to_json, headers: headers_for(@users["Bさん"])
     assert_response :not_found
+
+    # 解析できなかった・試合がなかった、の 2 件が HTML ごと残る（イベントがないものは HTML を見ていないので残さない）
+    assert_equal [ "試合のメンバーが見つかりません", "Aさん・Bさん・Cさん・Dさん の試合がイベントに見つかりません" ], VsmobileParseFailure.order(:id).map { |f| f.error_message[/\A[^（。]+/] }
+    assert_equal [ "<html><body>ログイン</body></html>", @html ], VsmobileParseFailure.order(:id).map(&:html)
+  end
+
+  test "取り込めなかった送信の記録は、同じ人・同じ試合なら上書きし、30 日より古いものは消す" do
+    old = VsmobileParseFailure.create!(user: @users["Bさん"], event: @event, match_ts: 1, error_message: "昔の失敗", html: "<p>old</p>", updated_at: 31.days.ago, created_at: 31.days.ago)
+    broken = match_params.merge(html: "<html><body>ログイン</body></html>")
+
+    post "/api/vsmobile/matches", params: broken.to_json, headers: headers_for(@users["Bさん"])
+    post "/api/vsmobile/matches", params: broken.merge(html: "<html><body>ログイン 2 回目</body></html>").to_json, headers: headers_for(@users["Bさん"])
+
+    assert_response :unprocessable_entity
+    assert_equal 1, VsmobileParseFailure.count
+    assert_equal "<html><body>ログイン 2 回目</body></html>", VsmobileParseFailure.sole.html
+    assert_not VsmobileParseFailure.exists?(old.id)
+  end
+
+  test "記録に失敗しても、元のエラー応答は返す" do
+    # 記録の保存を失敗させる（minitest/mock は入っていない）
+    VsmobileParseFailure.define_singleton_method(:find_or_initialize_by) { |*, **| raise ActiveRecord::StatementInvalid, "db down" }
+    begin
+      post "/api/vsmobile/matches", params: match_params.merge(html: "<html><body>ログイン</body></html>").to_json, headers: headers_for(@users["Bさん"])
+    ensure
+      VsmobileParseFailure.singleton_class.remove_method(:find_or_initialize_by)
+    end
+
+    assert_response :unprocessable_entity
+    assert_match "メンバーが見つかりません", response.parsed_body["error"]
+    assert_equal 0, VsmobileParseFailure.count
   end
 
   test "全試合そろったら、タイムスタンプを計算して Discord の連絡を予約する" do

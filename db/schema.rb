@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_24_090100) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_25_090000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -279,6 +279,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_24_090100) do
     t.index ["vsmobile_token"], name: "index_users_on_vsmobile_token", unique: true
   end
 
+  create_table "vsmobile_parse_failures", force: :cascade do |t|
+    t.bigint "user_id"
+    t.bigint "event_id"
+    t.bigint "match_ts"
+    t.string "error_message", null: false
+    t.jsonb "request_params", default: {}, null: false
+    t.text "html", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["event_id"], name: "index_vsmobile_parse_failures_on_event_id"
+    t.index ["user_id"], name: "index_vsmobile_parse_failures_on_user_id"
+  end
+
   add_foreign_key "discord_notice_deliveries", "events", on_delete: :cascade
   add_foreign_key "favorite_matches", "matches"
   add_foreign_key "favorite_matches", "users"
@@ -307,4 +320,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_24_090100) do
   add_foreign_key "user_announcement_reads", "users"
   add_foreign_key "user_favorite_suits", "mobile_suits"
   add_foreign_key "user_favorite_suits", "users"
+  add_foreign_key "vsmobile_parse_failures", "events", on_delete: :nullify
+  add_foreign_key "vsmobile_parse_failures", "users", on_delete: :nullify
 end

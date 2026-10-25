@@ -7,6 +7,9 @@ module Api
       # 試合詳細ページは数百 KB。これを大きく超えるものは受け付けない
       MAX_HTML_BYTES = 2.megabytes
 
+      # 送った人のニックネームが試合の 4 人にいない（アプリと VS.モバイルで名前が違う）
+      class NicknameMismatchError < StandardError; end
+
       def create
         event = Event.find_by(id: params[:event_id])
         return render json: { error: "イベントが見つかりません" }, status: :not_found unless event
@@ -16,8 +19,8 @@ module Api
         parsed = parse_page
         names = ::Vsmobile::MatchPageParser.player_names(parsed)
         unless names.include?(current_user.nickname)
-          return render json: { error: "この試合の 4 人（#{names.join('・')}）に、あなたのニックネーム「#{current_user.nickname}」がありません。" \
-                                       "アプリのニックネームを VS.モバイルの名前と同じにしてください。" }, status: :unprocessable_entity
+          raise NicknameMismatchError, "この試合の 4 人（#{names.join('・')}）に、あなたのニックネーム「#{current_user.nickname}」がありません。" \
+                                       "アプリのニックネームを VS.モバイルの名前と同じにしてください。"
         end
 
         result = ::Vsmobile::MatchImporter.new(event: event, parsed: parsed, submitted_by: current_user).import!
@@ -31,7 +34,10 @@ module Api
           total: coverage.total,
           remaining: coverage.total - coverage.covered_count
         }
-      rescue ::Vsmobile::MatchPageParser::ParseError, ::Vsmobile::MatchImporter::NoMatchError, ActiveRecord::RecordInvalid => e
+      rescue ::Vsmobile::MatchPageParser::ParseError, ::Vsmobile::MatchImporter::NoMatchError, NicknameMismatchError, ActiveRecord::RecordInvalid => e
+        # 届いた HTML を取り込めなかった。参加者のブラウザで起きたことは管理者が再現できないので、何が届いたかを残す
+        VsmobileParseFailure.record(user: current_user, event: event, match_ts: Integer(params[:match_ts], exception: false), error: e,
+                                    request_params: params.permit(:result_self, :self_name, :time, :game_date, :shop_name).to_h, html: params[:html])
         render json: { error: e.message }, status: :unprocessable_entity
       end
 

@@ -30,6 +30,13 @@
         </ul>
         <% if coverage.bulk_imported? %><p class="ed-note">一括取得（Cookie 方式）で取り込んだ試合も含みます。</p><% end %>
       <% end %>
+      <% if coverage.failures.any? %>
+        <%# 取り込めなかった送信。HTML は vsmobile_parse_failures に残っている（Rails コンソールで見る） %>
+        <p class="ed-note vc-fail">
+          取り込めなかった送信: <%= coverage.failures.size %> 件（<%= coverage.failure_senders.join("・") %>）<br>
+          最新のエラー: <%= coverage.failures.first.error_message %>
+        </p>
+      <% end %>
     </div>
   </div>
 <% elsif !coverage.complete? && coverage.participant?(viewer) %>
