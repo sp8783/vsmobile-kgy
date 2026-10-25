@@ -1,17 +1,17 @@
 module Layout
   class ShellComponent < ApplicationComponent
-    def initialize(user_signed_in:, current_user:, viewing_as_user:, viewing_as_someone_else:, unread_announcement:, flash:)
+    def initialize(user_signed_in:, current_user:, viewing_as_user:, viewing_as_someone_else:, unread_announcements:, flash:)
       @user_signed_in = user_signed_in
       @current_user = current_user
       @viewing_as_user = viewing_as_user
       @viewing_as_someone_else = viewing_as_someone_else
-      @unread_announcement = unread_announcement
+      @unread_announcements = unread_announcements
       @flash = flash
     end
 
     private
 
-    attr_reader :current_user, :viewing_as_user, :unread_announcement, :flash
+    attr_reader :current_user, :viewing_as_user, :unread_announcements, :flash
 
     def user_signed_in?
       @user_signed_in

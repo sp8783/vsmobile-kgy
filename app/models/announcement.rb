@@ -13,6 +13,9 @@ class Announcement < ApplicationRecord
       .order(published_at: :desc)
   }
 
+  # その人がまだ読んでいない、公開中のお知らせ（新しい順）
+  scope :unread_by, ->(user) { active.where.not(id: user.user_announcement_reads.select(:announcement_id)) }
+
   def read_by?(user)
     user_announcement_reads.exists?(user: user)
   end

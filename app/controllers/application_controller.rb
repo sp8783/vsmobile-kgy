@@ -9,7 +9,7 @@ class ApplicationController < ActionController::Base
   before_action :set_user_cookie
 
   # お知らせモーダル
-  before_action :set_unread_announcement
+  before_action :set_unread_announcements
 
   # ユーザー視点切り替え機能
   helper_method :viewing_as_user, :viewing_as_someone_else?, :can_react?
@@ -51,12 +51,9 @@ class ApplicationController < ActionController::Base
     end
   end
 
-  # 未読のお知らせを取得（ログイン中のみ）
-  def set_unread_announcement
+  # 未読のお知らせを取得（ログイン中のみ）。複数あれば 1 つのモーダルにまとめて出す（新しい順）
+  def set_unread_announcements
     return unless user_signed_in?
-    read_ids = current_user.user_announcement_reads.pluck(:announcement_id)
-    @unread_announcement = Announcement.active
-                                       .where.not(id: read_ids)
-                                       .first
+    @unread_announcements = Announcement.unread_by(current_user).to_a
   end
 end

@@ -31,7 +31,7 @@
       current_user: current_user,
       viewing_as_user: user_signed_in? ? viewing_as_user : nil,
       viewing_as_someone_else: user_signed_in? && viewing_as_someone_else?,
-      unread_announcement: @unread_announcement,
+      unread_announcements: @unread_announcements || [],
       flash: flash
     ) do %>
       <%= yield %>
