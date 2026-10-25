@@ -19,6 +19,11 @@
   </div>
 <% end %>
 
+<%# ===== VS.モバイル連携: 対戦結果がまだ届いていないイベントの呼びかけ ===== %>
+<% (@stats_coverages || []).each do |coverage| %>
+  <div class="vc-wrap"><%= render "events/stats_coverage", coverage: coverage, mode: :viewer, viewer: viewing_as_user, show_event: true %></div>
+<% end %>
+
 <%# ===== メトリクス帯 ===== %>
 <% unless viewing_as_user.is_guest || @user_total_matches.to_i.zero? %>
   <% recent = (@recent_10_results || []).to_a %>

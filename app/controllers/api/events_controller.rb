@@ -36,6 +36,8 @@ module Api
     end
 
     # POST /api/events/:id/stats
+    # 一括取得（exvs2ib-vsmobile-scraper）から届いた全試合分の統計。1 試合ずつ Vsmobile::MatchImporter で取り込む
+    # （VS.モバイル連携で先に届いている試合は触らない。試合数がそろっていなくても、届いた分だけ取り込む）
     def stats
       event = Event.find_by(id: params[:id])
       return render json: { error: "Event not found" }, status: :not_found unless event
@@ -48,37 +50,26 @@ module Api
       matches_data  = payload["matches"]
       expired_users = Array(payload["expired_users"])
 
-      db_matches = event.matches.includes(:match_timeline, :stats_payload, match_players: [ :user ]).order(:played_at, :id)
-
-      if matches_data.size != db_matches.size
-        return render json: {
-          error: "データ件数（#{matches_data.size}）とイベント内試合数（#{db_matches.size}）が一致しません"
-        }, status: :unprocessable_entity
-      end
-
-      ActiveRecord::Base.transaction do
-        db_matches.each_with_index do |match, index|
-          MatchTimelineImporter.new(match: match, parsed: matches_data[index]).apply!
-        end
+      imported = 0
+      already = 0
+      failed = []
+      matches_data.each do |match_data|
+        result = ::Vsmobile::MatchImporter.new(event: event, parsed: match_data).import!
+        result.status == :imported ? imported += 1 : already += 1
+      rescue ::Vsmobile::MatchImporter::NoMatchError, ActiveRecord::RecordInvalid => e
+        failed << { match_ts: match_data["match_ts"], error: e.message }
       end
 
       PushNotificationService.notify_expired_cookies(event: event, users: expired_users) if expired_users.any?
-
-      # 1試合目の配信上の時刻が入っていれば、取り込んだ試合の開始時刻から全試合のタイムスタンプを計算する。
-      # 動画解析のタイムスタンプが先に届いていれば、あわせて比べる
-      timestamp_count = EventTimestampCalculator.new(event: event).apply!
-      if timestamp_count
-        PushNotificationService.notify_timestamps_registered(event: event, count: timestamp_count)
-        comparison = EventTimestampComparison.new(event: event)
-        PushNotificationService.notify_timestamps_compared(event: event, summary: comparison.summary) if comparison.comparable?
+      if failed.any?
+        PushNotificationService.notify_stats_failed(event: event, error: "#{failed.size} 試合を取り込めませんでした: #{failed.first[:error]}")
       end
-      EventDataAnnouncer.announce_later(event)
+      EventStatsFollowUp.call(event) if imported.positive?
 
-      render json: { message: "OK", updated: db_matches.size, expired_users: expired_users }
+      status = imported.zero? && already.zero? && failed.any? ? :unprocessable_entity : :ok
+      render json: { message: status == :ok ? "OK" : "NG", updated: imported, already: already, failed: failed, expired_users: expired_users }, status: status
     rescue JSON::ParserError
       render json: { error: "リクエストボディが不正な JSON 形式です" }, status: :unprocessable_entity
-    rescue ActiveRecord::RecordInvalid => e
-      render json: { error: e.message }, status: :unprocessable_entity
     end
   end
 end

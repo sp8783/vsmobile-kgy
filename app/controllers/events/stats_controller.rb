@@ -1,6 +1,6 @@
 module Events
   # イベントの各試合の統計（スコア・撃墜・タイムラインなど）の登録。
-  # 登録のしかたは 2 つ: VS.モバイルから一括取得する・試合ごとに入力する
+  # 登録のしかたは 3 つ: 参加者が VS.モバイル連携（ブックマークレット）で送る・VS.モバイルから一括取得する・試合ごとに入力する
   class StatsController < ApplicationController
     TABS = %w[bulk per_match].freeze
 
@@ -10,7 +10,8 @@ module Events
 
     def show
       @tab = TABS.include?(params[:tab]) ? params[:tab] : TABS.first
-      @matches = @event.matches.includes(:match_timeline, match_players: :user).order(:played_at, :id)
+      @coverage = Vsmobile::Coverage.new(event: @event)
+      @matches = @coverage.matches
     end
 
     # VS.モバイルの戦績のスクレイピング（exvs2ib-vsmobile-scraper）を GitHub Actions で始める

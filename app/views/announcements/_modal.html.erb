@@ -1,25 +1,42 @@
+<%# 未読のお知らせ。複数あれば 1 つのモーダルにまとめて出し、「閉じる」でまとめて既読にする（1 件のときは見た目を変えない） %>
 <div id="announcement-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
   <%# オーバーレイ（背景） %>
   <div class="absolute inset-0 bg-ink/50"></div>
 
   <%# モーダル本体 %>
-  <div class="relative mx-auto w-full max-w-md overflow-hidden rounded-lg bg-surface shadow-floating">
+  <%# スマホでは幅いっぱい、PC では広く・高く（本文はスクロール） %>
+  <div class="relative mx-auto w-full max-w-md md:max-w-2xl overflow-hidden rounded-lg bg-surface shadow-floating">
     <%# ヘッダー %>
     <div class="bg-accent px-6 py-4">
       <div class="flex items-center gap-2">
-        <h2 class="text-lg font-black leading-tight text-on-accent"><%= announcement.title %></h2>
+        <h2 class="text-lg font-black leading-tight text-on-accent"><%= announcements.one? ? announcements.first.title : "お知らせが #{announcements.size} 件あります" %></h2>
       </div>
     </div>
 
     <%# 本文 %>
-    <div class="px-6 py-5 max-h-96 overflow-y-auto">
-      <div class="announcement-body text-sm leading-relaxed text-ink"><%= render_markdown(announcement.body) %></div>
+    <div class="px-6 py-5 max-h-[60vh] overflow-y-auto md:px-8">
+      <% if announcements.one? %>
+        <div class="announcement-body text-sm leading-relaxed text-ink"><%= render_markdown(announcements.first.body) %></div>
+      <% else %>
+        <%# お知らせごとにタイトルを帯にして区切る（本文の中の見出しと見分けがつくように） %>
+        <div class="space-y-5">
+          <% announcements.each do |announcement| %>
+            <section class="announcement-item">
+              <h3 class="mb-2 flex items-center justify-between gap-2 rounded-lg bg-accent/10 px-3 py-1.5 text-sm font-black leading-tight text-accent">
+                <span><%= announcement.title %></span>
+                <time class="text-xs font-bold text-muted" datetime="<%= announcement.published_at.to_date %>"><%= announcement.published_at.strftime("%-m/%-d") %></time>
+              </h3>
+              <div class="announcement-body text-sm leading-relaxed text-ink"><%= render_markdown(announcement.body) %></div>
+            </section>
+          <% end %>
+        </div>
+      <% end %>
     </div>
 
     <%# フッター %>
     <div class="px-6 pb-6 flex justify-end">
       <%= button_to "閉じる",
-            mark_as_read_announcement_path(announcement),
+            mark_all_as_read_announcements_path,
             method: :post,
             class: "ui-btn ui-btn-primary ui-btn-small" %>
     </div>

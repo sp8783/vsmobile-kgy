@@ -1,0 +1,60 @@
+<%#
+  VS.モバイル連携: 各試合の統計の登録状況
+  locals: coverage（Vsmobile::Coverage）, mode（:admin = 誰が送ったかの一覧 / :viewer = 本人への呼びかけ）, viewer（見ている人）,
+          show_event（省略可。true なら本文にイベント名をリンクで入れる。ダッシュボード用）
+%>
+<% show_event = local_assigns.fetch(:show_event, false) %>
+<% if mode == :admin %>
+  <div class="m-panel vc-panel">
+    <div class="m-phead">
+      <h2>各試合の統計</h2>
+      <span class="ed-chip <%= coverage.complete? ? "done" : "warn" %>"><%= coverage.covered_count %> / <%= coverage.total %> 試合</span>
+    </div>
+    <div class="m-pbody vc-body">
+      <% if coverage.complete? %>
+        <p class="vc-line">全試合そろっています。</p>
+      <% else %>
+        <%# 送った人と、まだの人（送ると何試合埋まるか） %>
+        <ul class="vc-people">
+          <% coverage.participants.sort_by { |user| [ coverage.submitted?(user) ? 0 : 1, -(coverage.candidate_for(user)&.match_numbers&.size || 0), user.nickname ] }.each do |user| %>
+            <% candidate = coverage.candidate_for(user) %>
+            <li>
+              <% if coverage.submitted?(user) %>
+                <span class="vc-ic done" aria-hidden="true">✓</span><span class="vc-nm"><%= user.nickname %></span><span class="vc-r">送信済み</span>
+              <% else %>
+                <span class="vc-ic todo" aria-hidden="true"></span><span class="vc-nm"><%= user.nickname %></span>
+                <span class="vc-r"><%= candidate ? "送ると #{candidate.match_numbers.size} 試合#{'（全部そろう）' if candidate.match_numbers.size == coverage.missing_numbers.size}" : "追加なし" %></span>
+              <% end %>
+            </li>
+          <% end %>
+        </ul>
+        <% if coverage.bulk_imported? %><p class="ed-note">一括取得（Cookie 方式）で取り込んだ試合も含みます。</p><% end %>
+      <% end %>
+      <% if coverage.failures.any? %>
+        <%# 取り込めなかった送信。HTML は vsmobile_parse_failures に残っている（Rails コンソールで見る） %>
+        <p class="ed-note vc-fail">
+          取り込めなかった送信: <%= coverage.failures.size %> 件（<%= coverage.failure_senders.join("・") %>）<br>
+          最新のエラー: <%= coverage.failures.first.error_message %>
+        </p>
+      <% end %>
+    </div>
+  </div>
+<% elsif !coverage.complete? && coverage.participant?(viewer) %>
+  <% mine = coverage.candidate_for(viewer) %>
+  <% if mine %>
+    <%# 本人への呼びかけ（送れば埋まる試合がある人だけ） %>
+    <div class="vc-cta">
+      <div class="vc-cta-title">対戦結果の送信をお願いします</div>
+      <p class="vc-cta-body">
+        <%= link_to(coverage.event.name, event_path(coverage.event), class: "m-link") if show_event %><%= "の" if show_event %>あなたの <%= mine.match_numbers.size %> 試合分が、まだ登録されていません。
+        VS.モバイルを開いて、連携のブックマークを開いてください。
+      </p>
+      <div class="vc-cta-foot">
+        <%= link_to "送り方を見る →", vsmobile_guide_path, class: "m-link" %>
+        <span class="dim">統計の登録状況 <%= coverage.covered_count %> / <%= coverage.total %> 試合</span>
+      </div>
+    </div>
+  <% else %>
+    <p class="vc-thanks">あなたの対戦結果は登録済みです。<span class="dim">統計の登録状況 <%= coverage.covered_count %> / <%= coverage.total %> 試合</span></p>
+  <% end %>
+<% end %>

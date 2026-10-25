@@ -40,6 +40,9 @@ gem "web-push", "~> 3.0"
 # Markdown rendering [https://github.com/vmg/redcarpet]
 gem "redcarpet"
 
+# CORS: VS.モバイル連携（web.vsmobile.jp 上のブックマークレットから /api/vsmobile/* へ送る）[https://github.com/cyu/rack-cors]
+gem "rack-cors"
+
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem "tzinfo-data", platforms: %i[ windows jruby ]
 

@@ -41,6 +41,10 @@ Rails.application.routes.draw do
 
   # Profile (User settings)
   resource :profile, only: [ :edit, :update ]
+  # VS.モバイル連携の鍵（ブックマークレットの URL）を作る・作り直す
+  resource :vsmobile_token, only: [ :create ]
+  # VS.モバイル連携の使い方（ログイン不要。Discord の「対戦会前のお願い」からもリンクする）
+  get "vsmobile/guide", to: "vsmobile_guides#show", as: :vsmobile_guide
 
   # Statistics
   get "statistics", to: "statistics#index", as: :statistics
@@ -56,6 +60,11 @@ Rails.application.routes.draw do
         post :notify_failure
         post :stats
       end
+    end
+    # VS.モバイル連携（web.vsmobile.jp 上のブックマークレットから。本人用の鍵で認証。CORS は config/initializers/cors.rb）
+    namespace :vsmobile do
+      resource :targets, only: [ :show ]
+      resources :matches, only: [ :create ]
     end
   end
 
@@ -109,9 +118,8 @@ Rails.application.routes.draw do
 
   # Announcements
   resources :announcements, only: [] do
-    member do
-      post :mark_as_read
-    end
+    # お知らせのモーダルの「閉じる」。そのとき未読だったお知らせをまとめて既読にする
+    post :mark_all_as_read, on: :collection
   end
 
   # Admin

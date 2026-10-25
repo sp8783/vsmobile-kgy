@@ -98,7 +98,7 @@ class EventDataPagesTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select ".st-tab.on", text: "試合ごとに入力"
-    assert_select ".ed-chip.done", text: "取り込み済み", count: 1
+    assert_select ".ed-tr .ed-chip.done", text: "取り込み済み", count: 1
     assert_select "a[href=?]", edit_match_stats_path(@matches.first), text: "直す"
     assert_select "a[href=?]", edit_match_stats_path(@matches.last), text: "入力する"
   end

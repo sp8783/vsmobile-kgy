@@ -108,15 +108,20 @@ class EventTimestampsFromGameStartTest < ActionDispatch::IntegrationTest
 
   # スクレイパー（exvs2ib-vsmobile-scraper）の出力と同じ形
   def stats_matches
-    OFFSETS.map do |offset|
+    OFFSETS.each_with_index.map do |offset, index|
       {
         "match_ts" => FIRST_MATCH_TS + offset, "time" => Time.zone.at(FIRST_MATCH_TS + offset).strftime("%H:%M"),
         "game_date" => "2026/11/07(土)", "shop_name" => "テスト店",
-        "team_a" => { "team_name" => "", "result" => "win", "players" => [] },
-        "team_b" => { "team_name" => "", "result" => "lose", "players" => [] },
+        "team_a" => { "team_name" => "", "result" => "win", "players" => players_json(@matches[index], 1) },
+        "team_b" => { "team_name" => "", "result" => "lose", "players" => players_json(@matches[index], 2) },
         "timeline_raw" => { "groups" => [], "events" => [], "game_end_cs" => 12000, "game_end_str" => "2:00.00" }
       }
     end
+  end
+
+  # 試合の 4 人を scrape.py の players の形に（統計の取り込みは 4 人の名前で試合に対応づけるため）
+  def players_json(match, team_number)
+    match.match_players.select { |player| player.team_number == team_number }.sort_by(&:position).map { |player| { "name" => player.user.nickname } }
   end
 
   def post_stats

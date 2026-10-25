@@ -17,6 +17,9 @@ class User < ApplicationRecord
   # 対戦結果入力のプルダウンの先頭に出す、最近使った機体の数
   RECENT_MOBILE_SUITS_LIMIT = 10
 
+  # VS.モバイル連携: ブックマークレットの URL に埋める本人用の鍵（設定から作り直せる。漏れても、本人名義で試合データを送れるだけ）
+  has_secure_token :vsmobile_token, length: 32
+
   # Validations
   validates :username, presence: true, uniqueness: { case_sensitive: false },
             format: { with: /\A[a-zA-Z0-9_-]+\z/, message: "は半角英数字と記号（_ -）のみ使用できます" }
@@ -66,6 +69,11 @@ class User < ApplicationRecord
   # Check if user can receive push notifications
   def push_notifications_enabled?
     push_subscriptions.exists?
+  end
+
+  # VS.モバイル連携の鍵を作り直す（古い URL は使えなくなる）
+  def regenerate_vsmobile_token!
+    update!(vsmobile_token: self.class.generate_unique_secure_token(length: 32), vsmobile_token_used_at: nil)
   end
 
   # Use username for authentication instead of email

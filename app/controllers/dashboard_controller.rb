@@ -76,8 +76,19 @@ class DashboardController < ApplicationController
     generate_notifications
 
     @upcoming_events = Event.where("held_on >= ?", Time.zone.today).order(held_on: :asc).limit(3)
+    @stats_coverages = pending_stats_coverages
 
     render "index"
+  end
+
+  # VS.モバイル連携: 直近 30 日のイベントで、この人の対戦結果がまだ届いていない（送れば埋まる試合がある）もの
+  def pending_stats_coverages
+    return [] if viewing_as_user.is_guest
+
+    Event.where(held_on: Api::Vsmobile::TargetsController::RETENTION_DAYS.days.ago.to_date..Date.current)
+         .joins(matches: :match_players).where(match_players: { user_id: viewing_as_user.id }).distinct.order(held_on: :desc)
+         .map { |event| Vsmobile::Coverage.new(event: event) }
+         .select { |coverage| !coverage.complete? && coverage.candidate_for(viewing_as_user) }
   end
 
   # 全ユーザー試合データを一度だけロード（N+1クエリを防ぐ）
