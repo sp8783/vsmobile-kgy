@@ -17,7 +17,7 @@
 
 ## 開発
 
-Ruby 4.0.9 / Rails 8.1 / PostgreSQL / Hotwire / Tailwind CSS
+Ruby 4.0.10 / Rails 8.1 / PostgreSQL / Hotwire / Tailwind CSS
 
 ```bash
 bundle install

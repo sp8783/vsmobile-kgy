@@ -2,7 +2,7 @@
 
 ## 必要なもの
 
-- Ruby 4.0.9（`.ruby-version`）
+- Ruby 4.0.10（`.ruby-version`）
 - Docker（PostgreSQL 用）
 - Node.js（Tailwind CSS のビルド用）
 
