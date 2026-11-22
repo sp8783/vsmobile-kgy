@@ -1,0 +1,51 @@
+name: Ruby の更新確認
+
+# 毎日 6:00（日本時間）に Ruby の新版を確かめ、あれば .ruby-version・Dockerfile・README・docs と、
+# workflow で SHA 固定している ruby/setup-ruby を上げる PR を作る・更新する。
+# patch は自動マージを予約する（main のブランチ保護で CI が必須）。minor / major は下書きにして Claude が取り込む。
+# 中身は lib/ruby_update/ を参照
+on:
+  schedule:
+    - cron: "0 21 * * *" # 21:00 UTC = 6:00 JST
+  workflow_dispatch:
+
+concurrency:
+  group: ruby-update
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    env:
+      # PR で CI が動き、自動マージを予約できるよう、GitHub 標準のトークンではなく Fine-grained PAT を使う（機体データの更新確認と同じ）
+      GH_TOKEN: ${{ secrets.MOBILE_SUITS_UPDATE_TOKEN }}
+
+    steps:
+      # 外部の Actions はコミット SHA で固定する
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.MOBILE_SUITS_UPDATE_TOKEN }}
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@be3c7df29b3349ec6bcfc6b4792f1cf9f5237d18 # v1.343.0
+        with:
+          bundler-cache: true
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      # main から作り直す
+      - name: Check out main
+        run: git checkout -B ruby-update origin/main
+
+      - name: Check for a new Ruby and publish PR
+        run: bin/rails ruby_update:publish
