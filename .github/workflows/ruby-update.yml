@@ -1,12 +1,12 @@
 name: Ruby の更新確認
 
-# 毎日 6:00（日本時間）に Ruby の新版を確かめ、あれば .ruby-version・Dockerfile・README・docs と、
+# 毎日 5:00（日本時間。機体データの更新確認・Dependabot と同じ時刻）に Ruby の新版を確かめ、あれば .ruby-version・Dockerfile・README・docs と、
 # workflow で SHA 固定している ruby/setup-ruby を上げる PR を作る・更新する。
 # patch は自動マージを予約する（main のブランチ保護で CI が必須）。minor / major は下書きにして Claude が取り込む。
 # 中身は lib/ruby_update/ を参照
 on:
   schedule:
-    - cron: "0 21 * * *" # 21:00 UTC = 6:00 JST
+    - cron: "0 20 * * *" # 20:00 UTC = 5:00 JST
   workflow_dispatch:
 
 concurrency:

@@ -1,12 +1,13 @@
 version: 2
-# 毎日 9:00（日本時間・平日）に更新を確認する。PR は .github/workflows/dependabot-auto-merge.yml が CI 後に自動でマージする（major は手で）。
+# 毎日 5:00（日本時間）に更新を確認する（機体データの更新確認・Ruby の更新確認と同じ時刻）。daily は平日だけなので cron で指定する。
+# PR は .github/workflows/dependabot-auto-merge.yml が CI 後に自動でマージする（major は手で）。
 # gem は間接依存（Kamal の net-ssh など）も対象にする。脆弱性の修正はリポジトリ設定の Dependabot security updates が、このスケジュールを待たずに PR を出す
 updates:
 - package-ecosystem: bundler
   directory: "/"
   schedule:
-    interval: daily
-    time: "09:00"
+    interval: cron
+    cronjob: "0 5 * * *"
     timezone: Asia/Tokyo
   allow:
     - dependency-type: all
@@ -18,8 +19,8 @@ updates:
 - package-ecosystem: github-actions
   directory: "/"
   schedule:
-    interval: daily
-    time: "09:00"
+    interval: cron
+    cronjob: "0 5 * * *"
     timezone: Asia/Tokyo
   open-pull-requests-limit: 10
   groups:
