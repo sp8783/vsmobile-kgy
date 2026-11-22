@@ -2,6 +2,5 @@
 require "rubygems"
 require "bundler/setup"
 
-ARGV.unshift("--ensure-latest")
-
+# --ensure-latest は付けない。新版が出ただけで CI が落ちるのを避け、Brakeman の版は Dependabot に任せる
 load Gem.bin_path("brakeman", "brakeman")
