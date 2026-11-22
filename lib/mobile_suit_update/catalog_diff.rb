@@ -14,7 +14,8 @@ module MobileSuitUpdate
     Change = Data.define(:before, :after, :fields)
     Incomplete = Data.define(:suit, :missing)
 
-    attr_reader :added, :removed, :changed, :position_only_count
+    # incomplete: 新しい機体のうち REQUIRED が欠けているもの
+    attr_reader :added, :removed, :changed, :position_only_count, :incomplete
 
     # image_dir: 取り直したあとの機体画像の置き場所（新しい機体の画像があるかを確かめる）
     def initialize(before_units, after_units, image_dir:)
@@ -34,18 +35,16 @@ module MobileSuitUpdate
           @position_only_count += 1
         end
       end
+      # 画像の有無はここで確かめる（Refresher の作業ディレクトリは call を抜けると消えるので、あとから見ると必ず「なし」になる）
+      @incomplete = added.filter_map do |suit|
+        missing = REQUIRED.filter_map { |key, label| label if missing?(suit, key) }
+        Incomplete.new(suit:, missing:) if missing.any?
+      end
     end
 
     # 並び順だけの変化では PR を作らない（ほかの変化と一緒に反映する）
     def changes?
       added.any? || removed.any? || changed.any?
-    end
-
-    def incomplete
-      added.filter_map do |suit|
-        missing = REQUIRED.filter_map { |key, label| label if missing?(suit, key) }
-        Incomplete.new(suit:, missing:) if missing.any?
-      end
     end
 
     def complete?

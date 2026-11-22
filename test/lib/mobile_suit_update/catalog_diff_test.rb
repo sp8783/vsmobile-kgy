@@ -8,14 +8,14 @@ class MobileSuitUpdate::CatalogDiffTest < ActiveSupport::TestCase
   end
 
   teardown do
-    FileUtils.remove_entry(@image_dir)
+    FileUtils.remove_entry(@image_dir) if @image_dir.exist?
   end
 
   test "アプリが使う項目の変化だけを拾い、取得日時などほかの項目の違いは無視する" do
     before = [ suit_unit(1, "機体A", durability: "650"), suit_unit(2, "機体B") ]
     after = [ suit_unit(1, "機体A", durability: "600").merge("pilot" => "別のパイロット"), suit_unit(2, "機体B").merge("tags" => [ "新しいタグ" ]) ]
 
-    diff = diff(before, after)
+    diff = catalog_diff(before, after)
 
     assert diff.changes?
     assert_equal [ 1 ], diff.changed.map { |change| change.after[:wiki_page_id] }
@@ -23,14 +23,14 @@ class MobileSuitUpdate::CatalogDiffTest < ActiveSupport::TestCase
   end
 
   test "新しい機体・消えた機体を拾う" do
-    diff = diff([ suit_unit(1, "機体A"), suit_unit(2, "機体B") ], [ suit_unit(1, "機体A"), suit_unit(3, "機体C") ])
+    diff = catalog_diff([ suit_unit(1, "機体A"), suit_unit(2, "機体B") ], [ suit_unit(1, "機体A"), suit_unit(3, "機体C") ])
 
     assert_equal [ "機体C" ], diff.added.map { |suit| suit[:name] }
     assert_equal [ "機体B" ], diff.removed.map { |suit| suit[:name] }
   end
 
   test "並び順だけの変化は数えるが、それだけでは変化とみなさない" do
-    diff = diff([ suit_unit(1, "機体A"), suit_unit(2, "機体B") ], [ suit_unit(2, "機体B"), suit_unit(1, "機体A") ])
+    diff = catalog_diff([ suit_unit(1, "機体A"), suit_unit(2, "機体B") ], [ suit_unit(2, "機体B"), suit_unit(1, "機体A") ])
 
     assert_not diff.changes?
     assert_equal 2, diff.position_only_count
@@ -41,7 +41,7 @@ class MobileSuitUpdate::CatalogDiffTest < ActiveSupport::TestCase
     after = [ suit_unit(3, "機体C", red_lock_range: ""), suit_unit(4, "機体D", durability: nil), suit_unit(5, "機体E") ]
     write_image(5, "機体E")
 
-    diff = diff([], after)
+    diff = catalog_diff([], after)
 
     assert_not diff.complete?
     assert_equal({ "機体C" => [ "赤ロック距離" ], "機体D" => [ "画像", "耐久値" ] },
@@ -51,12 +51,22 @@ class MobileSuitUpdate::CatalogDiffTest < ActiveSupport::TestCase
   test "新しい機体の情報がそろっていれば complete" do
     write_image(3, "機体C")
 
-    assert diff([], [ suit_unit(3, "機体C") ]).complete?
+    assert catalog_diff([], [ suit_unit(3, "機体C") ]).complete?
+  end
+
+  test "画像の有無は作ったときに確かめ、あとで画像の置き場所が消えても判定は変わらない" do
+    write_image(3, "機体C")
+    diff = catalog_diff([], [ suit_unit(3, "機体C"), suit_unit(4, "機体D") ])
+    FileUtils.remove_entry(@image_dir)
+
+    assert_not diff.complete?
+    assert_equal({ "機体D" => [ "画像" ] }, diff.incomplete.to_h { |item| [ item.suit[:name], item.missing ] })
   end
 
   private
 
-  def diff(before, after)
+  # Minitest::Assertions#diff（失敗時のメッセージ作り）と名前がかぶらないようにする
+  def catalog_diff(before, after)
     MobileSuitUpdate::CatalogDiff.new(before, after, image_dir: @image_dir)
   end
 
